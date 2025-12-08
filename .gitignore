@@ -1,0 +1,11 @@
+tmp
+.idea
+etc
+bin
+logs/*
+config/app.yaml
+apiok-admin
+apiok
+.air.toml
+/dist
+**/.DS_Store

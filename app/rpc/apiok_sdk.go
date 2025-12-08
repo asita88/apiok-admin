@@ -1,0 +1,842 @@
+package rpc
+
+import (
+	"apiok-admin/app/enums"
+	"apiok-admin/app/packages"
+	"apiok-admin/app/utils"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/url"
+	"strconv"
+	"sync"
+	"time"
+)
+
+type ApiOk struct {
+	Protocol string
+	Ip       string
+	Port     int
+	Domain   string
+	Secret   string
+	Address  string
+}
+
+var (
+	apiOk     *ApiOk
+	apiOkOnce sync.Once
+
+	timeOut         = time.Second * 2
+	routerUri       = "/apiok/admin/routers"
+	upstreamUri     = "/apiok/admin/upstreams"
+	upstreamNodeUri = "/apiok/admin/upstream/nodes"
+	serviceUri      = "/apiok/admin/services"
+	pluginUri       = "/apiok/admin/plugins"
+	certificateUri  = "/apiok/admin/certificates"
+)
+
+func NewApiOk() *ApiOk {
+
+	apiOkOnce.Do(func() {
+
+		address := packages.ConfigApiOk.Protocol + "://"
+		if len(packages.ConfigApiOk.Domain) != 0 {
+			address = address + packages.ConfigApiOk.Domain
+		} else {
+			address = address + packages.ConfigApiOk.Ip
+		}
+		address = address + ":" + strconv.Itoa(packages.ConfigApiOk.Port)
+
+		apiOk = &ApiOk{
+			Protocol: packages.ConfigApiOk.Protocol,
+			Ip:       packages.ConfigApiOk.Ip,
+			Port:     packages.ConfigApiOk.Port,
+			Domain:   packages.ConfigApiOk.Domain,
+			Secret:   packages.ConfigApiOk.Secret,
+			Address:  address,
+		}
+	})
+
+	return apiOk
+}
+
+type ConfigObjectName struct {
+	Id   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type UpstreamNodeList struct {
+	List []UpstreamNodeConfig `json:"list"`
+}
+
+type HealthCheck struct {
+	Enabled  bool   `json:"enabled"`
+	Tcp      bool   `json:"tcp"`
+	Method   string `json:"method"`
+	Host     string `json:"host"`
+	Uri      string `json:"uri"`
+	Interval int    `json:"interval"`
+	Timeout  int    `json:"timeout"`
+}
+
+type UpstreamNodeConfig struct {
+	Name    string            `json:"name"`
+	Address string            `json:"address"`
+	Port    int               `json:"port"`
+	Weight  int               `json:"weight"`
+	Health  string            `json:"health"`
+	Check   HealthCheck       `json:"check"`
+	Tags    map[string]string `json:"tags,omitempty"`
+}
+
+func (m *ApiOk) commonPut(resName string, uri string, data interface{}, params url.Values, headers http.Header) (err error) {
+
+	getUri := uri + "/" + resName
+
+	if len(m.Domain) > 0 {
+		headers.Set("Host", m.Domain)
+	}
+
+	var httpResp utils.HttpResp
+	httpResp, err = utils.Get(getUri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error(err.Error())
+		err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+		return
+	}
+
+	if httpResp.StatusCode == 404 {
+		httpResp, err = utils.PostJson(uri, data, headers, timeOut)
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.PublishError))
+			return
+		}
+
+		if httpResp.StatusCode != 200 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.PublishError))
+			return
+		}
+	} else if httpResp.StatusCode == 200 {
+		httpResp, err = utils.PutJson(getUri, data, headers, timeOut)
+
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.PublishError))
+			return
+		}
+
+		if httpResp.StatusCode != 200 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.PublishError))
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamNodeList(upstreamNodeIds []string) (list []UpstreamNodeConfig, err error) {
+
+	uri := m.Address + upstreamNodeUri
+
+	var params = url.Values{}
+	var headers = http.Header{}
+	var httpResp utils.HttpResp
+	httpResp, err = utils.Get(uri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error(err.Error())
+		err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+		return
+	}
+
+	if httpResp.StatusCode != 200 {
+		packages.Log.Error(string(httpResp.Body))
+		err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+		return
+	} else {
+		var tmpList UpstreamNodeList
+		json.Unmarshal(httpResp.Body, &tmpList)
+		list = tmpList.List
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamNodeListByNodeIds(upstreamNodeIds []string) (list []UpstreamNodeConfig, err error) {
+
+	nodeList, err := m.UpstreamNodeList(upstreamNodeIds)
+	if err != nil {
+		return
+	}
+
+	upstreamNodeIdsMap := make(map[string]byte)
+	for _, upstreamNodeId := range upstreamNodeIds {
+		upstreamNodeIdsMap[upstreamNodeId] = 0
+	}
+
+	for _, nodeInfo := range nodeList {
+		if _, exist := upstreamNodeIdsMap[nodeInfo.Name]; exist {
+			list = append(list, nodeInfo)
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamNodePut(upstreamNodeConfigList []UpstreamNodeConfig) (err error) {
+	if len(upstreamNodeConfigList) == 0 {
+		return
+	}
+
+	uri := m.Address + upstreamNodeUri
+
+	for _, upstreamNodeConfigInfo := range upstreamNodeConfigList {
+
+		var param = url.Values{}
+		var header = http.Header{}
+		if len(m.Domain) > 0 {
+			header.Set("Host", m.Domain)
+		}
+
+		resName := upstreamNodeConfigInfo.Name
+		err = m.commonPut(resName, uri, upstreamNodeConfigInfo, param, header)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamNodeDelete(upstreamNodeResIds []string) (err error) {
+	if len(upstreamNodeResIds) == 0 {
+		return
+	}
+
+	uri := m.Address + upstreamNodeUri
+
+	for _, upstreamNodeResId := range upstreamNodeResIds {
+
+		var params = url.Values{}
+		var headers = http.Header{}
+		if len(m.Domain) > 0 {
+			headers.Set("Host", m.Domain)
+		}
+
+		nodeUri := uri + "/" + upstreamNodeResId
+
+		var httpResp utils.HttpResp
+		httpResp, err = utils.Get(nodeUri, params, headers, timeOut)
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+			return
+		}
+
+		if httpResp.StatusCode == 500 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.SyncError))
+			return
+		} else if httpResp.StatusCode == 200 {
+			httpResp, err = utils.Delete(nodeUri, params, headers, timeOut)
+			if err != nil {
+				return
+			}
+
+			if httpResp.StatusCode != 200 {
+				packages.Log.Error(string(httpResp.Body))
+				err = errors.New(enums.CodeMessages(enums.PublishError))
+				return
+			}
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamNodeDeleteByIds(upstreamNodeIds []string) (err error) {
+	if len(upstreamNodeIds) == 0 {
+		return
+	}
+
+	uri := m.Address + upstreamNodeUri
+
+	for _, upstreamNodeId := range upstreamNodeIds {
+
+		var params = url.Values{}
+		var headers = http.Header{}
+		if len(m.Domain) > 0 {
+			headers.Set("Host", m.Domain)
+		}
+
+		uri = uri + "/" + upstreamNodeId
+
+		var httpResp utils.HttpResp
+		httpResp, err = utils.Get(uri, params, headers, timeOut)
+
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+			return
+		}
+
+		if httpResp.StatusCode == 500 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.SyncError))
+			return
+		} else if httpResp.StatusCode == 200 {
+			httpResp, err = utils.Delete(uri, params, headers, timeOut)
+			if err != nil {
+				packages.Log.Error(err.Error())
+				err = errors.New(enums.CodeMessages(enums.SyncError))
+				return
+			}
+
+			if httpResp.StatusCode != 200 {
+				packages.Log.Error(string(httpResp.Body))
+				err = errors.New(enums.CodeMessages(enums.PublishError))
+			}
+			return
+		}
+	}
+
+	return
+}
+
+type UpstreamConfig struct {
+	Name           string             `json:"name"`
+	Algorithm      string             `json:"algorithm"`
+	ConnectTimeout int                `json:"connect_timeout"`
+	WriteTimeout   int                `json:"write_timeout"`
+	ReadTimeout    int                `json:"read_timeout"`
+	Enabled        bool               `json:"enabled"`
+	Nodes          []ConfigObjectName `json:"nodes"`
+}
+
+func (m *ApiOk) UpstreamGet(upstreamResIds []string) (list []UpstreamConfig, err error) {
+	if len(upstreamResIds) == 0 {
+		return
+	}
+
+	uri := m.Address + upstreamUri
+
+	for _, upstreamResId := range upstreamResIds {
+
+		var params = url.Values{}
+		var headers = http.Header{}
+		if len(m.Domain) > 0 {
+			headers.Set("Host", m.Domain)
+		}
+
+		getUri := uri + "/" + upstreamResId
+
+		var httpResp utils.HttpResp
+		httpResp, err = utils.Get(getUri, params, headers, timeOut)
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+			return
+		}
+
+		if httpResp.StatusCode == 404 {
+			continue
+		} else if httpResp.StatusCode == 500 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.SyncError))
+			return
+		} else if httpResp.StatusCode == 200 {
+
+			var respData UpstreamConfig
+			err = json.Unmarshal(httpResp.Body, &respData)
+			if err != nil {
+				continue
+			}
+
+			if len(respData.Nodes) != 0 {
+				for k, node := range respData.Nodes {
+					respData.Nodes[k].Name = node.Id
+				}
+			}
+
+			list = append(list, respData)
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamPut(upstreamConfigList []UpstreamConfig) (err error) {
+	if len(upstreamConfigList) == 0 {
+		return
+	}
+
+	uri := m.Address + upstreamUri
+
+	for _, upstreamConfigInfo := range upstreamConfigList {
+
+		var param = url.Values{}
+		var header = http.Header{}
+		if len(m.Domain) > 0 {
+			header.Set("Host", m.Domain)
+		}
+
+		resName := upstreamConfigInfo.Name
+		err = m.commonPut(resName, uri, upstreamConfigInfo, param, header)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) UpstreamDelete(upstreamResIds []string) (err error) {
+	if len(upstreamResIds) == 0 {
+		return
+	}
+
+	uri := m.Address + upstreamUri
+
+	for _, upstreamResId := range upstreamResIds {
+
+		var params = url.Values{}
+		var headers = http.Header{}
+		if len(m.Domain) > 0 {
+			headers.Set("Host", m.Domain)
+		}
+
+		delUri := uri + "/" + upstreamResId
+
+		var httpResp utils.HttpResp
+		httpResp, err = utils.Get(delUri, params, headers, timeOut)
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+			return
+		}
+
+		if httpResp.StatusCode == 500 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.SyncError))
+			return
+		} else if httpResp.StatusCode == 200 {
+			httpResp, err = utils.Delete(delUri, params, headers, timeOut)
+			if err != nil {
+				packages.Log.Error(err.Error())
+				err = errors.New(enums.CodeMessages(enums.SyncError))
+				return
+			}
+
+			if httpResp.StatusCode != 200 {
+				packages.Log.Error(string(httpResp.Body))
+				err = errors.New(enums.CodeMessages(enums.PublishError))
+			}
+			return
+		}
+	}
+
+	return
+}
+
+type RouterConfig struct {
+	Name                    string                 `json:"name"`
+	Methods                 []string               `json:"methods"`
+	Paths                   []string               `json:"paths"`
+	Enabled                 bool                   `json:"enabled"`
+	Headers                 map[string]string      `json:"headers"`
+	Service                 ConfigObjectName       `json:"service"`
+	Upstream                ConfigObjectName       `json:"upstream"`
+	Plugins                 []ConfigObjectName     `json:"plugins"`
+	ClientMaxBodySize       *int64                 `json:"client_max_body_size,omitempty"`
+	ChunkedTransferEncoding *bool                  `json:"chunked_transfer_encoding,omitempty"`
+	ProxyBuffering          *bool                  `json:"proxy_buffering,omitempty"`
+	ProxyCache              map[string]interface{} `json:"proxy_cache,omitempty"`
+	ProxySetHeader          map[string]string      `json:"proxy_set_header,omitempty"`
+}
+
+func (m *ApiOk) RouterGet(routerResIds []string) (list []RouterConfig, err error) {
+	if len(routerResIds) == 0 {
+		return
+	}
+
+	uri := m.Address + routerUri
+
+	for _, routerResId := range routerResIds {
+
+		var params = url.Values{}
+		var headers = http.Header{}
+		if len(m.Domain) > 0 {
+			headers.Set("Host", m.Domain)
+		}
+
+		getUri := uri + "/" + routerResId
+
+		var httpResp utils.HttpResp
+		httpResp, err = utils.Get(getUri, params, headers, timeOut)
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+			return
+		}
+
+		if httpResp.StatusCode == 404 {
+			continue
+		} else if httpResp.StatusCode == 500 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.SyncError))
+			return
+		} else if httpResp.StatusCode == 200 {
+
+			var respData RouterConfig
+			err = json.Unmarshal(httpResp.Body, &respData)
+			if err != nil {
+				continue
+			}
+
+			if len(respData.Upstream.Id) != 0 {
+				respData.Upstream.Name = respData.Upstream.Id
+			}
+
+			list = append(list, respData)
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) RouterPut(routerConfigList []RouterConfig) (err error) {
+	if len(routerConfigList) == 0 {
+		return
+	}
+
+	uri := m.Address + routerUri
+
+	for _, routerConfigInfo := range routerConfigList {
+
+		var param = url.Values{}
+		var header = http.Header{}
+		if len(m.Domain) > 0 {
+			header.Set("Host", m.Domain)
+		}
+
+		resName := routerConfigInfo.Name
+		err = m.commonPut(resName, uri, routerConfigInfo, param, header)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (m *ApiOk) RouterDelete(routerResIds []string) (err error) {
+	if len(routerResIds) == 0 {
+		return
+	}
+
+	uri := m.Address + routerUri
+
+	for _, routerResId := range routerResIds {
+
+		var params = url.Values{}
+		var headers = http.Header{}
+		if len(m.Domain) > 0 {
+			headers.Set("Host", m.Domain)
+		}
+
+		delUri := uri + "/" + routerResId
+
+		var httpResp utils.HttpResp
+		httpResp, err = utils.Get(delUri, params, headers, timeOut)
+		if err != nil {
+			packages.Log.Error(err.Error())
+			err = errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+			return
+		}
+
+		if httpResp.StatusCode == 500 {
+			packages.Log.Error(string(httpResp.Body))
+			err = errors.New(enums.CodeMessages(enums.SyncError))
+			return
+		} else if httpResp.StatusCode == 200 {
+			httpResp, err = utils.Delete(delUri, params, headers, timeOut)
+			if err != nil {
+				packages.Log.Error(err.Error())
+				err = errors.New(enums.CodeMessages(enums.SyncError))
+				return
+			}
+
+			if httpResp.StatusCode != 200 {
+				packages.Log.Error(string(httpResp.Body))
+				err = errors.New(enums.CodeMessages(enums.PublishError))
+			}
+			return
+		}
+	}
+
+	return
+}
+
+type CertificateGetResponse struct {
+	ID   string   `json:"id"`
+	Name string   `json:"name"`
+	Sni  []string `json:"sni"`
+	Cert string   `json:"cert"`
+	Key  string   `json:"key"`
+}
+
+func (m *ApiOk) CertificateGet(resID string) (CertificateGetResponse, error) {
+
+	var params = url.Values{}
+	var headers = http.Header{}
+	if len(m.Domain) > 0 {
+		headers.Set("Host", m.Domain)
+	}
+
+	uri := m.Address + certificateUri + "/" + resID
+
+	httpResp, err := utils.Get(uri, params, headers, timeOut)
+	if err != nil || httpResp.StatusCode != 200 {
+		packages.Log.Error("Failed to obtain the data side certificate information", err)
+		return CertificateGetResponse{}, errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+	}
+
+	var body CertificateGetResponse
+	err = json.Unmarshal(httpResp.Body, &body)
+
+	if err != nil {
+		packages.Log.Error("Failed to parse data side certificate information", err)
+	}
+
+	return body, nil
+
+}
+
+func (m *ApiOk) CertificateDelete(resID string) error {
+	var params = url.Values{}
+	var headers = http.Header{}
+
+	uri := m.Address + certificateUri + "/" + resID
+
+	httpResp, err := utils.Get(uri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error("[delete]:Failed to obtain the data side certificate information", err)
+		return errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+	}
+
+	if httpResp.StatusCode != 200 {
+		return nil
+	}
+
+	dHttpResp, err := utils.Delete(uri, params, headers, timeOut)
+
+	if err != nil || dHttpResp.StatusCode != 200 {
+		packages.Log.Error("[delete]:Failed to delete the data side certificate information", err)
+		return errors.New(enums.CodeMessages(enums.SyncError))
+	}
+
+	return nil
+}
+
+type CertificatePutRequest struct {
+	Name string   `json:"name"`
+	Sni  []string `json:"snis"`
+	Cert string   `json:"cert"`
+	Key  string   `json:"key"`
+}
+
+func (m *ApiOk) CertificatePut(request *CertificatePutRequest) error {
+
+	resName := request.Name
+	uri := m.Address + certificateUri
+	err := m.commonPut(resName, uri, request, url.Values{}, http.Header{})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ServiceResponse struct {
+	ID        string             `json:"id"`
+	Name      string             `json:"name"`
+	Protocols []string           `json:"protocols"`
+	Hosts     []string           `json:"hosts"`
+	Ports     []string           `json:"ports"`
+	Plugins   []ConfigObjectName `json:"plugins"`
+	Enabled   bool               `json:"enabled"`
+}
+
+func (m *ApiOk) ServiceGet(resID string) (ServiceResponse, error) {
+
+	var params = url.Values{}
+	var headers = http.Header{}
+	if len(m.Domain) > 0 {
+		headers.Set("Host", m.Domain)
+	}
+
+	uri := m.Address + serviceUri + "/" + resID
+
+	httpResp, err := utils.Get(uri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error("Failed to obtain the data side service information", err)
+		return ServiceResponse{}, errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+	}
+
+	if httpResp.StatusCode == 500 {
+		packages.Log.Error(string(httpResp.Body))
+		return ServiceResponse{}, errors.New(enums.CodeMessages(enums.SyncError))
+	} else if httpResp.StatusCode == 200 {
+		var body ServiceResponse
+		err = json.Unmarshal(httpResp.Body, &body)
+
+		if err != nil {
+			packages.Log.Error("Failed to parse data side service information", err)
+		}
+		return body, nil
+	} else {
+		return ServiceResponse{}, nil
+	}
+}
+
+func (m *ApiOk) ServiceDelete(resID string) error {
+	var params = url.Values{}
+	var headers = http.Header{}
+
+	uri := m.Address + serviceUri + "/" + resID
+
+	httpResp, err := utils.Get(uri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error("[delete]:Failed to obtain the data side service information", err)
+		return errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+	}
+
+	if httpResp.StatusCode == 404 {
+		return nil
+	}
+
+	dHttpResp, err := utils.Delete(uri, params, headers, timeOut)
+
+	if err != nil || dHttpResp.StatusCode != 200 {
+		packages.Log.Error("[delete]:Failed to delete the data side service information", err)
+		return errors.New(enums.CodeMessages(enums.SyncError))
+	}
+
+	return nil
+}
+
+type ServicePutRequest struct {
+	Name                    string                 `json:"name"`
+	Protocols               []string               `json:"protocols"`
+	Hosts                   []string               `json:"hosts"`
+	Ports                   []int                  `json:"ports"`
+	Plugins                 []ConfigObjectName     `json:"plugins"`
+	Enabled                 bool                   `json:"enabled"`
+	ClientMaxBodySize       *int64                 `json:"client_max_body_size,omitempty"`
+	ChunkedTransferEncoding *bool                  `json:"chunked_transfer_encoding,omitempty"`
+	ProxyBuffering          *bool                  `json:"proxy_buffering,omitempty"`
+	ProxyCache              map[string]interface{} `json:"proxy_cache,omitempty"`
+	ProxySetHeader          map[string]string      `json:"proxy_set_header,omitempty"`
+}
+
+func (m *ApiOk) ServicePut(request *ServicePutRequest) error {
+
+	resName := request.Name
+	uri := m.Address + serviceUri
+	err := m.commonPut(resName, uri, request, url.Values{}, http.Header{})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type PluginResponse struct {
+	ID        string             `json:"id"`
+	Name      string             `json:"name"`
+	Protocols []string           `json:"protocols"`
+	Hosts     []string           `json:"hosts"`
+	Ports     []string           `json:"ports"`
+	Plugins   []ConfigObjectName `json:"plugins"`
+	Enabled   bool               `json:"enabled"`
+}
+
+func (m *ApiOk) PluginGet(resID string) (PluginResponse, error) {
+
+	var params = url.Values{}
+	var headers = http.Header{}
+	if len(m.Domain) > 0 {
+		headers.Set("Host", m.Domain)
+	}
+
+	uri := m.Address + pluginUri + "/" + resID
+
+	httpResp, err := utils.Get(uri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error("Failed to obtain the data side plugin information", err)
+		return PluginResponse{}, errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+	}
+
+	if httpResp.StatusCode == 500 {
+		packages.Log.Error(string(httpResp.Body))
+		return PluginResponse{}, errors.New(enums.CodeMessages(enums.SyncError))
+	} else if httpResp.StatusCode == 200 {
+		var body PluginResponse
+		err = json.Unmarshal(httpResp.Body, &body)
+
+		if err != nil {
+			packages.Log.Error("Failed to parse data side plugin information", err)
+		}
+		return body, nil
+	} else {
+		return PluginResponse{}, nil
+	}
+}
+
+func (m *ApiOk) PluginDelete(resID string) error {
+	var params = url.Values{}
+	var headers = http.Header{}
+
+	uri := m.Address + pluginUri + "/" + resID
+
+	httpResp, err := utils.Get(uri, params, headers, timeOut)
+	if err != nil {
+		packages.Log.Error("[delete]:Failed to obtain the data side plugin information", err)
+		return errors.New(enums.CodeMessages(enums.RemoteServiceErr))
+	}
+
+	if httpResp.StatusCode != 200 {
+		return nil
+	}
+
+	dHttpResp, err := utils.Delete(uri, params, headers, timeOut)
+
+	if err != nil || dHttpResp.StatusCode != 200 {
+		packages.Log.Error("[delete]:Failed to delete the data side plugin information", err)
+		return errors.New(enums.CodeMessages(enums.SyncError))
+	}
+
+	return nil
+}
+
+type PluginPutRequest struct {
+	Name   string      `json:"name"`
+	Key    string      `json:"key"`
+	Config interface{} `json:"config"`
+}
+
+func (m *ApiOk) PluginPut(request *PluginPutRequest) error {
+
+	resName := request.Name
+	uri := m.Address + pluginUri
+	err := m.commonPut(resName, uri, request, url.Values{}, http.Header{})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
