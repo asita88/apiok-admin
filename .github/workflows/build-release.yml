@@ -102,18 +102,12 @@ jobs:
             mkdir -p release-temp-$platform
             cp apiok-admin_$platform release-temp-$platform/
             cp -r config release-temp-$platform/
-            if [ -d "html" ] && [ "$(ls -A html 2>/dev/null)" ]; then
-              cp -r html release-temp-$platform/
-            fi
             tar -czf release/apiok-admin_$platform.tar.gz -C release-temp-$platform .
             rm -rf release-temp-$platform
           done
           mkdir -p release-temp-windows
           cp apiok-admin_windows_amd64.exe release-temp-windows/
           cp -r config release-temp-windows/
-          if [ -d "html" ] && [ "$(ls -A html 2>/dev/null)" ]; then
-            cp -r html release-temp-windows/
-          fi
           cd release-temp-windows
           zip -r ../release/apiok-admin_windows_amd64.zip .
           cd ..
