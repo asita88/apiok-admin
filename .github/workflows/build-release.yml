@@ -22,11 +22,12 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Checkout dashboard to main branch
-        run: |
-          git fetch origin main:main || true
-          git checkout main || git checkout -b main origin/main || true
-          echo "Dashboard using branch: $(git rev-parse --abbrev-ref HEAD)"
+      - name: Checkout apiok-dashboard
+        uses: actions/checkout@v4
+        with:
+          repository: asita88/apiok-dashboard
+          path: apiok-dashboard
+          ref: main
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
