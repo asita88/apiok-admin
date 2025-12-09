@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 env:
@@ -113,26 +111,47 @@ jobs:
           path: release/
           retention-days: 30
 
-      - name: Get version
-        id: get_version
+      - name: Generate version and tag
+        id: version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+            TAG_NAME=$VERSION
+          else
+            DATE=$(date +%Y%m%d)
+            TIME=$(date +%H%M%S)
+            SHORT_SHA=${GITHUB_SHA::7}
+            VERSION="v1.0.0-${DATE}-${TIME}-${SHORT_SHA}"
+            TAG_NAME=$VERSION
+          fi
+          BUILD_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
+          echo "Tag: $TAG_NAME"
+          echo "Build time: $BUILD_TIME"
+
+      - name: Create tag
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag_name }}" -m "Release ${{ steps.version.outputs.tag_name }}"
+          git push origin "${{ steps.version.outputs.tag_name }}"
 
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: release/*
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ steps.get_version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.tag_name }}
+          name: Release ${{ steps.version.outputs.version }}
           body: |
-            ## apiok-admin ${{ steps.get_version.outputs.version }}
+            ## apiok-admin ${{ steps.version.outputs.version }}
 
             ### 构建信息
             - Commit: ${{ github.sha }}
-            - 构建时间: ${{ github.event.head_commit.timestamp }}
+            - 构建时间: ${{ steps.version.outputs.build_time }}
 
             ### 下载
             - Linux AMD64: `apiok-admin_linux_amd64.tar.gz`
