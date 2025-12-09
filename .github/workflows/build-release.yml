@@ -22,13 +22,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Checkout apiok-dashboard
-        uses: actions/checkout@v4
-        with:
-          repository: asita88/apiok-dashboard
-          path: apiok-dashboard
-          ref: main
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

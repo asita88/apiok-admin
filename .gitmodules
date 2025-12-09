@@ -1,0 +1,3 @@
+[submodule "apiok-dashboard"]
+	path = apiok-dashboard
+	url = https://github.com/asita88/apiok-dashboard.git
