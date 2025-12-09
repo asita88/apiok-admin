@@ -77,23 +77,23 @@ jobs:
 
       - name: Build Linux AMD64
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin_linux_amd64 main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin_linux_amd64 .
 
       - name: Build Linux ARM64
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o apiok-admin_linux_arm64 main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o apiok-admin_linux_arm64 .
 
       - name: Build Windows AMD64
         run: |
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o apiok-admin_windows_amd64.exe main.go
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o apiok-admin_windows_amd64.exe .
 
       - name: Build macOS AMD64
         run: |
-          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o apiok-admin_darwin_amd64 main.go
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o apiok-admin_darwin_amd64 .
 
       - name: Build macOS ARM64
         run: |
-          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o apiok-admin_darwin_arm64 main.go
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o apiok-admin_darwin_arm64 .
 
       - name: Create release archive
         run: |
