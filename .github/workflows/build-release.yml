@@ -98,11 +98,26 @@ jobs:
       - name: Create release archive
         run: |
           mkdir -p release
-          tar -czf release/apiok-admin_linux_amd64.tar.gz apiok-admin_linux_amd64
-          tar -czf release/apiok-admin_linux_arm64.tar.gz apiok-admin_linux_arm64
-          zip release/apiok-admin_windows_amd64.zip apiok-admin_windows_amd64.exe
-          tar -czf release/apiok-admin_darwin_amd64.tar.gz apiok-admin_darwin_amd64
-          tar -czf release/apiok-admin_darwin_arm64.tar.gz apiok-admin_darwin_arm64
+          for platform in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+            mkdir -p release-temp-$platform
+            cp apiok-admin_$platform release-temp-$platform/
+            cp -r config release-temp-$platform/
+            if [ -d "html" ] && [ "$(ls -A html 2>/dev/null)" ]; then
+              cp -r html release-temp-$platform/
+            fi
+            tar -czf release/apiok-admin_$platform.tar.gz -C release-temp-$platform .
+            rm -rf release-temp-$platform
+          done
+          mkdir -p release-temp-windows
+          cp apiok-admin_windows_amd64.exe release-temp-windows/
+          cp -r config release-temp-windows/
+          if [ -d "html" ] && [ "$(ls -A html 2>/dev/null)" ]; then
+            cp -r html release-temp-windows/
+          fi
+          cd release-temp-windows
+          zip -r ../release/apiok-admin_windows_amd64.zip .
+          cd ..
+          rm -rf release-temp-windows
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
