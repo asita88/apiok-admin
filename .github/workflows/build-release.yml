@@ -1,0 +1,141 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.23'
+  NODE_VERSION: '18'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Checkout dashboard to main branch
+        run: |
+          git fetch origin main:main || true
+          git checkout main || git checkout -b main origin/main || true
+          echo "Dashboard using branch: $(git rev-parse --abbrev-ref HEAD)"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apiok-dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        working-directory: apiok-dashboard
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build dashboard
+        working-directory: apiok-dashboard
+        run: npm run build
+
+      - name: Copy dashboard to admin
+        run: |
+          mkdir -p apiok-admin/html
+          cp -r apiok-dashboard/html/* apiok-admin/html/
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('apiok-admin/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        working-directory: apiok-admin
+        run: go mod download
+
+      - name: Build Linux AMD64
+        working-directory: apiok-admin
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin_linux_amd64 main.go
+
+      - name: Build Linux ARM64
+        working-directory: apiok-admin
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o apiok-admin_linux_arm64 main.go
+
+      - name: Build Windows AMD64
+        working-directory: apiok-admin
+        run: |
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o apiok-admin_windows_amd64.exe main.go
+
+      - name: Build macOS AMD64
+        working-directory: apiok-admin
+        run: |
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o apiok-admin_darwin_amd64 main.go
+
+      - name: Build macOS ARM64
+        working-directory: apiok-admin
+        run: |
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o apiok-admin_darwin_arm64 main.go
+
+      - name: Create release archive
+        run: |
+          mkdir -p release
+          tar -czf release/apiok-admin_linux_amd64.tar.gz -C apiok-admin apiok-admin_linux_amd64
+          tar -czf release/apiok-admin_linux_arm64.tar.gz -C apiok-admin apiok-admin_linux_arm64
+          zip release/apiok-admin_windows_amd64.zip apiok-admin/apiok-admin_windows_amd64.exe
+          tar -czf release/apiok-admin_darwin_amd64.tar.gz -C apiok-admin apiok-admin_darwin_amd64
+          tar -czf release/apiok-admin_darwin_arm64.tar.gz -C apiok-admin apiok-admin_darwin_arm64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apiok-admin-binaries
+          path: release/
+          retention-days: 30
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          body: |
+            ## apiok-admin ${{ steps.get_version.outputs.version }}
+
+            ### 构建信息
+            - Commit: ${{ github.sha }}
+            - 构建时间: ${{ github.event.head_commit.timestamp }}
+
+            ### 下载
+            - Linux AMD64: `apiok-admin_linux_amd64.tar.gz`
+            - Linux ARM64: `apiok-admin_linux_arm64.tar.gz`
+            - Windows AMD64: `apiok-admin_windows_amd64.zip`
+            - macOS AMD64: `apiok-admin_darwin_amd64.tar.gz`
+            - macOS ARM64: `apiok-admin_darwin_arm64.tar.gz`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
