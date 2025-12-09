@@ -25,7 +25,7 @@ type Certificates struct {
 
 // TableName sets the insert table name for this struct type
 func (c *Certificates) TableName() string {
-	return "oak_certificates"
+	return "ok_certificates"
 }
 
 var recursionTimesCertificates = 1

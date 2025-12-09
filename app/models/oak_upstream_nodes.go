@@ -23,7 +23,7 @@ type UpstreamNodes struct {
 
 // TableName sets the insert table name for this struct type
 func (u *UpstreamNodes) TableName() string {
-	return "oak_upstream_nodes"
+	return "ok_upstream_nodes"
 }
 
 func (m *UpstreamNodes) ModelUniqueId() (generateId string, err error) {

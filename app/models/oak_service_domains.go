@@ -20,7 +20,7 @@ type ServiceDomains struct {
 
 // TableName sets the insert table name for this struct type
 func (s *ServiceDomains) TableName() string {
-	return "oak_service_domains"
+	return "ok_service_domains"
 }
 
 var recursionTimesServiceDomains = 1

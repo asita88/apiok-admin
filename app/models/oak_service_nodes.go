@@ -23,7 +23,7 @@ var (
 
 // TableName sets the insert table name for this struct type
 func (s *ServiceNodes) TableName() string {
-	return "oak_service_nodes"
+	return "ok_service_nodes"
 }
 
 var recursionTimesServiceNodes = 1

@@ -19,7 +19,7 @@ type Plugins struct {
 
 // TableName sets the insert table name for this struct type
 func (p *Plugins) TableName() string {
-	return "oak_plugins"
+	return "ok_plugins"
 }
 
 func (p *Plugins) PluginAdd(pluginData *Plugins) error {

@@ -29,7 +29,7 @@ type PluginConfigs struct {
 
 // TableName sets the insert table name for this struct type
 func (m *PluginConfigs) TableName() string {
-	return "oak_plugin_configs"
+	return "ok_plugin_configs"
 }
 
 var recursionTimesPluginConfig = 1

@@ -53,7 +53,7 @@ go mod download
 创建数据库并导入 SQL 文件：
 
 ```bash
-mysql -u root -p < config/apioak.sql
+mysql -u root -p < config/apiok.sql
 ```
 
 4. **配置文件**
@@ -150,7 +150,7 @@ apiok-admin/
 ├── cores/                 # 核心模块
 ├── config/                # 配置文件
 │   ├── app.yaml          # 应用配置
-│   └── apioak.sql        # 数据库结构
+│   └── apiok.sql        # 数据库结构
 ├── routers/               # 路由定义
 ├── html/                  # 前端静态文件
 ├── main.go               # 入口文件

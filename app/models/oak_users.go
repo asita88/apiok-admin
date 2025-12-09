@@ -20,7 +20,7 @@ type Users struct {
 
 // TableName sets the insert table name for this struct type
 func (u *Users) TableName() string {
-	return "oak_users"
+	return "ok_users"
 }
 
 var recursionTimesUsers = 1

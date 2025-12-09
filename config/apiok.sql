@@ -64,10 +64,10 @@ CREATE TABLE `apiok_sync_hash` (
 INSERT INTO `apiok_sync_hash` VALUES ('2499016', 'sync/update', '{\"old\":\"bd0a57b3a6ce39f912f9babfa19404cc\",\"new\":\"bd0a57b3a6ce39f912f9babfa19404cc\"}', '2025-12-08 15:51:04');
 
 -- ----------------------------
--- Table structure for oak_certificates
+-- Table structure for ok_certificates
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_certificates`;
-CREATE TABLE `oak_certificates` (
+DROP TABLE IF EXISTS `ok_certificates`;
+CREATE TABLE `ok_certificates` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Certificate id',
   `sni` varchar(150) NOT NULL DEFAULT '' COMMENT 'SNI',
@@ -83,14 +83,14 @@ CREATE TABLE `oak_certificates` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Certificates';
 
 -- ----------------------------
--- Records of oak_certificates
+-- Records of ok_certificates
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for oak_plugins
+-- Table structure for ok_plugins
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_plugins`;
-CREATE TABLE `oak_plugins` (
+DROP TABLE IF EXISTS `ok_plugins`;
+CREATE TABLE `ok_plugins` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Plugin id',
   `plugin_key` varchar(20) NOT NULL DEFAULT '' COMMENT 'Plugin key',
@@ -105,21 +105,21 @@ CREATE TABLE `oak_plugins` (
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Plugins';
 
 -- ----------------------------
--- Records of oak_plugins
+-- Records of ok_plugins
 -- ----------------------------
-INSERT INTO `oak_plugins` VALUES ('1', 'pl-dIhZpgqcCHQzNgT', 'cors', 'icon-cors', '3', '配置服务端CORS（Cross-Origin Resource Sharing，跨域资源共享）的响应头信息', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `oak_plugins` VALUES ('2', 'pl-5xO9hzfcHJtpcQT', 'mock', 'icon-mock', '99', '配置模拟API数据，且请求不会转发到上游', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `oak_plugins` VALUES ('3', 'pl-xZjvnLQfq2i5GTS', 'key-auth', 'icon-key-auth', '1', '配置身份验证密钥（key密钥字符串）', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `oak_plugins` VALUES ('4', 'pl-0FnmajmiO7C8PtX', 'jwt-auth', 'icon-jwt-auth', '1', '配置用于JWT身份验证的密钥', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `oak_plugins` VALUES ('5', 'pl-m5BzSXbCQfGzoQi', 'limit-req', 'icon-limit-req', '2', '使用漏桶算法限制客户端对服务的请求速率', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `oak_plugins` VALUES ('6', 'pl-rLYsoeNVfPUMUAA', 'limit-conn', 'icon-limit-conn', '2', '限制客户端对服务的并发请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `oak_plugins` VALUES ('7', 'pl-XZxaqOgRZsBKpoE', 'limit-count', 'icon-limit-count', '2', '限制客户端在指定的时间范围内对服务的总请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('1', 'pl-dIhZpgqcCHQzNgT', 'cors', 'icon-cors', '3', '配置服务端CORS（Cross-Origin Resource Sharing，跨域资源共享）的响应头信息', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('2', 'pl-5xO9hzfcHJtpcQT', 'mock', 'icon-mock', '99', '配置模拟API数据，且请求不会转发到上游', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('3', 'pl-xZjvnLQfq2i5GTS', 'key-auth', 'icon-key-auth', '1', '配置身份验证密钥（key密钥字符串）', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('4', 'pl-0FnmajmiO7C8PtX', 'jwt-auth', 'icon-jwt-auth', '1', '配置用于JWT身份验证的密钥', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('5', 'pl-m5BzSXbCQfGzoQi', 'limit-req', 'icon-limit-req', '2', '使用漏桶算法限制客户端对服务的请求速率', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('6', 'pl-rLYsoeNVfPUMUAA', 'limit-conn', 'icon-limit-conn', '2', '限制客户端对服务的并发请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('7', 'pl-XZxaqOgRZsBKpoE', 'limit-count', 'icon-limit-count', '2', '限制客户端在指定的时间范围内对服务的总请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
 
 -- ----------------------------
--- Table structure for oak_plugin_configs
+-- Table structure for ok_plugin_configs
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_plugin_configs`;
-CREATE TABLE `oak_plugin_configs` (
+DROP TABLE IF EXISTS `ok_plugin_configs`;
+CREATE TABLE `ok_plugin_configs` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Plugin config id',
   `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Plugin config name',
@@ -136,15 +136,15 @@ CREATE TABLE `oak_plugin_configs` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Plugin Configs';
 
 -- ----------------------------
--- Records of oak_plugin_configs
+-- Records of ok_plugin_configs
 -- ----------------------------
-INSERT INTO `oak_plugin_configs` VALUES ('1', 'pc-cIvvY2IdZ1U9eQD', 'plugin-limit-req', '2', 'rt-Vany67MXLtgTHwG', 'pl-m5BzSXbCQfGzoQi', 'limit-req', '{\"rate\":1,\"burst\":500}', '1', '2025-12-04 15:56:32', '2025-12-04 15:56:32');
+INSERT INTO `ok_plugin_configs` VALUES ('1', 'pc-cIvvY2IdZ1U9eQD', 'plugin-limit-req', '2', 'rt-Vany67MXLtgTHwG', 'pl-m5BzSXbCQfGzoQi', 'limit-req', '{\"rate\":1,\"burst\":500}', '1', '2025-12-04 15:56:32', '2025-12-04 15:56:32');
 
 -- ----------------------------
--- Table structure for oak_routers
+-- Table structure for ok_routers
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_routers`;
-CREATE TABLE `oak_routers` (
+DROP TABLE IF EXISTS `ok_routers`;
+CREATE TABLE `ok_routers` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Router id',
   `service_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
@@ -166,15 +166,15 @@ CREATE TABLE `oak_routers` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Routers';
 
 -- ----------------------------
--- Records of oak_routers
+-- Records of ok_routers
 -- ----------------------------
-INSERT INTO `oak_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-DQ0CASH03pMddn3', 'up-BsYcvp9VClgXIX2', 'sss', 'ALL', '/apple', '1', '3', '100', null, null, null, null, '2025-12-05 18:58:50', '2025-12-08 17:03:37');
+INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-DQ0CASH03pMddn3', 'up-BsYcvp9VClgXIX2', 'sss', 'ALL', '/apple', '1', '3', '100', null, null, null, null, '2025-12-05 18:58:50', '2025-12-08 17:03:37');
 
 -- ----------------------------
--- Table structure for oak_services
+-- Table structure for ok_services
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_services`;
-CREATE TABLE `oak_services` (
+DROP TABLE IF EXISTS `ok_services`;
+CREATE TABLE `ok_services` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
   `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Service name',
@@ -194,16 +194,16 @@ CREATE TABLE `oak_services` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Services';
 
 -- ----------------------------
--- Records of oak_services
+-- Records of ok_services
 -- ----------------------------
-INSERT INTO `oak_services` VALUES ('3', 'sv-GdO0rkKOo5yJ9RM', 'aa', '1', '1', '2', null, null, null, null, null, '2025-12-05 19:22:32', '2025-12-08 17:07:08');
-INSERT INTO `oak_services` VALUES ('4', 'sv-DQ0CASH03pMddn3', 'bb', '1', '1', '3', null, null, null, null, null, '2025-12-08 16:13:03', '2025-12-08 17:03:32');
+INSERT INTO `ok_services` VALUES ('3', 'sv-GdO0rkKOo5yJ9RM', 'aa', '1', '1', '2', null, null, null, null, null, '2025-12-05 19:22:32', '2025-12-08 17:07:08');
+INSERT INTO `ok_services` VALUES ('4', 'sv-DQ0CASH03pMddn3', 'bb', '1', '1', '3', null, null, null, null, null, '2025-12-08 16:13:03', '2025-12-08 17:03:32');
 
 -- ----------------------------
--- Table structure for oak_service_domains
+-- Table structure for ok_service_domains
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_service_domains`;
-CREATE TABLE `oak_service_domains` (
+DROP TABLE IF EXISTS `ok_service_domains`;
+CREATE TABLE `ok_service_domains` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Domain id',
   `service_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
@@ -216,16 +216,16 @@ CREATE TABLE `oak_service_domains` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Service domains';
 
 -- ----------------------------
--- Records of oak_service_domains
+-- Records of ok_service_domains
 -- ----------------------------
-INSERT INTO `oak_service_domains` VALUES ('5', 'sd-aAREmDKmlalbqcU', 'sv-DQ0CASH03pMddn3', 'bb.apple.com', '2025-12-08 16:13:03', '2025-12-08 16:13:03');
-INSERT INTO `oak_service_domains` VALUES ('6', 'sd-6lC97dnRG8juBeC', 'sv-GdO0rkKOo5yJ9RM', 'aa.apple.com', '2025-12-08 16:13:24', '2025-12-08 16:13:24');
+INSERT INTO `ok_service_domains` VALUES ('5', 'sd-aAREmDKmlalbqcU', 'sv-DQ0CASH03pMddn3', 'bb.apple.com', '2025-12-08 16:13:03', '2025-12-08 16:13:03');
+INSERT INTO `ok_service_domains` VALUES ('6', 'sd-6lC97dnRG8juBeC', 'sv-GdO0rkKOo5yJ9RM', 'aa.apple.com', '2025-12-08 16:13:24', '2025-12-08 16:13:24');
 
 -- ----------------------------
--- Table structure for oak_upstreams
+-- Table structure for ok_upstreams
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_upstreams`;
-CREATE TABLE `oak_upstreams` (
+DROP TABLE IF EXISTS `ok_upstreams`;
+CREATE TABLE `ok_upstreams` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
   `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Upstream name',
@@ -249,16 +249,16 @@ CREATE TABLE `oak_upstreams` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Upstreams';
 
 -- ----------------------------
--- Records of oak_upstreams
+-- Records of ok_upstreams
 -- ----------------------------
-INSERT INTO `oak_upstreams` VALUES ('3', 'up-BsYcvp9VClgXIX2', 'test1', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:12:04', '2025-12-08 17:03:16');
-INSERT INTO `oak_upstreams` VALUES ('4', 'up-m00a4aXgZul43zU', 'test2', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:31:39', '2025-12-08 15:57:47');
+INSERT INTO `ok_upstreams` VALUES ('3', 'up-BsYcvp9VClgXIX2', 'test1', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:12:04', '2025-12-08 17:03:16');
+INSERT INTO `ok_upstreams` VALUES ('4', 'up-m00a4aXgZul43zU', 'test2', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:31:39', '2025-12-08 15:57:47');
 
 -- ----------------------------
--- Table structure for oak_upstream_nodes
+-- Table structure for ok_upstream_nodes
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_upstream_nodes`;
-CREATE TABLE `oak_upstream_nodes` (
+DROP TABLE IF EXISTS `ok_upstream_nodes`;
+CREATE TABLE `ok_upstream_nodes` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service node id',
   `upstream_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
@@ -277,18 +277,18 @@ CREATE TABLE `oak_upstream_nodes` (
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Upstream nodes';
 
 -- ----------------------------
--- Records of oak_upstream_nodes
+-- Records of ok_upstream_nodes
 -- ----------------------------
-INSERT INTO `oak_upstream_nodes` VALUES ('4', 'un-RTjg5YiOqd2jFVH', 'up-BsYcvp9VClgXIX2', '127.0.0.2', '1', '8080', '100', '1', '2', null, '2025-12-05 18:19:07', '2025-12-08 15:58:03');
-INSERT INTO `oak_upstream_nodes` VALUES ('8', 'un-rmxmDAvLlJt7dpe', 'up-m00a4aXgZul43zU', '127.0.0.1', '1', '8080', '100', '1', '2', '{\"123\":\"456\",\"789\":\"123\"}', '2025-12-05 18:50:36', '2025-12-08 15:57:30');
-INSERT INTO `oak_upstream_nodes` VALUES ('9', 'un-tPdCAkBvo9xZOwz', 'up-m00a4aXgZul43zU', '127.0.0.2', '1', '8080', '100', '1', '2', '', '2025-12-08 15:56:53', '2025-12-08 15:57:30');
-INSERT INTO `oak_upstream_nodes` VALUES ('10', 'un-PiXhYWPg81UqbNG', 'up-m00a4aXgZul43zU', '127.0.0.3', '1', '8080', '100', '1', '2', '', '2025-12-08 15:57:30', '2025-12-08 15:57:30');
+INSERT INTO `ok_upstream_nodes` VALUES ('4', 'un-RTjg5YiOqd2jFVH', 'up-BsYcvp9VClgXIX2', '127.0.0.2', '1', '8080', '100', '1', '2', null, '2025-12-05 18:19:07', '2025-12-08 15:58:03');
+INSERT INTO `ok_upstream_nodes` VALUES ('8', 'un-rmxmDAvLlJt7dpe', 'up-m00a4aXgZul43zU', '127.0.0.1', '1', '8080', '100', '1', '2', '{\"123\":\"456\",\"789\":\"123\"}', '2025-12-05 18:50:36', '2025-12-08 15:57:30');
+INSERT INTO `ok_upstream_nodes` VALUES ('9', 'un-tPdCAkBvo9xZOwz', 'up-m00a4aXgZul43zU', '127.0.0.2', '1', '8080', '100', '1', '2', '', '2025-12-08 15:56:53', '2025-12-08 15:57:30');
+INSERT INTO `ok_upstream_nodes` VALUES ('10', 'un-PiXhYWPg81UqbNG', 'up-m00a4aXgZul43zU', '127.0.0.3', '1', '8080', '100', '1', '2', '', '2025-12-08 15:57:30', '2025-12-08 15:57:30');
 
 -- ----------------------------
--- Table structure for oak_users
+-- Table structure for ok_users
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_users`;
-CREATE TABLE `oak_users` (
+DROP TABLE IF EXISTS `ok_users`;
+CREATE TABLE `ok_users` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'User iD',
   `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'User name',
@@ -302,15 +302,15 @@ CREATE TABLE `oak_users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Users';
 
 -- ----------------------------
--- Records of oak_users
+-- Records of ok_users
 -- ----------------------------
-INSERT INTO `oak_users` VALUES ('1', 'us-Ew2h6VglDSz5Jgi', 'apple', '550e1bafe077ff0b0b67f4e32f29d751', 'apple@apple.com', '2025-12-04 15:25:01', '2025-12-04 15:25:01');
+INSERT INTO `ok_users` VALUES ('1', 'us-Ew2h6VglDSz5Jgi', 'apple', '550e1bafe077ff0b0b67f4e32f29d751', 'apple@apple.com', '2025-12-04 15:25:01', '2025-12-04 15:25:01');
 
 -- ----------------------------
--- Table structure for oak_user_tokens
+-- Table structure for ok_user_tokens
 -- ----------------------------
-DROP TABLE IF EXISTS `oak_user_tokens`;
-CREATE TABLE `oak_user_tokens` (
+DROP TABLE IF EXISTS `ok_user_tokens`;
+CREATE TABLE `ok_user_tokens` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'User tokenID',
   `token` text NOT NULL COMMENT 'Token',
@@ -324,6 +324,6 @@ CREATE TABLE `oak_user_tokens` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User token';
 
 -- ----------------------------
--- Records of oak_user_tokens
+-- Records of ok_user_tokens
 -- ----------------------------
-INSERT INTO `oak_user_tokens` VALUES ('2', 'ut-fRxOwcPbZkePkrB', 'eyJlbmNyeXB0aW9uIjoiYXBwbGVAYXBwbGUuY29tIiwidGltZXN0YW1wIjoiNzk3NmY5YTIzZWZmYjA5MDAzYzZiMzdkMGYwYzljZmYiLCJzZWNyZXQiOiJGUF9WbFdWM292TXY1SHNnUkJFRXIzbzgwWEttOXFlbkVjc1dQWGJPQW8wPSIsImlzc3VlciI6InphbmVoeSJ9', 'apple@apple.com', '2025-12-08 15:56:21', '2025-12-08 17:08:01', '2025-12-08 19:08:01');
+INSERT INTO `ok_user_tokens` VALUES ('2', 'ut-fRxOwcPbZkePkrB', 'eyJlbmNyeXB0aW9uIjoiYXBwbGVAYXBwbGUuY29tIiwidGltZXN0YW1wIjoiNzk3NmY5YTIzZWZmYjA5MDAzYzZiMzdkMGYwYzljZmYiLCJzZWNyZXQiOiJGUF9WbFdWM292TXY1SHNnUkJFRXIzbzgwWEttOXFlbkVjc1dQWGJPQW8wPSIsImlzc3VlciI6InphbmVoeSJ9', 'apple@apple.com', '2025-12-08 15:56:21', '2025-12-08 17:08:01', '2025-12-08 19:08:01');

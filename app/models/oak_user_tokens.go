@@ -21,7 +21,7 @@ type UserTokens struct {
 
 // TableName sets the insert table name for this struct type
 func (u *UserTokens) TableName() string {
-	return "oak_user_tokens"
+	return "ok_user_tokens"
 }
 
 var recursionTimesUserTokens = 1

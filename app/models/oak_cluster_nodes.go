@@ -19,7 +19,7 @@ type ClusterNodes struct {
 
 // TableName sets the insert table name for this struct type
 func (c *ClusterNodes) TableName() string {
-	return "oak_cluster_nodes"
+	return "ok_cluster_nodes"
 }
 
 var recursionTimesClusterNodes = 1

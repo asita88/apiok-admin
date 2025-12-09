@@ -31,7 +31,7 @@ type Routers struct {
 
 // TableName sets the insert table name for this struct type
 func (r *Routers) TableName() string {
-	return "oak_routers"
+	return "ok_routers"
 }
 
 var recursionTimesRouter = 1
