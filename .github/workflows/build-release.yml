@@ -31,7 +31,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: apiok-dashboard/package.json
 
       - name: Install dashboard dependencies
         working-directory: apiok-dashboard
