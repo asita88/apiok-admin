@@ -56,8 +56,8 @@ jobs:
 
       - name: Copy dashboard to admin
         run: |
-          mkdir -p apiok-admin/html
-          cp -r apiok-dashboard/html/* apiok-admin/html/
+          mkdir -p html
+          cp -r apiok-dashboard/html/* html/
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -68,47 +68,41 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('apiok-admin/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
       - name: Download dependencies
-        working-directory: apiok-admin
         run: go mod download
 
       - name: Build Linux AMD64
-        working-directory: apiok-admin
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin_linux_amd64 main.go
 
       - name: Build Linux ARM64
-        working-directory: apiok-admin
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o apiok-admin_linux_arm64 main.go
 
       - name: Build Windows AMD64
-        working-directory: apiok-admin
         run: |
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o apiok-admin_windows_amd64.exe main.go
 
       - name: Build macOS AMD64
-        working-directory: apiok-admin
         run: |
           CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o apiok-admin_darwin_amd64 main.go
 
       - name: Build macOS ARM64
-        working-directory: apiok-admin
         run: |
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o apiok-admin_darwin_arm64 main.go
 
       - name: Create release archive
         run: |
           mkdir -p release
-          tar -czf release/apiok-admin_linux_amd64.tar.gz -C apiok-admin apiok-admin_linux_amd64
-          tar -czf release/apiok-admin_linux_arm64.tar.gz -C apiok-admin apiok-admin_linux_arm64
-          zip release/apiok-admin_windows_amd64.zip apiok-admin/apiok-admin_windows_amd64.exe
-          tar -czf release/apiok-admin_darwin_amd64.tar.gz -C apiok-admin apiok-admin_darwin_amd64
-          tar -czf release/apiok-admin_darwin_arm64.tar.gz -C apiok-admin apiok-admin_darwin_arm64
+          tar -czf release/apiok-admin_linux_amd64.tar.gz apiok-admin_linux_amd64
+          tar -czf release/apiok-admin_linux_arm64.tar.gz apiok-admin_linux_arm64
+          zip release/apiok-admin_windows_amd64.zip apiok-admin_windows_amd64.exe
+          tar -czf release/apiok-admin_darwin_amd64.tar.gz apiok-admin_darwin_amd64
+          tar -czf release/apiok-admin_darwin_arm64.tar.gz apiok-admin_darwin_arm64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
