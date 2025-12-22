@@ -6,6 +6,7 @@ logs/*
 config/app.yaml
 apiok-admin
 apiok
+html
 .air.toml
 /dist
 **/.DS_Store
