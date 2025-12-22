@@ -71,11 +71,6 @@ func (s *LetsEncryptService) InitLetsEncrypt(config *LetsEncryptConfig) error {
 		return fmt.Errorf("failed to create cert directory: %v", err)
 	}
 
-	// 创建ACME验证路由
-	if err := s.ensureAcmeChallengeRoute(); err != nil {
-		packages.Log.Warnf("Failed to create ACME challenge route: %v", err)
-	}
-
 	// 选择ACME服务器
 	var acmeURL string
 	if config.UseStaging {
@@ -98,10 +93,13 @@ func (s *LetsEncryptService) InitLetsEncrypt(config *LetsEncryptConfig) error {
 	}
 	_, err := client.Register(ctx, account, acme.AcceptTOS)
 	if err != nil {
-		// 如果账户已存在，尝试获取账户信息
-		if !strings.Contains(err.Error(), "already registered") {
+		// 如果账户已存在，这是正常情况，继续使用现有账户
+		errMsg := strings.ToLower(err.Error())
+		if !strings.Contains(errMsg, "already registered") &&
+			!strings.Contains(errMsg, "account already exists") {
 			return fmt.Errorf("failed to register account: %v", err)
 		}
+		packages.Log.Infof("ACME account already exists, using existing account")
 	}
 
 	s.client = client
@@ -195,6 +193,11 @@ func (s *LetsEncryptService) RequestCertificate(domain string, enable bool) (str
 		if err := s.InitLetsEncrypt(config); err != nil {
 			return "", fmt.Errorf("Let's Encrypt 初始化失败: %v", err)
 		}
+	}
+
+	// 确保ACME验证路由存在，并添加域名
+	if err := s.ensureAcmeChallengeRoute(domain); err != nil {
+		return "", fmt.Errorf("failed to ensure ACME challenge route: %v", err)
 	}
 
 	ctx := context.Background()
@@ -419,7 +422,7 @@ func (s *LetsEncryptService) RenewExpiringCertificates() error {
 }
 
 // ensureAcmeChallengeRoute 确保ACME验证路由存在
-func (s *LetsEncryptService) ensureAcmeChallengeRoute() error {
+func (s *LetsEncryptService) ensureAcmeChallengeRoute(domain string) error {
 	conf := packages.GetConfig()
 	if conf == nil {
 		return errors.New("config not found")
@@ -501,9 +504,14 @@ func (s *LetsEncryptService) ensureAcmeChallengeRoute() error {
 				Release:  utils.ReleaseStatusU,
 			}
 
-			serviceResID, err = serviceModel.ServiceAdd(createServiceData, []string{})
+			serviceResID, err = serviceModel.ServiceAdd(createServiceData, []string{domain})
 			if err != nil {
 				return fmt.Errorf("failed to create service: %v", err)
+			}
+
+			serviceService := NewServicesService()
+			if err := serviceService.ServiceRelease(serviceResID); err != nil {
+				return fmt.Errorf("failed to release service: %v", err)
 			}
 		} else {
 			serviceResID = serviceInfos[0].ResID
@@ -511,6 +519,34 @@ func (s *LetsEncryptService) ensureAcmeChallengeRoute() error {
 				serviceService := NewServicesService()
 				if err := serviceService.ServiceSwitchEnable(serviceResID, utils.EnableOn); err != nil {
 					return fmt.Errorf("failed to enable service: %v", err)
+				}
+			}
+
+			domainModel := models.ServiceDomains{}
+			existingDomains, err := domainModel.DomainInfosByServiceIds([]string{serviceResID})
+			if err == nil {
+				domainExists := false
+				for _, d := range existingDomains {
+					if d.Domain == domain {
+						domainExists = true
+						break
+					}
+				}
+				if !domainExists {
+					allDomains := make([]string, 0, len(existingDomains)+1)
+					for _, d := range existingDomains {
+						allDomains = append(allDomains, d.Domain)
+					}
+					allDomains = append(allDomains, domain)
+					serviceInfo, _ := serviceModel.ServiceInfoById(serviceResID)
+					if err := serviceModel.ServiceUpdate(serviceResID, &serviceInfo, allDomains); err != nil {
+						return fmt.Errorf("failed to add domain to service: %v", err)
+					}
+
+					serviceService := NewServicesService()
+					if err := serviceService.ServiceRelease(serviceResID); err != nil {
+						return fmt.Errorf("failed to release service after adding domain: %v", err)
+					}
 				}
 			}
 		}
@@ -539,6 +575,7 @@ func (s *LetsEncryptService) ensureAcmeChallengeRoute() error {
 			}
 		} else {
 			routerInfo := routerInfos[0]
+			needRelease := false
 			if routerInfo.UpstreamResID != upstreamResID {
 				updateRouterData := map[string]interface{}{
 					"upstream_res_id": upstreamResID,
@@ -546,13 +583,15 @@ func (s *LetsEncryptService) ensureAcmeChallengeRoute() error {
 				if err := routerModel.RouterUpdate(routerInfo.ResID, updateRouterData); err != nil {
 					return fmt.Errorf("failed to update router upstream: %v", err)
 				}
+				needRelease = true
 			}
 			if routerInfo.Enable != utils.EnableOn {
 				if err := routerModel.RouterSwitchEnable(routerInfo.ResID, utils.EnableOn); err != nil {
 					return fmt.Errorf("failed to enable router: %v", err)
 				}
+				needRelease = true
 			}
-			if routerInfo.Release != utils.ReleaseStatusY {
+			if needRelease || routerInfo.Release != utils.ReleaseStatusY {
 				if err := RouterRelease([]string{routerInfo.ResID}, utils.ReleaseTypePush); err != nil {
 					return fmt.Errorf("failed to release router: %v", err)
 				}
