@@ -4,8 +4,8 @@ build:
 
 .PHONY: build-all
 build-all: dashboard-build
-	@rm -rf html 2>/dev/null || if exist html rmdir /s /q html
-	@cp -r apiok-dashboard/html html 2>/dev/null || xcopy /E /I /Y apiok-dashboard\html html
+	@rm -rf html 2>/dev/null || cmd /c "if exist html rmdir /s /q html" 2>nul || true
+	@cp -r apiok-dashboard/html html 2>/dev/null || cmd /c "xcopy /E /I /Y apiok-dashboard\html html" 2>nul || true
 	@$(MAKE) build-linux-amd64
 	@$(MAKE) build-linux-arm64
 
