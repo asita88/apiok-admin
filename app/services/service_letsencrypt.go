@@ -255,6 +255,12 @@ func (s *LetsEncryptService) RequestCertificate(domain string, enable bool) (str
 		}
 
 		// 存储挑战信息（用于HTTP验证路由）
+		expiredAt := time.Now().Add(1 * time.Hour)
+		challengeModel := &models.AcmeChallenges{}
+		if err := challengeModel.ChallengeAdd(challenge.Token, token, expiredAt); err != nil {
+			return "", fmt.Errorf("failed to save challenge to database: %v", err)
+		}
+
 		s.challengesMu.Lock()
 		s.challenges[challenge.Token] = token
 		s.challengesMu.Unlock()
@@ -332,9 +338,11 @@ func (s *LetsEncryptService) RequestCertificate(domain string, enable bool) (str
 	}
 
 	// 清理挑战信息
+	challengeModel := &models.AcmeChallenges{}
 	s.challengesMu.Lock()
 	for _, token := range challengeTokens {
 		delete(s.challenges, token)
+		challengeModel.ChallengeDelete(token)
 	}
 	s.challengesMu.Unlock()
 
@@ -344,9 +352,24 @@ func (s *LetsEncryptService) RequestCertificate(domain string, enable bool) (str
 // GetChallengeToken 获取HTTP-01挑战token
 func (s *LetsEncryptService) GetChallengeToken(token string) (string, bool) {
 	s.challengesMu.RLock()
-	defer s.challengesMu.RUnlock()
 	keyAuth, ok := s.challenges[token]
-	return keyAuth, ok
+	s.challengesMu.RUnlock()
+
+	if ok {
+		return keyAuth, true
+	}
+
+	challengeModel := &models.AcmeChallenges{}
+	keyAuth, err := challengeModel.ChallengeGet(token)
+	if err != nil {
+		return "", false
+	}
+
+	s.challengesMu.Lock()
+	s.challenges[token] = keyAuth
+	s.challengesMu.Unlock()
+
+	return keyAuth, true
 }
 
 // RenewExpiringCertificates 续期即将过期的证书

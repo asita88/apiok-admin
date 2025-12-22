@@ -87,6 +87,26 @@ CREATE TABLE `ok_certificates` (
 -- ----------------------------
 
 -- ----------------------------
+-- Table structure for ok_acme_challenges
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_acme_challenges`;
+CREATE TABLE `ok_acme_challenges` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `token` varchar(255) NOT NULL DEFAULT '' COMMENT 'ACME challenge token',
+  `key_auth` text NOT NULL COMMENT 'Key authorization value',
+  `expired_at` timestamp NOT NULL COMMENT 'Expiration time',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_TOKEN` (`token`),
+  KEY `IDX_EXPIRED_AT` (`expired_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='ACME Challenges';
+
+-- ----------------------------
+-- Records of ok_acme_challenges
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for ok_plugins
 -- ----------------------------
 DROP TABLE IF EXISTS `ok_plugins`;
@@ -154,7 +174,7 @@ CREATE TABLE `ok_routers` (
   `router_path` varchar(200) NOT NULL DEFAULT '' COMMENT 'Routing path',
   `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Router enable  1:on  2:off',
   `release` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
-  `client_max_body_size` bigint unsigned DEFAULT NULL COMMENT 'Maximum request body size in bytes',
+  `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size (e.g., "100M", "1G")',
   `chunked_transfer_encoding` tinyint unsigned DEFAULT NULL COMMENT 'Chunked transfer encoding 1:enable 2:disable',
   `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
   `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',
@@ -181,7 +201,7 @@ CREATE TABLE `ok_services` (
   `protocol` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS',
   `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Service enable  1:on  2:off',
   `release` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
-  `client_max_body_size` bigint unsigned DEFAULT NULL COMMENT 'Maximum request body size in bytes',
+  `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size (e.g., "100M", "1G")',
   `chunked_transfer_encoding` tinyint unsigned DEFAULT NULL COMMENT 'Chunked transfer encoding 1:enable 2:disable',
   `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
   `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',

@@ -67,6 +67,8 @@ func IdGenerate(idType string) (string, error) {
 		id = IdTypeUpstream + "-" + randomId
 	case IdTypeUpstreamNode:
 		id = IdTypeUpstreamNode + "-" + randomId
+	case IdTypeAcmeChallenge:
+		id = IdTypeAcmeChallenge + "-" + randomId
 	default:
 		return "", fmt.Errorf("id type error")
 	}
@@ -418,4 +420,45 @@ func InterceptSni(domains []string) ([]string, error) {
 	}
 
 	return domainSniInfos, nil
+}
+
+func ParseSizeToBytes(sizeStr *string) (*int64, error) {
+	if sizeStr == nil || *sizeStr == "" {
+		return nil, nil
+	}
+
+	str := strings.TrimSpace(*sizeStr)
+	str = strings.ToLower(str)
+
+	if str == "0" || str == "" {
+		return nil, nil
+	}
+
+	var multiplier int64 = 1
+	var numStr string
+
+	if strings.HasSuffix(str, "k") {
+		multiplier = 1024
+		numStr = strings.TrimSuffix(str, "k")
+	} else if strings.HasSuffix(str, "m") {
+		multiplier = 1024 * 1024
+		numStr = strings.TrimSuffix(str, "m")
+	} else if strings.HasSuffix(str, "g") {
+		multiplier = 1024 * 1024 * 1024
+		numStr = strings.TrimSuffix(str, "g")
+	} else {
+		numStr = str
+	}
+
+	num, err := strconv.ParseFloat(numStr, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid size format: %s", str)
+	}
+
+	if num == 0 {
+		return nil, nil
+	}
+
+	result := int64(num * float64(multiplier))
+	return &result, nil
 }

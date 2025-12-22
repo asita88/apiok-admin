@@ -10,7 +10,7 @@ type ServiceAddUpdate struct {
 	Release                 int                    `json:"release" zh:"发布开关" en:"Release status enable" binding:"omitempty,oneof=1 2"`
 	Protocol                int                    `json:"protocol" zh:"请求协议" en:"Protocol" binding:"omitempty,oneof=1 2 3"`
 	ServiceDomains          []string               `json:"service_domains" zh:"域名" en:"Service domains" binding:"required,min=1,CheckServiceDomain"`
-	ClientMaxBodySize       *int64                 `json:"client_max_body_size" zh:"请求体大小限制" en:"Maximum request body size" binding:"omitempty"`
+	ClientMaxBodySize       *string                `json:"client_max_body_size" zh:"请求体大小限制" en:"Maximum request body size" binding:"omitempty"`
 	ChunkedTransferEncoding *bool                  `json:"chunked_transfer_encoding" zh:"分块传输编码" en:"Chunked transfer encoding" binding:"omitempty"`
 	ProxyBuffering          *bool                  `json:"proxy_buffering" zh:"代理缓冲" en:"Proxy buffering" binding:"omitempty"`
 	ProxyCache              map[string]interface{} `json:"proxy_cache" zh:"代理缓存配置" en:"Proxy cache configuration" binding:"omitempty"`

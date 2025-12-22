@@ -21,7 +21,7 @@ type Routers struct {
 	RouterPath              string  `gorm:"column:router_path"`                // Routing path
 	Enable                  int     `gorm:"column:enable"`                     // Router enable  1:on  2:off
 	Release                 int     `gorm:"column:release"`                    // Service release status 1:unpublished  2:to be published  3:published
-	ClientMaxBodySize       *int64  `gorm:"column:client_max_body_size"`       // Maximum request body size in bytes
+	ClientMaxBodySize       *string `gorm:"column:client_max_body_size"`       // Maximum request body size (e.g., "100M", "1G")
 	ChunkedTransferEncoding *int    `gorm:"column:chunked_transfer_encoding"`  // Chunked transfer encoding 1:enable 2:disable
 	ProxyBuffering          *int    `gorm:"column:proxy_buffering"`            // Proxy buffering 1:enable 2:disable
 	ProxyCache              *string `gorm:"column:proxy_cache;type:text"`      // Proxy cache configuration (JSON)

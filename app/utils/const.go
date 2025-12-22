@@ -13,6 +13,7 @@ const (
 	IdTypeClusterNode   = "cn"
 	IdTypeUpstream      = "up"
 	IdTypeUpstreamNode  = "un"
+	IdTypeAcmeChallenge = "ac"
 
 	IdLength           = 15
 	IdGenerateMaxTimes = 5

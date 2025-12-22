@@ -159,17 +159,22 @@ type routerPlugin struct {
 }
 
 type RouterInfo struct {
-	ResId          string         `json:"res_id"`
-	ServiceResId   string         `json:"service_res_id"`
-	ServiceName    string         `json:"service_name,omitempty"`
-	RouterName     string         `json:"router_name"`
-	RequestMethods []string       `json:"request_methods"`
-	RouterPath     string         `json:"router_path"`
-	Enable         int            `json:"enable"`
-	Release        int            `json:"release"`
-	UpstreamResId  string         `json:"upstream_res_id,omitempty"`
-	UpstreamName   string         `json:"upstream_name,omitempty"`
-	PluginList     []routerPlugin `json:"plugin_list,omitempty"`
+	ResId                   string                 `json:"res_id"`
+	ServiceResId            string                 `json:"service_res_id"`
+	ServiceName             string                 `json:"service_name,omitempty"`
+	RouterName              string                 `json:"router_name"`
+	RequestMethods          []string               `json:"request_methods"`
+	RouterPath              string                 `json:"router_path"`
+	Enable                  int                    `json:"enable"`
+	Release                 int                    `json:"release"`
+	UpstreamResId           string                 `json:"upstream_res_id,omitempty"`
+	UpstreamName            string                 `json:"upstream_name,omitempty"`
+	ClientMaxBodySize       *string                `json:"client_max_body_size,omitempty"`
+	ChunkedTransferEncoding *bool                  `json:"chunked_transfer_encoding,omitempty"`
+	ProxyBuffering          *bool                  `json:"proxy_buffering,omitempty"`
+	ProxyCache              map[string]interface{} `json:"proxy_cache,omitempty"`
+	ProxySetHeader          map[string]string      `json:"proxy_set_header,omitempty"`
+	PluginList              []routerPlugin         `json:"plugin_list,omitempty"`
 }
 
 func RouterListPage(serviceResId string, param *validators.ValidatorRouterList) (
@@ -317,15 +322,40 @@ func RouterListPage(serviceResId string, param *validators.ValidatorRouterList) 
 
 func RouterInfoFromModel(routerModelDetail models.Routers) RouterInfo {
 	routerInfo := RouterInfo{
-		ResId:          routerModelDetail.ResID,
-		ServiceResId:   routerModelDetail.ServiceResID,
-		RouterName:     routerModelDetail.RouterName,
-		RequestMethods: strings.Split(routerModelDetail.RequestMethods, ","),
-		RouterPath:     routerModelDetail.RouterPath,
-		Enable:         routerModelDetail.Enable,
-		Release:        routerModelDetail.Release,
-		UpstreamResId:  routerModelDetail.UpstreamResID,
-		PluginList:     make([]routerPlugin, 0),
+		ResId:             routerModelDetail.ResID,
+		ServiceResId:      routerModelDetail.ServiceResID,
+		RouterName:        routerModelDetail.RouterName,
+		RequestMethods:    strings.Split(routerModelDetail.RequestMethods, ","),
+		RouterPath:        routerModelDetail.RouterPath,
+		Enable:            routerModelDetail.Enable,
+		Release:           routerModelDetail.Release,
+		UpstreamResId:     routerModelDetail.UpstreamResID,
+		ClientMaxBodySize: routerModelDetail.ClientMaxBodySize,
+		PluginList:        make([]routerPlugin, 0),
+	}
+
+	if routerModelDetail.ChunkedTransferEncoding != nil {
+		enabled := *routerModelDetail.ChunkedTransferEncoding == 1
+		routerInfo.ChunkedTransferEncoding = &enabled
+	}
+
+	if routerModelDetail.ProxyBuffering != nil {
+		enabled := *routerModelDetail.ProxyBuffering == 1
+		routerInfo.ProxyBuffering = &enabled
+	}
+
+	if routerModelDetail.ProxyCache != nil && len(*routerModelDetail.ProxyCache) > 0 {
+		var proxyCache map[string]interface{}
+		if jsonErr := json.Unmarshal([]byte(*routerModelDetail.ProxyCache), &proxyCache); jsonErr == nil {
+			routerInfo.ProxyCache = proxyCache
+		}
+	}
+
+	if routerModelDetail.ProxySetHeader != nil && len(*routerModelDetail.ProxySetHeader) > 0 {
+		var proxySetHeader map[string]string
+		if jsonErr := json.Unmarshal([]byte(*routerModelDetail.ProxySetHeader), &proxySetHeader); jsonErr == nil {
+			routerInfo.ProxySetHeader = proxySetHeader
+		}
 	}
 
 	if len(routerModelDetail.ServiceResID) > 0 {
@@ -592,7 +622,12 @@ func generateRouterConfig(routerInfo models.Routers) (rpc.RouterConfig, error) {
 	routerConfig.Plugins = make([]rpc.ConfigObjectName, 0)
 
 	// 处理新字段
-	routerConfig.ClientMaxBodySize = routerInfo.ClientMaxBodySize
+	if routerInfo.ClientMaxBodySize != nil {
+		sizeBytes, err := utils.ParseSizeToBytes(routerInfo.ClientMaxBodySize)
+		if err == nil {
+			routerConfig.ClientMaxBodySize = sizeBytes
+		}
+	}
 	if routerInfo.ChunkedTransferEncoding != nil {
 		enabled := *routerInfo.ChunkedTransferEncoding == 1
 		routerConfig.ChunkedTransferEncoding = &enabled

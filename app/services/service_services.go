@@ -209,13 +209,14 @@ func (s *ServicesService) ServiceSwitchEnable(serviceId string, enable int) erro
 }
 
 type StructServiceInfo struct {
-	ID             int64    `json:"id"`              // Service id
-	ResID          string   `json:"res_id"`          // Service res id
-	Name           string   `json:"name"`            // Service name
-	Protocol       int      `json:"protocol"`        // Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS
-	Enable         int      `json:"enable"`          // Service enable  1:on  2:off
-	Release        int      `json:"release"`         // Service release status 1:unpublished  2:to be published  3:published
-	ServiceDomains []string `json:"service_domains"` // Service Domains
+	ID                int64    `json:"id"`              // Service id
+	ResID             string   `json:"res_id"`          // Service res id
+	Name              string   `json:"name"`            // Service name
+	Protocol          int      `json:"protocol"`        // Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS
+	Enable            int      `json:"enable"`          // Service enable  1:on  2:off
+	Release           int      `json:"release"`         // Service release status 1:unpublished  2:to be published  3:published
+	ServiceDomains    []string `json:"service_domains"` // Service Domains
+	ClientMaxBodySize *string  `json:"client_max_body_size,omitempty"`
 }
 
 func (s *ServicesService) ServiceInfoById(serviceId string) (StructServiceInfo, error) {
@@ -227,12 +228,13 @@ func (s *ServicesService) ServiceInfoById(serviceId string) (StructServiceInfo, 
 	}
 
 	serviceInfo = StructServiceInfo{
-		ID:       service.ID,
-		ResID:    service.ResID,
-		Name:     service.Name,
-		Protocol: service.Protocol,
-		Enable:   service.Enable,
-		Release:  service.Release,
+		ID:                service.ID,
+		ResID:             service.ResID,
+		Name:              service.Name,
+		Protocol:          service.Protocol,
+		Enable:            service.Enable,
+		Release:           service.Release,
+		ClientMaxBodySize: service.ClientMaxBodySize,
 	}
 	serviceDomain, err := (&models.ServiceDomains{}).DomainInfosByServiceIds([]string{serviceId})
 
@@ -309,14 +311,15 @@ type pluginConfig struct {
 }
 
 type ServiceItem struct {
-	ID             int64          `json:"id"`
-	ResID          string         `json:"res_id"`          // Service id
-	Name           string         `json:"name"`            // Service name
-	Protocol       int            `json:"protocol"`        // Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS
-	Enable         int            `json:"enable"`          // Service enable  1:on  2:off
-	Release        int            `json:"release"`         // Service release status 1:unpublished  2:to be published  3:published
-	ServiceDomains []string       `json:"service_domains"` // Domain name
-	PluginList     []pluginConfig `json:"plugin_list"`
+	ID                int64          `json:"id"`
+	ResID             string         `json:"res_id"`          // Service id
+	Name              string         `json:"name"`            // Service name
+	Protocol          int            `json:"protocol"`        // Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS
+	Enable            int            `json:"enable"`          // Service enable  1:on  2:off
+	Release           int            `json:"release"`         // Service release status 1:unpublished  2:to be published  3:published
+	ServiceDomains    []string       `json:"service_domains"` // Domain name
+	ClientMaxBodySize *string        `json:"client_max_body_size,omitempty"`
+	PluginList        []pluginConfig `json:"plugin_list"`
 }
 
 func (s *ServicesService) ServiceList(request *validators.ServiceList) ([]ServiceItem, int, error) {
@@ -432,14 +435,15 @@ func (s *ServicesService) ServiceList(request *validators.ServiceList) ([]Servic
 		}
 
 		serviceItem := ServiceItem{
-			ID:             v.ID,
-			ResID:          v.ResID,
-			Name:           v.Name,
-			Protocol:       v.Protocol,
-			Enable:         v.Enable,
-			Release:        v.Release,
-			ServiceDomains: domain,
-			PluginList:     make([]pluginConfig, 0),
+			ID:                v.ID,
+			ResID:             v.ResID,
+			Name:              v.Name,
+			Protocol:          v.Protocol,
+			Enable:            v.Enable,
+			Release:           v.Release,
+			ServiceDomains:    domain,
+			ClientMaxBodySize: v.ClientMaxBodySize,
+			PluginList:        make([]pluginConfig, 0),
 		}
 
 		if _, ok := pluginConfigListMap[v.ResID]; ok {
@@ -491,7 +495,12 @@ func genServiceReleaseSyncRequest(service models.Services, serviceDomains []mode
 	}
 
 	// 处理新字段
-	servicePutRequest.ClientMaxBodySize = service.ClientMaxBodySize
+	if service.ClientMaxBodySize != nil {
+		sizeBytes, err := utils.ParseSizeToBytes(service.ClientMaxBodySize)
+		if err == nil {
+			servicePutRequest.ClientMaxBodySize = sizeBytes
+		}
+	}
 	if service.ChunkedTransferEncoding != nil {
 		enabled := *service.ChunkedTransferEncoding == 1
 		servicePutRequest.ChunkedTransferEncoding = &enabled
