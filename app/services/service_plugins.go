@@ -204,6 +204,9 @@ func (s *PluginsService) PluginConfigAdd(request *validators.ValidatorPluginConf
 			err = errors.New(enums.CodeMessages(enums.RouterNull))
 			return
 		}
+	} else if request.Type == models.PluginConfigsTypeGlobal {
+		// 全局插件不需要验证 target_id
+		request.TargetID = ""
 	}
 
 	var pluginContext plugins.PluginContext
@@ -347,6 +350,14 @@ func SyncPluginToDataSide(tx *gorm.DB, resType int, targetId string) ([]models.P
 
 	if err != nil {
 		return []models.PluginConfigs{}, err
+	}
+
+	// 如果是服务类型，还需要包含全局插件
+	if resType == models.PluginConfigsTypeService {
+		globalPluginList, err := (&models.PluginConfigs{}).PluginConfigGlobalList(utils.EnableOn)
+		if err == nil && len(globalPluginList) > 0 {
+			pluginConfigList = append(pluginConfigList, globalPluginList...)
+		}
 	}
 
 	if len(pluginConfigList) == 0 {

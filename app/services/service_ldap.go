@@ -1,7 +1,11 @@
 package services
 
 import (
+	"apiok-admin/app/enums"
+	"apiok-admin/app/models"
 	"apiok-admin/app/packages"
+	"apiok-admin/app/utils"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -116,38 +120,52 @@ func LdapAuthenticate(username string, password string) (string, string, error) 
 	return name, email, nil
 }
 
-func CheckUserAndPasswordWithLdap(email string, password string) error {
+func CheckUserAndPasswordWithLdap(username string, password string) error {
 	conf := packages.GetConfig()
 	if conf == nil {
-		return CheckUserAndPassword(email, password)
+		return checkUserAndPasswordLocal(username, password)
 	}
 
 	confValue := reflect.ValueOf(conf).Elem()
 	ldapField := confValue.FieldByName("Ldap")
 	if ldapField.IsValid() && ldapField.FieldByName("Enabled").Bool() {
-		_, _, err := LdapAuthenticate(email, password)
+		_, _, err := LdapAuthenticate(username, password)
 		if err != nil {
 			return fmt.Errorf("LDAP authentication failed: %v", err)
 		}
 		return nil
 	}
 
-	return CheckUserAndPassword(email, password)
+	return checkUserAndPasswordLocal(username, password)
 }
 
-func GetUserEmailWithLdap(email string) string {
+func checkUserAndPasswordLocal(username string, password string) error {
+	userModel := models.Users{}
+	userInfo := userModel.UserInfoByName(username)
+	if userInfo.Name != username {
+		return errors.New(enums.CodeMessages(enums.UserNull))
+	}
+
+	if utils.Md5(utils.Md5(password)) != userInfo.Password {
+		return errors.New(enums.CodeMessages(enums.UserPasswordError))
+	}
+
+	return nil
+}
+
+func GetUserEmailWithLdap(username string) string {
 	conf := packages.GetConfig()
 	if conf == nil {
-		return email
+		return username
 	}
 
 	confValue := reflect.ValueOf(conf).Elem()
 	ldapField := confValue.FieldByName("Ldap")
 	if ldapField.IsValid() && ldapField.FieldByName("Enabled").Bool() {
-		_, ldapEmail, err := LdapAuthenticate(email, "")
+		_, ldapEmail, err := LdapAuthenticate(username, "")
 		if err == nil && ldapEmail != "" {
 			return ldapEmail
 		}
 	}
-	return email
+	return username
 }

@@ -400,6 +400,17 @@ func (u *ServiceUpstream) UpstreamDelete(resId string) (err error) {
 		return
 	}
 
+	err = u.CheckUpstreamUse(resId)
+	if err != nil {
+		return
+	}
+
+	upstreamNodeModel := models.UpstreamNodes{}
+	upstreamNodeList, err := upstreamNodeModel.UpstreamNodeListByUpstreamResIds([]string{resId})
+	if err != nil {
+		return err
+	}
+
 	err = packages.GetDb().Transaction(func(tx *gorm.DB) (err error) {
 		if err = tx.Table(upstreamModel.TableName()).
 			Where("res_id = ?", upstreamInfo.ResID).
@@ -407,7 +418,6 @@ func (u *ServiceUpstream) UpstreamDelete(resId string) (err error) {
 			return
 		}
 
-		upstreamNodeModel := models.UpstreamNodes{}
 		if err = tx.Table(upstreamNodeModel.TableName()).
 			Where("upstream_res_id = ?", upstreamInfo.ResID).
 			Delete(&upstreamNodeModel).Error; err != nil {
@@ -417,7 +427,22 @@ func (u *ServiceUpstream) UpstreamDelete(resId string) (err error) {
 		return
 	})
 
-	err = UpstreamRelease([]string{resId}, utils.ReleaseTypeDelete)
+	if err != nil {
+		return
+	}
+
+	apiokDataModel := models.ApiokData{}
+	for _, nodeInfo := range upstreamNodeList {
+		err = apiokDataModel.Delete("upstream_nodes", nodeInfo.ResID)
+		if err != nil {
+			return
+		}
+	}
+
+	err = apiokDataModel.Delete("upstreams", resId)
+	if err != nil {
+		return
+	}
 
 	return
 }

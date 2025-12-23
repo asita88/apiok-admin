@@ -14,6 +14,7 @@ const (
 	IdTypeUpstream      = "up"
 	IdTypeUpstreamNode  = "un"
 	IdTypeAcmeChallenge = "ac"
+	IdTypeLog           = "lg"
 
 	IdLength           = 15
 	IdGenerateMaxTimes = 5
@@ -115,6 +116,7 @@ const (
 	PluginIdLimitReq   = "pl-m5BzSXbCQfGzoQi"
 	PluginIdLimitConn  = "pl-rLYsoeNVfPUMUAA"
 	PluginIdLimitCount = "pl-XZxaqOgRZsBKpoE"
+	PluginIdWaf        = "pl-WafZxaqOgRZsBKpE"
 
 	PluginKeyCors       = "cors"
 	PluginKeyMock       = "mock"
@@ -123,6 +125,7 @@ const (
 	PluginKeyLimitReq   = "limit-req"
 	PluginKeyLimitConn  = "limit-conn"
 	PluginKeyLimitCount = "limit-count"
+	PluginKeyWaf        = "waf"
 
 	PluginIconCors       = "icon-cors"
 	PluginIconMock       = "icon-mock"
@@ -131,6 +134,7 @@ const (
 	PluginIconLimitReq   = "icon-limit-req"
 	PluginIconLimitConn  = "icon-limit-conn"
 	PluginIconLimitCount = "icon-limit-count"
+	PluginIconWaf        = "icon-waf"
 
 	PluginDescCors       = "配置服务端CORS（Cross-Origin Resource Sharing，跨域资源共享）的响应头信息"
 	PluginDescMock       = "配置模拟API数据，且请求不会转发到上游"
@@ -139,6 +143,7 @@ const (
 	PluginDescLimitReq   = "使用漏桶算法限制客户端对服务的请求速率"
 	PluginDescLimitConn  = "限制客户端对服务的并发请求数"
 	PluginDescLimitCount = "限制客户端在指定的时间范围内对服务的总请求数"
+	PluginDescWaf        = "Web应用防火墙，提供SQL注入、XSS攻击等安全防护"
 
 	// ===================================== cluster node =====================================
 

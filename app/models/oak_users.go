@@ -4,7 +4,9 @@ import (
 	"apiok-admin/app/enums"
 	"apiok-admin/app/packages"
 	"apiok-admin/app/utils"
+	"apiok-admin/app/validators"
 	"errors"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -98,4 +100,83 @@ func (u *Users) UserInfoByEmail(email string) Users {
 		First(&userInfo)
 
 	return userInfo
+}
+
+func (u *Users) UserInfoByName(name string) Users {
+	userInfo := Users{}
+	packages.GetDb().
+		Table(u.TableName()).
+		Where("name = ?", name).
+		First(&userInfo)
+
+	return userInfo
+}
+
+func (u *Users) UserUpdatePassword(email string, newPassword string) error {
+	hashedPassword := utils.Md5(utils.Md5(newPassword))
+	err := packages.GetDb().
+		Table(u.TableName()).
+		Where("email = ?", email).
+		Update("password", hashedPassword).Error
+
+	return err
+}
+
+func (u *Users) UserListPage(param *validators.UserList) (list []Users, total int, listError error) {
+	usersModel := Users{}
+	tx := packages.GetDb().
+		Table(usersModel.TableName())
+
+	param.Search = strings.TrimSpace(param.Search)
+	if len(param.Search) != 0 {
+		search := "%" + param.Search + "%"
+		tx = tx.Where("name LIKE ? OR email LIKE ?", search, search)
+	}
+
+	countError := ListCount(tx, &total)
+	if countError != nil {
+		listError = countError
+		return
+	}
+
+	tx = tx.Order("created_at desc")
+
+	listError = ListPaginate(tx, &list, &param.BaseListPage)
+
+	if len(list) == 0 {
+		return
+	}
+
+	return
+}
+
+func (u *Users) UserInfoByResId(resId string) (Users, error) {
+	userInfo := Users{}
+	err := packages.GetDb().
+		Table(u.TableName()).
+		Where("res_id = ?", resId).
+		First(&userInfo).Error
+
+	return userInfo, err
+}
+
+func (u *Users) UserUpdate(resId string, userData map[string]interface{}) error {
+	if password, ok := userData["password"].(string); ok && password != "" {
+		userData["password"] = utils.Md5(utils.Md5(password))
+	}
+	err := packages.GetDb().
+		Table(u.TableName()).
+		Where("res_id = ?", resId).
+		Updates(&userData).Error
+
+	return err
+}
+
+func (u *Users) UserDelete(resId string) error {
+	err := packages.GetDb().
+		Table(u.TableName()).
+		Where("res_id = ?", resId).
+		Delete(&Users{}).Error
+
+	return err
 }

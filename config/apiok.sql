@@ -134,6 +134,7 @@ INSERT INTO `ok_plugins` VALUES ('4', 'pl-0FnmajmiO7C8PtX', 'jwt-auth', 'icon-jw
 INSERT INTO `ok_plugins` VALUES ('5', 'pl-m5BzSXbCQfGzoQi', 'limit-req', 'icon-limit-req', '2', '使用漏桶算法限制客户端对服务的请求速率', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
 INSERT INTO `ok_plugins` VALUES ('6', 'pl-rLYsoeNVfPUMUAA', 'limit-conn', 'icon-limit-conn', '2', '限制客户端对服务的并发请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
 INSERT INTO `ok_plugins` VALUES ('7', 'pl-XZxaqOgRZsBKpoE', 'limit-count', 'icon-limit-count', '2', '限制客户端在指定的时间范围内对服务的总请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
+INSERT INTO `ok_plugins` VALUES ('8', 'pl-WafZxaqOgRZsBKpE', 'waf', 'icon-waf', '3', 'Web应用防火墙，提供SQL注入、XSS攻击等安全防护', '2025-12-08 17:20:19', '2025-12-08 17:20:19');
 
 -- ----------------------------
 -- Table structure for ok_plugin_configs
@@ -347,3 +348,30 @@ CREATE TABLE `ok_user_tokens` (
 -- Records of ok_user_tokens
 -- ----------------------------
 INSERT INTO `ok_user_tokens` VALUES ('2', 'ut-fRxOwcPbZkePkrB', 'eyJlbmNyeXB0aW9uIjoiYXBwbGVAYXBwbGUuY29tIiwidGltZXN0YW1wIjoiNzk3NmY5YTIzZWZmYjA5MDAzYzZiMzdkMGYwYzljZmYiLCJzZWNyZXQiOiJGUF9WbFdWM292TXY1SHNnUkJFRXIzbzgwWEttOXFlbkVjc1dQWGJPQW8wPSIsImlzc3VlciI6InphbmVoeSJ9', 'apple@apple.com', '2025-12-08 15:56:21', '2025-12-08 17:08:01', '2025-12-08 19:08:01');
+
+-- ----------------------------
+-- Table structure for ok_logs
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_logs`;
+CREATE TABLE `ok_logs` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` varchar(50) NOT NULL DEFAULT '' COMMENT 'Log resource ID',
+  `username` varchar(100) NOT NULL DEFAULT '' COMMENT 'Username',
+  `action` varchar(50) NOT NULL DEFAULT '' COMMENT 'Action type: create/update/delete/list/info',
+  `resource_type` varchar(50) NOT NULL DEFAULT '' COMMENT 'Resource type: service/router/upstream/user/certificate',
+  `resource_id` varchar(50) DEFAULT NULL COMMENT 'Resource ID',
+  `method` varchar(10) NOT NULL DEFAULT '' COMMENT 'HTTP method: GET/POST/PUT/DELETE',
+  `path` varchar(255) NOT NULL DEFAULT '' COMMENT 'Request path',
+  `ip` varchar(50) DEFAULT NULL COMMENT 'Client IP address',
+  `request_data` text COMMENT 'Request data (JSON)',
+  `response_data` text COMMENT 'Response data (JSON)',
+  `status_code` int DEFAULT NULL COMMENT 'HTTP status code',
+  `error_message` varchar(500) DEFAULT NULL COMMENT 'Error message if failed',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  KEY `idx_res_id` (`res_id`),
+  KEY `idx_username` (`username`),
+  KEY `idx_resource_type` (`resource_type`),
+  KEY `idx_created_at` (`created_at`)
+) COMMENT='Operation logs';

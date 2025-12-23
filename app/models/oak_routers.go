@@ -155,20 +155,16 @@ func (r *Routers) RouterInfosByServiceRouterId(serviceResId string, resId string
 	return
 }
 
-func (r *Routers) RouterInfosByServiceIdReleaseStatus(serviceId string, releaseStatus []int) []Routers {
+func (r *Routers) RouterInfosByServiceId(serviceId string) []Routers {
 	routerInfos := make([]Routers, 0)
 	if len(serviceId) == 0 {
 		return routerInfos
 	}
 
-	db := packages.GetDb().
+	packages.GetDb().
 		Table(r.TableName()).
-		Where("service_id = ?", serviceId)
-
-	if len(releaseStatus) != 0 {
-		db = db.Where("release IN ?", releaseStatus)
-	}
-	db.Find(&routerInfos)
+		Where("service_res_id = ?", serviceId).
+		Find(&routerInfos)
 
 	return routerInfos
 }

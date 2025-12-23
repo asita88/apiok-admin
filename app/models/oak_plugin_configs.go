@@ -12,6 +12,7 @@ import (
 const (
 	PluginConfigsTypeService int = 1 // service
 	PluginConfigsTypeRouter  int = 2 // router
+	PluginConfigsTypeGlobal  int = 3 // global
 )
 
 type PluginConfigs struct {
@@ -88,6 +89,27 @@ func (m *PluginConfigs) PluginConfigList(tx *gorm.DB, configType int, targetId s
 	return pluginConfigs, nil
 }
 
+func (m *PluginConfigs) PluginConfigGlobalList(enable int) ([]PluginConfigs, error) {
+	var pluginConfigs []PluginConfigs
+
+	db := packages.GetDb().Table(m.TableName()).
+		Where("type = ? AND target_id = ?", PluginConfigsTypeGlobal, "")
+
+	if enable > 0 {
+		db.Where("enable = ?", enable)
+	}
+
+	db = db.Order("created_at desc")
+
+	err := db.Find(&pluginConfigs).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return []PluginConfigs{}, err
+	}
+
+	return pluginConfigs, nil
+}
+
 func (m *PluginConfigs) PluginConfigInfoByResId(resId string) (PluginConfigs, error) {
 	var pluginConfigInfo PluginConfigs
 	err := packages.GetDb().Table(m.TableName()).
@@ -138,6 +160,28 @@ func pluginConfigSyncTargetRelease(tx *gorm.DB, configType int, targetId string)
 
 			if err != nil {
 				packages.Log.Error("Failed to modify the router plugin release status")
+				return err
+			}
+		}
+	} else if configType == PluginConfigsTypeGlobal {
+		var services []Services
+		err := tx.Model(&Services{}).Where("release = ?", utils.ReleaseStatusY).Find(&services).Error
+
+		if err != nil {
+			packages.Log.Error("Failed to get published services for global plugin")
+			return err
+		}
+
+		if len(services) > 0 {
+			serviceIds := make([]string, 0, len(services))
+			for _, s := range services {
+				serviceIds = append(serviceIds, s.ResID)
+			}
+
+			err = tx.Model(&Services{}).Where("res_id IN ?", serviceIds).Update("release", utils.ReleaseStatusT).Error
+
+			if err != nil {
+				packages.Log.Error("Failed to modify services release status for global plugin")
 				return err
 			}
 		}

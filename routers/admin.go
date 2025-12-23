@@ -20,12 +20,18 @@ func RouterRegister(routerEngine *gin.Engine) {
 		}
 	}
 
-	adminRouter := routerEngine.Group("admin", middlewares.CheckUserLogin)
+	adminRouter := routerEngine.Group("admin", middlewares.CheckUserLogin, middlewares.AuditLog())
 	{
 		// user
 		user := adminRouter.Group("user")
 		{
 			user.POST("/logout", admin.UserLogout)
+			user.PUT("/change-password", admin.UserChangePassword)
+			user.GET("/list", admin.UserList)
+			user.GET("/info/:res_id", admin.UserInfo)
+			user.POST("/add", admin.UserAdd)
+			user.PUT("/update/:res_id", admin.UserUpdate)
+			user.DELETE("/delete/:res_id", admin.UserDelete)
 		}
 
 		// service
@@ -104,6 +110,17 @@ func RouterRegister(routerEngine *gin.Engine) {
 			// plugin.DELETE("/delete/:id", admin.PluginDelete)
 		}
 
+		// global plugin
+		globalPlugin := adminRouter.Group("global/plugin/config")
+		{
+			globalPlugin.POST("/add", admin.GlobalPluginConfigAdd)
+			globalPlugin.GET("/list", admin.GlobalPluginConfigList)
+			globalPlugin.GET("/info/:res_id", admin.GlobalPluginConfigInfo)
+			globalPlugin.PUT("/update/:res_id", admin.GlobalPluginConfigUpdate)
+			globalPlugin.DELETE("/delete/:res_id", admin.GlobalPluginConfigDelete)
+			globalPlugin.PUT("/switch/enable/:res_id", admin.GlobalPluginConfigSwitchEnable)
+		}
+
 		// certificate
 		certificate := adminRouter.Group("certificate")
 		{
@@ -127,6 +144,12 @@ func RouterRegister(routerEngine *gin.Engine) {
 			clusterNode.POST("/add", admin.ClusterNodeAdd)
 			clusterNode.GET("/list", admin.ClusterNodeList)
 			clusterNode.DELETE("/delete/:id", admin.ClusterNodeDelete)
+		}
+
+		// log
+		log := adminRouter.Group("log")
+		{
+			log.GET("/list", admin.LogList)
 		}
 	}
 }

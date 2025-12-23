@@ -69,6 +69,8 @@ func IdGenerate(idType string) (string, error) {
 		id = IdTypeUpstreamNode + "-" + randomId
 	case IdTypeAcmeChallenge:
 		id = IdTypeAcmeChallenge + "-" + randomId
+	case IdTypeLog:
+		id = IdTypeLog + "-" + randomId
 	default:
 		return "", fmt.Errorf("id type error")
 	}
@@ -172,6 +174,7 @@ func PluginAllKeys() []string {
 		PluginKeyLimitReq,
 		PluginKeyLimitConn,
 		PluginKeyLimitCount,
+		PluginKeyWaf,
 	}
 
 	return pluginKeysList
@@ -236,6 +239,13 @@ func AllConfigPluginData() []ConfigPluginData {
 			Icon:        PluginIconLimitCount,
 			Type:        PluginTypeIdLimit,
 			Description: PluginDescLimitCount,
+		},
+		{
+			ResID:       PluginIdWaf,
+			PluginKey:   PluginKeyWaf,
+			Icon:        PluginIconWaf,
+			Type:        PluginTypeIdSafety,
+			Description: PluginDescWaf,
 		},
 	}
 

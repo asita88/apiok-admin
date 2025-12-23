@@ -253,42 +253,33 @@ func (s *ServicesService) ServiceInfoById(serviceId string) (StructServiceInfo, 
 func (s *ServicesService) ServiceDelete(serviceId string) error {
 
 	routeModel := models.Routers{}
-	routerList := routeModel.RouterInfosByServiceIdReleaseStatus(serviceId, []int{})
+	routerList := routeModel.RouterInfosByServiceId(serviceId)
 
 	if len(routerList) > 0 {
 		return errors.New(enums.CodeMessages(enums.ServiceBindingRouter))
 	}
 
-	err := packages.GetDb().Transaction(func(tx *gorm.DB) error {
+	pluginConfigModel := models.PluginConfigs{}
+	pluginConfigList, err := pluginConfigModel.PluginConfigListByTargetResIds(models.PluginConfigsTypeService, []string{serviceId})
+	if err != nil {
+		return err
+	}
 
+	err = packages.GetDb().Transaction(func(tx *gorm.DB) error {
 		// 删除service 信息
 		err := (&models.Services{}).ServiceDelete(serviceId)
 		if err != nil {
 			return errors.New(err.Error())
 		}
 
-		pluginConfigList, err := (&models.PluginConfigs{}).PluginConfigList(tx, models.PluginConfigsTypeService, serviceId, utils.EnableOn)
-
 		// 删除pluginConfig 信息
-		if err == nil && len(pluginConfigList) > 0 {
+		if len(pluginConfigList) > 0 {
 			for _, v := range pluginConfigList {
 				err = tx.Model(&models.PluginConfigs{}).Where("res_id = ?", v.ResID).Delete(&models.PluginConfigs{}).Error
-
 				if err != nil {
 					return err
 				}
 			}
-		}
-		// 删除数据面 service 数据
-		apiokDataModel := models.ApiokData{}
-		err = apiokDataModel.Delete("services", serviceId)
-		if err != nil {
-			return err
-		}
-
-		// 删除数据面 plugin 数据
-		for _, v := range pluginConfigList {
-			_ = apiokDataModel.Delete("plugins", v.ResID) // 忽略删除远程插件实体错误信息
 		}
 
 		return nil
@@ -296,6 +287,18 @@ func (s *ServicesService) ServiceDelete(serviceId string) error {
 
 	if err != nil {
 		return err
+	}
+
+	// 删除数据面 service 数据
+	apiokDataModel := models.ApiokData{}
+	err = apiokDataModel.Delete("services", serviceId)
+	if err != nil {
+		return err
+	}
+
+	// 删除数据面 plugin 数据
+	for _, v := range pluginConfigList {
+		_ = apiokDataModel.Delete("plugins", v.ResID)
 	}
 
 	return nil

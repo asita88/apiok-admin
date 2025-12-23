@@ -542,23 +542,24 @@ func RouterRelease(routerResIds []string, releaseType string) (err error) {
 		return
 	}
 
-	opRouterResIds := make([]string, 0)
-	publishedRouterResIds := make([]string, 0)
-	opRouterResIds, publishedRouterResIds, err = filterPushedServiceRouterResIds(routerResIds)
-
-	routerModel := models.Routers{}
-	routerList := make([]models.Routers, 0)
-	routerList, err = routerModel.RouterListByRouterResIds(opRouterResIds)
-	if err != nil {
-		return
-	}
-
-	if len(routerList) == 0 {
-		return
-	}
-
 	ApiokDataModel := models.ApiokData{}
 	if releaseType == utils.ReleaseTypePush {
+		opRouterResIds := make([]string, 0)
+		opRouterResIds, _, err = filterPushedServiceRouterResIds(routerResIds)
+		if err != nil {
+			return
+		}
+
+		routerModel := models.Routers{}
+		routerList := make([]models.Routers, 0)
+		routerList, err = routerModel.RouterListByRouterResIds(opRouterResIds)
+		if err != nil {
+			return
+		}
+
+		if len(routerList) == 0 {
+			return
+		}
 
 		err = packages.GetDb().Transaction(func(tx *gorm.DB) (err error) {
 
@@ -595,7 +596,7 @@ func RouterRelease(routerResIds []string, releaseType string) (err error) {
 		})
 
 	} else {
-		for _, resId := range publishedRouterResIds {
+		for _, resId := range routerResIds {
 			err = ApiokDataModel.Delete("routers", resId)
 			if err != nil {
 				return
@@ -653,6 +654,12 @@ func generateRouterConfig(routerInfo models.Routers) (rpc.RouterConfig, error) {
 	pluginConfigList, err := pluginConfigModel.PluginConfigListByTargetResIds(models.PluginConfigsTypeRouter, []string{routerInfo.ResID})
 	if err != nil {
 		return routerConfig, err
+	}
+
+	// 添加全局插件
+	globalPluginList, err := pluginConfigModel.PluginConfigGlobalList(utils.EnableOn)
+	if err == nil && len(globalPluginList) > 0 {
+		pluginConfigList = append(pluginConfigList, globalPluginList...)
 	}
 
 	if len(pluginConfigList) > 0 {
