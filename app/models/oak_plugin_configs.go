@@ -164,27 +164,9 @@ func pluginConfigSyncTargetRelease(tx *gorm.DB, configType int, targetId string)
 			}
 		}
 	} else if configType == PluginConfigsTypeGlobal {
-		var services []Services
-		err := tx.Model(&Services{}).Where("release = ?", utils.ReleaseStatusY).Find(&services).Error
-
-		if err != nil {
-			packages.Log.Error("Failed to get published services for global plugin")
-			return err
-		}
-
-		if len(services) > 0 {
-			serviceIds := make([]string, 0, len(services))
-			for _, s := range services {
-				serviceIds = append(serviceIds, s.ResID)
-			}
-
-			err = tx.Model(&Services{}).Where("res_id IN ?", serviceIds).Update("release", utils.ReleaseStatusT).Error
-
-			if err != nil {
-				packages.Log.Error("Failed to modify services release status for global plugin")
-				return err
-			}
-		}
+		// 全局插件独立管理，不修改 Services 的发布状态
+		// 全局插件会同步到 apiok_data 表的 global_plugins 类型（在 services 层处理）
+		return nil
 	}
 
 	return nil

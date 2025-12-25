@@ -150,6 +150,9 @@ func RouterRegister(routerEngine *gin.Engine) {
 		log := adminRouter.Group("log")
 		{
 			log.GET("/list", admin.LogList)
+			log.GET("/access/list", admin.AccessLogList)
+			log.GET("/access/aggregation", admin.AccessLogAggregation)
+			log.GET("/access/field/aggregation", admin.FieldAggregation)
 		}
 	}
 }

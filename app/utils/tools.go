@@ -175,6 +175,11 @@ func PluginAllKeys() []string {
 		PluginKeyLimitConn,
 		PluginKeyLimitCount,
 		PluginKeyWaf,
+		PluginKeyLogKafka,
+		PluginKeyLogMysql,
+		PluginKeyTrafficTag,
+		PluginKeyRequestRewrite,
+		PluginKeyResponseRewrite,
 	}
 
 	return pluginKeysList
@@ -246,6 +251,41 @@ func AllConfigPluginData() []ConfigPluginData {
 			Icon:        PluginIconWaf,
 			Type:        PluginTypeIdSafety,
 			Description: PluginDescWaf,
+		},
+		{
+			ResID:       PluginIdLogKafka,
+			PluginKey:   PluginKeyLogKafka,
+			Icon:        PluginIconLogKafka,
+			Type:        PluginTypeIdOther,
+			Description: PluginDescLogKafka,
+		},
+		{
+			ResID:       PluginIdLogMysql,
+			PluginKey:   PluginKeyLogMysql,
+			Icon:        PluginIconLogMysql,
+			Type:        PluginTypeIdOther,
+			Description: PluginDescLogMysql,
+		},
+		{
+			ResID:       PluginIdTrafficTag,
+			PluginKey:   PluginKeyTrafficTag,
+			Icon:        PluginIconTrafficTag,
+			Type:        PluginTypeIdFlowControl,
+			Description: PluginDescTrafficTag,
+		},
+		{
+			ResID:       PluginIdRequestRewrite,
+			PluginKey:   PluginKeyRequestRewrite,
+			Icon:        PluginIconRequestRewrite,
+			Type:        PluginTypeIdFlowControl,
+			Description: PluginDescRequestRewrite,
+		},
+		{
+			ResID:       PluginIdResponseRewrite,
+			PluginKey:   PluginKeyResponseRewrite,
+			Icon:        PluginIconResponseRewrite,
+			Type:        PluginTypeIdFlowControl,
+			Description: PluginDescResponseRewrite,
 		},
 	}
 

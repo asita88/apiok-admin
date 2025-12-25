@@ -35,6 +35,18 @@ func NewPluginContext(pluginTag string) (PluginContext, error) {
 		pluginContext.Strategy = NewLimitReq()
 	case utils.PluginKeyMock:
 		pluginContext.Strategy = NewMock()
+	case utils.PluginKeyWaf:
+		pluginContext.Strategy = NewWaf()
+	case utils.PluginKeyLogKafka:
+		pluginContext.Strategy = NewLogKafka()
+	case utils.PluginKeyLogMysql:
+		pluginContext.Strategy = NewLogMysql()
+	case utils.PluginKeyTrafficTag:
+		pluginContext.Strategy = NewTrafficTag()
+	case utils.PluginKeyRequestRewrite:
+		pluginContext.Strategy = NewRequestRewrite()
+	case utils.PluginKeyResponseRewrite:
+		pluginContext.Strategy = NewResponseRewrite()
 	default:
 		return pluginContext, errors.New(enums.CodeMessages(enums.PluginTagNull))
 	}

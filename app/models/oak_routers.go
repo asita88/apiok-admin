@@ -340,7 +340,7 @@ func (r *Routers) RouterSwitchRelease(resId string, releaseStatus int) error {
 	updateErr := packages.GetDb().
 		Table(r.TableName()).
 		Where("res_id = ?", resId).
-		Update("release", releaseStatus).Error
+		Update("`release`", releaseStatus).Error
 
 	if updateErr != nil {
 		return updateErr

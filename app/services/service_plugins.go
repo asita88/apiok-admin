@@ -243,6 +243,13 @@ func (s *PluginsService) PluginConfigAdd(request *validators.ValidatorPluginConf
 		return
 	}
 
+	if request.Type == models.PluginConfigsTypeGlobal {
+		err = GlobalPluginRelease(pluginConfigResId)
+		if err != nil {
+			packages.Log.Error("Failed to release global plugin", err.Error())
+		}
+	}
+
 	return
 }
 
@@ -295,6 +302,13 @@ func (s *PluginsService) PluginConfigUpdate(request *validators.ValidatorPluginC
 		return err
 	}
 
+	if pluginConfigInfo.Type == models.PluginConfigsTypeGlobal {
+		err = GlobalPluginRelease(pluginConfigInfo.ResID)
+		if err != nil {
+			packages.Log.Error("Failed to release global plugin", err.Error())
+		}
+	}
+
 	return nil
 }
 
@@ -319,6 +333,13 @@ func (s *PluginsService) PluginConfigSwitchEnable(pluginConfigId string, enable 
 		return err
 	}
 
+	if pluginConfigInfo.Type == models.PluginConfigsTypeGlobal {
+		err = GlobalPluginRelease(pluginConfigInfo.ResID)
+		if err != nil {
+			packages.Log.Error("Failed to release global plugin", err.Error())
+		}
+	}
+
 	return nil
 }
 
@@ -330,6 +351,8 @@ func (s *PluginsService) PluginConfigDelete(pluginConfigId string) error {
 		return errors.New(enums.CodeMessages(enums.PluginConfigNull))
 	}
 
+	isGlobal := pluginConfigInfo.Type == models.PluginConfigsTypeGlobal
+
 	err = (&models.PluginConfigs{}).PluginConfigDelete(
 		pluginConfigInfo.ResID,
 		pluginConfigInfo.Type,
@@ -339,6 +362,14 @@ func (s *PluginsService) PluginConfigDelete(pluginConfigId string) error {
 	if err != nil {
 		packages.Log.Error("Failed to delete plugin config")
 		return err
+	}
+
+	if isGlobal {
+		apiokDataModel := models.ApiokData{}
+		err = apiokDataModel.Delete("global_plugins", pluginConfigInfo.ResID)
+		if err != nil {
+			packages.Log.Error("Failed to delete global plugin from data side", err.Error())
+		}
 	}
 
 	return nil
@@ -394,6 +425,53 @@ func SyncPluginToDataSide(tx *gorm.DB, resType int, targetId string) ([]models.P
 	}
 
 	return success, nil
+}
+
+func GlobalPluginRelease(pluginConfigResId string) error {
+	pluginConfig, err := (&models.PluginConfigs{}).PluginConfigInfoByResId(pluginConfigResId)
+	if err != nil {
+		return err
+	}
+
+	if pluginConfig.Type != models.PluginConfigsTypeGlobal {
+		return nil
+	}
+
+	if pluginConfig.Enable == utils.EnableOff {
+		apiokDataModel := models.ApiokData{}
+		err = apiokDataModel.Delete("global_plugins", pluginConfig.ResID)
+		if err != nil {
+			packages.Log.Error("Failed to delete global plugin from data side", err.Error())
+		}
+		return err
+	}
+
+	pluginContext, err := plugins.NewPluginContext(pluginConfig.PluginKey)
+	if err != nil {
+		packages.Log.Error("Failed to create plugin context for global plugin", err.Error())
+		return err
+	}
+
+	config, err := pluginContext.StrategyPluginParse(pluginConfig.Config)
+	if err != nil {
+		packages.Log.Error("Failed to parse global plugin config", err.Error())
+		return err
+	}
+
+	pluginData := map[string]interface{}{
+		"name":   pluginConfig.ResID,
+		"key":    pluginConfig.PluginKey,
+		"config": config,
+	}
+
+	apiokDataModel := models.ApiokData{}
+	err = apiokDataModel.Upsert("global_plugins", pluginConfig.ResID, pluginData)
+	if err != nil {
+		packages.Log.Error("Failed to sync global plugin to data side", err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func PluginBasicInfoMaintain() {
