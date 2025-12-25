@@ -49,6 +49,23 @@ install: build
 		echo "请先运行 make build 构建项目"; \
 	fi
 
+.PHONY: install-supervisor
+install-supervisor:
+	@if [ "$$(uname -s)" = "Linux" ]; then \
+		if [ -f supervisor/apiok-admin.ini ]; then \
+			sudo cp supervisor/apiok-admin.ini /etc/supervisord.d/apiok-admin.ini && \
+			sudo chmod 644 /etc/supervisord.d/apiok-admin.ini && \
+			echo "supervisor配置文件已安装到 /etc/supervisord.d/apiok-admin.ini"; \
+			echo "请运行以下命令重新加载supervisor配置:"; \
+			echo "  sudo supervisorctl reread"; \
+			echo "  sudo supervisorctl update"; \
+		else \
+			echo "supervisor配置文件不存在: supervisor/apiok-admin.ini"; \
+		fi \
+	else \
+		echo "supervisor安装仅支持Linux平台"; \
+	fi
+
 .PHONY: help
 help:
 	@echo "make build : 仅根据当前平台编译"
@@ -57,3 +74,4 @@ help:
 	@echo "make run : 直接运行 Go 代码"
 	@echo "make clean : 清理构建产物"
 	@echo "make install : 安装到 /opt/apiok-admin（Linux/macOS）"
+	@echo "make install-supervisor : 安装supervisor配置文件到 /etc/supervisord.d/"
