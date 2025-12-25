@@ -19,6 +19,7 @@ type PluginConfigs struct {
 	ID          int    `gorm:"column:id;primary_key"` // primary key
 	ResID       string `gorm:"column:res_id"`         // Plugin config id
 	Name        string `gorm:"column:name"`           // Plugin config name
+	Description string `gorm:"column:description"`   // Plugin config description
 	Type        int    `gorm:"column:type"`           // Plugin relation type 1:service  2:router
 	TargetID    string `gorm:"column:target_id"`      // Target id
 	PluginResID string `gorm:"column:plugin_res_id"`  // Plugin res id

@@ -261,7 +261,7 @@ func (r *Routers) RouterListPage(serviceResId string, param *validators.Validato
 		tx = tx.Where("enable = ?", param.Enable)
 	}
 	if param.Release != 0 {
-		tx = tx.Where("`release` = ?", param.Release)
+		tx = tx.Where("release = ?", param.Release)
 	}
 
 	countError := ListCount(tx, &total)
@@ -340,7 +340,7 @@ func (r *Routers) RouterSwitchRelease(resId string, releaseStatus int) error {
 	updateErr := packages.GetDb().
 		Table(r.TableName()).
 		Where("res_id = ?", resId).
-		Update("`release`", releaseStatus).Error
+		Updates(map[string]interface{}{"release": releaseStatus}).Error
 
 	if updateErr != nil {
 		return updateErr

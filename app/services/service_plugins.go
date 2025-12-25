@@ -75,6 +75,7 @@ func (s *PluginsService) PluginInfoByResId(resId string) (PluginInfoService, err
 type PluginConfigListItem struct {
 	ResID             string      `json:"res_id"`
 	Name              string      `json:"name"`
+	Description       string      `json:"description"`
 	Icon              string      `json:"icon"`
 	PluginKey         string      `json:"plugin_key"`
 	PluginType        int         `json:"plugin_type"`
@@ -129,6 +130,7 @@ func (s *PluginsService) PluginConfigList(resType int, resId string) (*PluginCon
 		item := PluginConfigListItem{
 			ResID:             v.ResID,
 			Name:              v.Name,
+			Description:       v.Description,
 			Icon:              plugin.Icon,
 			PluginKey:         plugin.PluginKey,
 			PluginType:        plugin.Type,
@@ -166,6 +168,7 @@ func (s *PluginsService) PluginConfigInfoByResId(resId string) (*PluginConfigLis
 	res := &PluginConfigListItem{
 		ResID:             pluginConfig.ResID,
 		Name:              pluginConfig.Name,
+		Description:       pluginConfig.Description,
 		PluginKey:         plugin.PluginKey,
 		PluginType:        plugin.Type,
 		PluginDescription: plugin.Description,
@@ -230,6 +233,7 @@ func (s *PluginsService) PluginConfigAdd(request *validators.ValidatorPluginConf
 
 	pluginConfigResId, err = (&models.PluginConfigs{}).PluginConfigAdd(&models.PluginConfigs{
 		Name:        request.Name,
+		Description: request.Description,
 		Type:        request.Type,
 		TargetID:    request.TargetID,
 		PluginResID: pluginInfo.ResID,
@@ -288,14 +292,18 @@ func (s *PluginsService) PluginConfigUpdate(request *validators.ValidatorPluginC
 		return err
 	}
 
+	updateParams := map[string]interface{}{
+		"name":   request.Name,
+		"config": string(config),
+	}
+	if request.Description != "" {
+		updateParams["description"] = request.Description
+	}
 	err = (&models.PluginConfigs{}).PluginConfigUpdateColumns(
 		pluginConfigInfo.ResID,
 		pluginConfigInfo.Type,
 		pluginConfigInfo.TargetID,
-		map[string]interface{}{
-			"name":   request.Name,
-			"config": string(config),
-		})
+		updateParams)
 
 	if err != nil {
 		packages.Log.Error("update plugin config error")
@@ -381,14 +389,6 @@ func SyncPluginToDataSide(tx *gorm.DB, resType int, targetId string) ([]models.P
 
 	if err != nil {
 		return []models.PluginConfigs{}, err
-	}
-
-	// 如果是服务类型，还需要包含全局插件
-	if resType == models.PluginConfigsTypeService {
-		globalPluginList, err := (&models.PluginConfigs{}).PluginConfigGlobalList(utils.EnableOn)
-		if err == nil && len(globalPluginList) > 0 {
-			pluginConfigList = append(pluginConfigList, globalPluginList...)
-		}
 	}
 
 	if len(pluginConfigList) == 0 {

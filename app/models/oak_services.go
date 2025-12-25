@@ -208,7 +208,7 @@ func (s *Services) ServiceList(serviceIds []string, param *validators.ServiceLis
 		tx.Where("enable = ?", param.Enable)
 	}
 	if param.Release != 0 {
-		tx.Where("`release` = ?", param.Release)
+		tx.Where("release = ?", param.Release)
 	}
 
 	var total int
