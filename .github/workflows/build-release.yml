@@ -16,8 +16,11 @@ env:
 jobs:
   build:
     uses: asita88/ci-templates/.github/workflows/build-release-go.yml@main
+    permissions:
+      contents: write
     with:
       app_name: ${{ env.APP_NAME }}
       go_version: ${{ env.GO_VERSION }}
       node_version: ${{ env.NODE_VERSION }}
+      build_script: scripts/build.sh
     secrets: inherit
