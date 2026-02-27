@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 env:
@@ -41,7 +43,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install dashboard dependencies
+      - name: Install frontend dependencies
         working-directory: apiok-dashboard
         run: |
           if [ -f package-lock.json ]; then
@@ -50,7 +52,7 @@ jobs:
             npm install
           fi
 
-      - name: Build dashboard
+      - name: Build frontend
         working-directory: apiok-dashboard
         run: npm run build
 
@@ -72,46 +74,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Download dependencies
+      - name: Download Go dependencies
         run: go mod download
 
       - name: Build Linux AMD64
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin_linux_amd64 .
-
-      - name: Build Linux ARM64
-        run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o apiok-admin_linux_arm64 .
-
-      - name: Build Windows AMD64
-        run: |
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o apiok-admin_windows_amd64.exe .
-
-      - name: Build macOS AMD64
-        run: |
-          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o apiok-admin_darwin_amd64 .
-
-      - name: Build macOS ARM64
-        run: |
-          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o apiok-admin_darwin_arm64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin .
 
       - name: Create release archive
         run: |
           mkdir -p release
-          for platform in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
-            mkdir -p release-temp-$platform
-            cp apiok-admin_$platform release-temp-$platform/
-            cp -r config release-temp-$platform/
-            tar -czf release/apiok-admin_$platform.tar.gz -C release-temp-$platform .
-            rm -rf release-temp-$platform
-          done
-          mkdir -p release-temp-windows
-          cp apiok-admin_windows_amd64.exe release-temp-windows/
-          cp -r config release-temp-windows/
-          cd release-temp-windows
-          zip -r ../release/apiok-admin_windows_amd64.zip .
-          cd ..
-          rm -rf release-temp-windows
+          mkdir -p release-temp
+          cp apiok-admin release-temp/
+          chmod +x release-temp/apiok-admin
+          cp -r config release-temp/
+          tar -czf release/apiok-admin.tar.gz -C release-temp .
+          rm -rf release-temp
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -120,53 +98,49 @@ jobs:
           path: release/
           retention-days: 30
 
-      - name: Generate version and tag
-        id: version
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-            TAG_NAME=$VERSION
-          else
-            DATE=$(date +%Y%m%d)
-            TIME=$(date +%H%M%S)
-            SHORT_SHA=${GITHUB_SHA::7}
-            VERSION="v1.0.0-${DATE}-${TIME}-${SHORT_SHA}"
-            TAG_NAME=$VERSION
-          fi
-          BUILD_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
-          echo "Tag: $TAG_NAME"
-          echo "Build time: $BUILD_TIME"
-
-      - name: Create tag
-        if: "!startsWith(github.ref, 'refs/tags/')"
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.version.outputs.tag_name }}" -m "Release ${{ steps.version.outputs.tag_name }}"
-          git push origin "${{ steps.version.outputs.tag_name }}"
-
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
         with:
           files: release/*
-          tag_name: ${{ steps.version.outputs.tag_name }}
-          name: Release ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          name: OpsEasy ${{ github.ref_name }}
           body: |
-            ## apiok-admin ${{ steps.version.outputs.version }}
+            ## OpsEasy ${{ github.ref_name }}
 
             ### 构建信息
             - Commit: ${{ github.sha }}
-            - 构建时间: ${{ steps.version.outputs.build_time }}
 
             ### 下载
-            - Linux AMD64: `apiok-admin_linux_amd64.tar.gz`
-            - Linux ARM64: `apiok-admin_linux_arm64.tar.gz`
-            - Windows AMD64: `apiok-admin_windows_amd64.zip`
-            - macOS AMD64: `apiok-admin_darwin_amd64.tar.gz`
-            - macOS ARM64: `apiok-admin_darwin_arm64.tar.gz`
+            - Linux AMD64: `apiok-admin.tar.gz`
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    #  if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: apiok-admin-binaries
+
+      - name: Deploy to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          username: ${{ vars.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "apiok-admin.tar.gz"
+          target: "/tmp"
+
+      - name: Extract and restart
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          username: ${{ vars.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            mkdir -p /opt/apiok-admin
+            tar -xzf /tmp/apiok-admin.tar.gz -C /opt/apiok-admin
+            supervisorctl restart apiok-admin || true

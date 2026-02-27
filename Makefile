@@ -11,7 +11,7 @@ build-all: dashboard-build
 
 .PHONY: build-linux-amd64
 build-linux-amd64:
-	@set CGO_ENABLED=0 && set GOOS=linux && set GOARCH=amd64 && go build -o apiok-admin_linux_amd64 main.go || env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin_linux_amd64 main.go
+	@set CGO_ENABLED=0 && set GOOS=linux && set GOARCH=amd64 && go build -o apiok-admin main.go || env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin main.go
 
 .PHONY: build-linux-arm64
 build-linux-arm64:
@@ -28,7 +28,7 @@ run:
 
 .PHONY: clean
 clean:
-	@rm -f apiok-admin apiok-admin.exe apiok-admin_linux_amd64 apiok-admin_linux_arm64 2>/dev/null || true
+	@rm -f apiok-admin apiok-admin.exe apiok-admin apiok-admin_linux_arm64 2>/dev/null || true
 	@rm -rf html 2>/dev/null || cmd /c "if exist html rmdir /s /q html" 2>nul || true
 	@echo "已清理构建产物"
 
