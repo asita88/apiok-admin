@@ -20,23 +20,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Initialize and update submodules
-        run: |
-          git submodule update --init --recursive
-          echo "Submodule status:"
-          git submodule status
-          if [ -d "apiok-dashboard" ]; then
-            echo "apiok-dashboard directory exists"
-            ls -la apiok-dashboard/
-          else
-            echo "ERROR: apiok-dashboard directory not found"
-            exit 1
-          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
