@@ -5,22 +5,16 @@ build:
 .PHONY: build-all
 build-all: dashboard-build
 	@rm -rf html 2>/dev/null || cmd /c "if exist html rmdir /s /q html" 2>nul || true
-	@cp -r apiok-dashboard/html html 2>/dev/null || cmd /c "xcopy /E /I /Y apiok-dashboard\html html" 2>nul || true
+	@cp -r dashboard/html html 2>/dev/null || cmd /c "xcopy /E /I /Y dashboard\html html" 2>nul || true
 	@$(MAKE) build-linux-amd64
-	@$(MAKE) build-linux-arm64
 
 .PHONY: build-linux-amd64
 build-linux-amd64:
 	@set CGO_ENABLED=0 && set GOOS=linux && set GOARCH=amd64 && go build -o apiok-admin main.go || env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin main.go
 
-.PHONY: build-linux-arm64
-build-linux-arm64:
-	@set CGO_ENABLED=0 && set GOOS=linux && set GOARCH=arm64 && go build -o apiok-admin_linux_arm64 main.go || env CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o apiok-admin_linux_arm64 main.go
-
 .PHONY: dashboard-build
 dashboard-build:
-	git submodule update --init --recursive
-	cd apiok-dashboard && npm install && npm run build
+	cd dashboard && npm install && npm run build
 
 .PHONY: run
 run:
@@ -28,7 +22,7 @@ run:
 
 .PHONY: clean
 clean:
-	@rm -f apiok-admin apiok-admin.exe apiok-admin apiok-admin_linux_arm64 2>/dev/null || true
+	@rm -f apiok-admin apiok-admin.exe 2>/dev/null || true
 	@rm -rf html 2>/dev/null || cmd /c "if exist html rmdir /s /q html" 2>nul || true
 	@echo "已清理构建产物"
 
@@ -69,8 +63,8 @@ install-supervisor:
 .PHONY: help
 help:
 	@echo "make build : 仅根据当前平台编译"
-	@echo "make build-all : 编译 linux/amd64、linux/arm64（包含前端构建）"
-	@echo "make dashboard-build : 构建 apiok-dashboard 前端项目"
+	@echo "make build-all : 编译 linux/amd64（包含前端构建）"
+	@echo "make dashboard-build : 构建 dashboard 前端项目"
 	@echo "make run : 直接运行 Go 代码"
 	@echo "make clean : 清理构建产物"
 	@echo "make install : 安装到 /opt/apiok-admin（Linux/macOS）"

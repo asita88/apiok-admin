@@ -7,7 +7,7 @@ config/app.yaml
 apiok-admin
 apiok
 html
-apiok-dashboard/node_modules
+dashboard/node_modules
 .air.toml
 /dist
 **/.DS_Store

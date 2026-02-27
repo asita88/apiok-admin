@@ -27,7 +27,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install frontend dependencies
-        working-directory: apiok-dashboard
+        working-directory: dashboard
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -36,13 +36,13 @@ jobs:
           fi
 
       - name: Build frontend
-        working-directory: apiok-dashboard
+        working-directory: dashboard
         run: npm run build
 
       - name: Copy dashboard to admin
         run: |
           mkdir -p html
-          cp -r apiok-dashboard/html/* html/
+          cp -r dashboard/html/* html/
 
       - name: Set up Go
         uses: actions/setup-go@v5
