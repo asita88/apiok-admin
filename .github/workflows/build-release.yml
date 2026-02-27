@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     uses: asita88/ci-templates/.github/workflows/build-release-go.yml@main
+    permissions:
+      contents: write
     with:
       app_name: apiok-admin
       go_version: '1.23'
