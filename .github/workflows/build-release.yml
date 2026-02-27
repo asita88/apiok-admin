@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 
 env:
+  APP_NAME: apiok-admin
   GO_VERSION: '1.23'
   NODE_VERSION: '18'
 
@@ -18,7 +19,8 @@ jobs:
     permissions:
       contents: write
     outputs:
-      artifact_name: ${{ steps.package.outputs.artifact_name }}
+      version: ${{ steps.version.outputs.version }}
+      artifact_name: ${{ steps.version.outputs.artifact_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,46 +64,57 @@ jobs:
       - name: Download Go dependencies
         run: go mod download
 
+      - name: Set version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="dev-${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
+          BRANCH=$(echo '${{ github.ref_name }}' | sed 's/\//-/g')
+          DATE=$(date +%Y%m%d)
+          ARTIFACT_NAME=${{ env.APP_NAME }}-${BRANCH}-${DATE}.tar.gz
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "artifact_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+
       - name: Build Linux AMD64
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o apiok-admin .
+          LDFLAGS=""
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o ${{ env.APP_NAME }} main.go
 
       - name: Create release archive
         run: |
           mkdir -p release
           mkdir -p release-temp
-          VERSION=$(date +%Y%m%d)
-          BRANCH=$(echo '${{ github.ref_name }}' | sed 's/\//-/g')
-          ARTIFACT_NAME=apiok-admin-${BRANCH}-${VERSION}.tar.gz	  
-          cp apiok-admin release-temp/
-          chmod +x release-temp/apiok-admin
+          cp ${{ env.APP_NAME }} release-temp/
+          chmod +x release-temp/${{ env.APP_NAME }}
           cp -r config release-temp/
-          tar -czf release/${ARTIFACT_NAME} -C release-temp .
+          tar -czf release/${{ steps.version.outputs.artifact_name }} -C release-temp .
           rm -rf release-temp
-          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: apiok-admin-release
-          path: release/${{ steps.package.outputs.artifact_name }}
+          name: ${{ env.APP_NAME }}-release
+          path: release/${{ steps.version.outputs.artifact_name }}
           retention-days: 30
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: release/${{ steps.package.outputs.artifact_name }}
+          files: release/${{ steps.version.outputs.artifact_name }}
           tag_name: ${{ github.ref_name }}
-          name: apiok-admin ${{ github.ref_name }}
+          name: ${{ env.APP_NAME }} ${{ github.ref_name }}
           body: |
-            ## apiok-admin ${{ github.ref_name }}
+            ## ${{ env.APP_NAME }} ${{ github.ref_name }}
 
             ### 构建信息
             - Commit: ${{ github.sha }}
 
             ### 下载
-            - Linux AMD64: `apiok-admin.tar.gz`
+            - Linux AMD64: `${{ env.APP_NAME }}.tar.gz`
           token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
@@ -113,7 +126,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: apiok-admin-release
+          name: ${{ env.APP_NAME }}-release
 
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
@@ -131,7 +144,8 @@ jobs:
           username: ${{ vars.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            mkdir -p /opt/apiok-admin
-            ARTIFACT_NAME='${{ needs.build.outputs.artifact_name }}'	    
-            tar -xzf /tmp/"$ARTIFACT_NAME" -C /opt/apiok-admin
-            supervisorctl restart apiok-admin || true
+            mkdir -p /opt/${{ env.APP_NAME }}
+            ARTIFACT_NAME='${{ needs.build.outputs.artifact_name }}'
+            tar -xzf /tmp/"$ARTIFACT_NAME" -C /opt/${{ env.APP_NAME }}
+            rm -f /tmp/"$ARTIFACT_NAME"
+            supervisorctl restart ${{ env.APP_NAME }} || true
