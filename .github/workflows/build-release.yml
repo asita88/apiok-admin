@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      artifact_name: ${{ steps.package.outputs.artifact_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,28 +70,32 @@ jobs:
         run: |
           mkdir -p release
           mkdir -p release-temp
+          VERSION=$(date +%Y%m%d)
+          BRANCH=$(echo '${{ github.ref_name }}' | sed 's/\//-/g')
+          ARTIFACT_NAME=apiok-admin-${BRANCH}-${VERSION}.tar.gz	  
           cp apiok-admin release-temp/
           chmod +x release-temp/apiok-admin
           cp -r config release-temp/
-          tar -czf release/apiok-admin.tar.gz -C release-temp .
+          tar -czf release/${ARTIFACT_NAME} -C release-temp .
           rm -rf release-temp
+          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: apiok-admin-binaries
-          path: release/
+          name: apiok-admin-release
+          path: release/${{ steps.package.outputs.artifact_name }}
           retention-days: 30
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: release/*
+          files: release/${{ steps.package.outputs.artifact_name }}
           tag_name: ${{ github.ref_name }}
-          name: OpsEasy ${{ github.ref_name }}
+          name: apiok-admin ${{ github.ref_name }}
           body: |
-            ## OpsEasy ${{ github.ref_name }}
+            ## apiok-admin ${{ github.ref_name }}
 
             ### 构建信息
             - Commit: ${{ github.sha }}
@@ -101,12 +107,13 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: production
     #  if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: apiok-admin-binaries
+          name: apiok-admin-release
 
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
@@ -114,7 +121,7 @@ jobs:
           host: ${{ vars.DEPLOY_HOST }}
           username: ${{ vars.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "apiok-admin.tar.gz"
+          source: ${{ needs.build.outputs.artifact_name }}
           target: "/tmp"
 
       - name: Extract and restart
@@ -125,5 +132,6 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             mkdir -p /opt/apiok-admin
-            tar -xzf /tmp/apiok-admin.tar.gz -C /opt/apiok-admin
+            ARTIFACT_NAME='${{ needs.build.outputs.artifact_name }}'	    
+            tar -xzf /tmp/"$ARTIFACT_NAME" -C /opt/apiok-admin
             supervisorctl restart apiok-admin || true
