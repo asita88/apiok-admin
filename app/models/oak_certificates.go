@@ -13,13 +13,16 @@ import (
 )
 
 type Certificates struct {
-	ID          int       `gorm:"column:id;primary_key"` //Certificate id
-	ResID       string    `gorm:"column:res_id"`         //SNI
-	Sni         string    `gorm:"column:sni"`            //SNI
-	Certificate string    `gorm:"column:certificate"`    //Certificate content
-	PrivateKey  string    `gorm:"column:private_key"`    //Private key content
-	Enable      int       `gorm:"column:enable"`         //Certificate enable  1:on  2:off
-	ExpiredAt   time.Time `gorm:"column:expired_at"`     //Expiration time
+	ID           int       `gorm:"column:id;primary_key"`   //Certificate id
+	ResID        string    `gorm:"column:res_id"`           //SNI
+	Sni          string    `gorm:"column:sni"`              //SNI
+	CaProvider   string    `gorm:"column:ca_provider"`      //CA provider e.g. letsencrypt, manual
+	KeyAlgorithm string    `gorm:"column:key_algorithm"`    //Key algorithm e.g. rsa2048, rsa4096, ecdsa_p256
+	Issuer       string    `gorm:"column:issuer"`            //Certificate issuer e.g. Let's Encrypt Authority X3
+	Certificate  string    `gorm:"column:certificate"`      //Certificate content
+	PrivateKey   string    `gorm:"column:private_key"`      //Private key content
+	Enable       int       `gorm:"column:enable"`           //Certificate enable  1:on  2:off
+	ExpiredAt    time.Time `gorm:"column:expired_at"`       //Expiration time
 	ModelTime
 }
 
@@ -114,6 +117,21 @@ func (c *Certificates) CertificateListPage(param *validators.CertificateList) (l
 
 	if param.Enable != 0 {
 		tx = tx.Where("enable = ?", param.Enable)
+	}
+
+	param.CaProvider = strings.TrimSpace(param.CaProvider)
+	if len(param.CaProvider) != 0 {
+		tx = tx.Where("ca_provider = ?", param.CaProvider)
+	}
+
+	param.KeyAlgorithm = strings.TrimSpace(param.KeyAlgorithm)
+	if len(param.KeyAlgorithm) != 0 {
+		tx = tx.Where("key_algorithm = ?", param.KeyAlgorithm)
+	}
+
+	param.Issuer = strings.TrimSpace(param.Issuer)
+	if len(param.Issuer) != 0 {
+		tx = tx.Where("issuer LIKE ?", "%"+param.Issuer+"%")
 	}
 
 	param.Search = strings.TrimSpace(param.Search)

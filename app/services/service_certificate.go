@@ -93,11 +93,14 @@ func (s *CertificateService) CertificateAdd(request *validators.CertificateAddUp
 	err = packages.GetDb().Transaction(func(tx *gorm.DB) error {
 
 		certificates := &models.Certificates{
-			Certificate: request.Certificate,
-			PrivateKey:  request.PrivateKey,
-			ExpiredAt:   certificateInfo.NotAfter,
-			Enable:      request.Enable,
-			Sni:         request.Sni,
+			Certificate:   request.Certificate,
+			PrivateKey:    request.PrivateKey,
+			ExpiredAt:     certificateInfo.NotAfter,
+			Enable:        request.Enable,
+			Sni:           request.Sni,
+			CaProvider:    "manual",
+			KeyAlgorithm:  certificateInfo.KeyAlgorithm,
+			Issuer:        certificateInfo.Issuer,
 		}
 
 		resID, err := (&models.Certificates{}).CertificatesAdd(tx, certificates)
@@ -146,6 +149,8 @@ func (s *CertificateService) CertificateUpdate(resID string, request *validators
 		certificates.ExpiredAt = discernCertificateInfo.NotAfter
 		certificates.Enable = request.Enable
 		certificates.Sni = request.Sni
+		certificates.KeyAlgorithm = discernCertificateInfo.KeyAlgorithm
+		certificates.Issuer = discernCertificateInfo.Issuer
 
 		err = (&models.Certificates{}).CertificatesUpdate(tx, resID, &certificates)
 
@@ -167,11 +172,14 @@ func (s *CertificateService) CertificateUpdate(resID string, request *validators
 }
 
 type CertificateInfo struct {
-	ResID       string `json:"res_id"`
-	Sni         string `json:"sni"`
-	Certificate string `json:"certificate"`
-	PrivateKey  string `json:"private_key"`
-	Enable      int    `json:"enable"`
+	ResID        string `json:"res_id"`
+	Sni          string `json:"sni"`
+	CaProvider   string `json:"ca_provider"`
+	KeyAlgorithm string `json:"key_algorithm"`
+	Issuer       string `json:"issuer"`
+	Certificate  string `json:"certificate"`
+	PrivateKey   string `json:"private_key"`
+	Enable       int    `json:"enable"`
 }
 
 // CertificateInfo
@@ -186,20 +194,26 @@ func (s *CertificateService) CertificateInfo(id string) (CertificateInfo, error)
 	}
 
 	return CertificateInfo{
-		ResID:       certificateInfo.ResID,
-		Sni:         certificateInfo.Sni,
-		Certificate: certificateInfo.Certificate,
-		PrivateKey:  certificateInfo.PrivateKey,
-		Enable:      certificateInfo.Enable,
+		ResID:        certificateInfo.ResID,
+		Sni:          certificateInfo.Sni,
+		CaProvider:   certificateInfo.CaProvider,
+		KeyAlgorithm: certificateInfo.KeyAlgorithm,
+		Issuer:       certificateInfo.Issuer,
+		Certificate:  certificateInfo.Certificate,
+		PrivateKey:   certificateInfo.PrivateKey,
+		Enable:       certificateInfo.Enable,
 	}, nil
 
 }
 
 type CertificateItem struct {
-	ResID     string `json:"res_id"`
-	Sni       string `json:"sni"`
-	ExpiredAt int64  `json:"expired_at"`
-	Enable    int    `json:"enable"`
+	ResID        string `json:"res_id"`
+	Sni          string `json:"sni"`
+	CaProvider   string `json:"ca_provider"`
+	KeyAlgorithm string `json:"key_algorithm"`
+	Issuer       string `json:"issuer"`
+	ExpiredAt    int64  `json:"expired_at"`
+	Enable       int    `json:"enable"`
 }
 
 // CertificateListPage
@@ -218,10 +232,13 @@ func (s *CertificateService) CertificateListPage(param *validators.CertificateLi
 
 	for _, v := range certificateList {
 		list = append(list, CertificateItem{
-			ResID:     v.ResID,
-			Sni:       v.Sni,
-			ExpiredAt: v.ExpiredAt.Unix(),
-			Enable:    v.Enable,
+			ResID:        v.ResID,
+			Sni:          v.Sni,
+			CaProvider:   v.CaProvider,
+			KeyAlgorithm: v.KeyAlgorithm,
+			Issuer:       v.Issuer,
+			ExpiredAt:    v.ExpiredAt.Unix(),
+			Enable:       v.Enable,
 		})
 	}
 

@@ -11,6 +11,16 @@
         <a-input v-model:value="data.formData.sni" />
       </a-form-item>
 
+      <a-form-item v-if="props.currentResId" label="CA提供商：">
+        <a-input v-model:value="data.formData.ca_provider" disabled />
+      </a-form-item>
+      <a-form-item v-if="props.currentResId" label="加密算法：">
+        <a-input v-model:value="data.formData.key_algorithm" disabled />
+      </a-form-item>
+      <a-form-item v-if="props.currentResId" label="颁发者：">
+        <a-input v-model:value="data.formData.issuer" disabled />
+      </a-form-item>
+
       <a-form-item label="证书内容：" name="certificate" :rules="schemaSsl.certificate">
         <a-textarea v-model:value="data.formData.certificate" :rows="7" />
       </a-form-item>
@@ -56,6 +66,9 @@ export default {
     const data = reactive({
       formData: {
         sni: '',
+        ca_provider: '',
+        key_algorithm: '',
+        issuer: '',
         certificate: '',
         private_key: '',
         enable: false
@@ -71,6 +84,9 @@ export default {
         return
       } else {
         data.formData.sni = dataInfo.sni
+        data.formData.ca_provider = dataInfo.ca_provider === 'letsencrypt' ? "Let's Encrypt" : (dataInfo.ca_provider === 'manual' ? '手动上传' : dataInfo.ca_provider || '')
+        data.formData.key_algorithm = dataInfo.key_algorithm || ''
+        data.formData.issuer = dataInfo.issuer || ''
         data.formData.certificate = dataInfo.certificate
         data.formData.private_key = dataInfo.private_key
         data.formData.enable = dataInfo.enable == 1 ? true : false

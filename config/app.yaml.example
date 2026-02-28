@@ -38,7 +38,7 @@ token: # 用户登录token加密信息配置
 letsencrypt: # Let's Encrypt自动证书申请配置
   enabled: true # 是否启用Let's Encrypt自动申请
   email: "admin@apiok.com" # Let's Encrypt注册邮箱（必填）
-  use_staging: true # 是否使用测试环境（true: 测试环境, false: 生产环境）
+  use_staging: false # 是否使用测试环境（true: 测试环境, false: 生产环境）
   cert_dir: "./certs" # 证书存储目录
   renew_before_days: 30 # 证书到期前多少天自动续期
 

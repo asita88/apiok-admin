@@ -4,8 +4,10 @@ import (
 	"apiok-admin/app/enums"
 	"apiok-admin/app/packages"
 	"bytes"
+	"crypto/ecdsa"
 	"crypto/md5"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
@@ -96,9 +98,11 @@ func DiscernIP(s string) (string, error) {
 }
 
 type CertificateInfo struct {
-	CommonName string
-	NotBefore  time.Time
-	NotAfter   time.Time
+	CommonName    string
+	NotBefore     time.Time
+	NotAfter      time.Time
+	KeyAlgorithm  string
+	Issuer        string
 }
 
 func DiscernCertificate(certificate *string) (CertificateInfo, error) {
@@ -113,12 +117,51 @@ func DiscernCertificate(certificate *string) (CertificateInfo, error) {
 		return certificateInfo, errors.New(enums.CodeMessages(enums.CertificateParseError))
 	}
 
-	// 多域名证书的CommonName需要提取 parseCert.DNSNames（一维数组）中的数据，并且需要过滤出"*"开头的
 	certificateInfo.CommonName = parseCert.Subject.CommonName
 	certificateInfo.NotBefore = parseCert.NotBefore
 	certificateInfo.NotAfter = parseCert.NotAfter
+	certificateInfo.KeyAlgorithm = discernKeyAlgorithm(parseCert)
+	certificateInfo.Issuer = discernIssuer(parseCert)
 
 	return certificateInfo, nil
+}
+
+func discernIssuer(cert *x509.Certificate) string {
+	issuer := &cert.Issuer
+	if issuer.CommonName != "" {
+		return issuer.CommonName
+	}
+	if len(issuer.Organization) > 0 {
+		return issuer.Organization[0]
+	}
+	return ""
+}
+
+func discernKeyAlgorithm(cert *x509.Certificate) string {
+	switch pub := cert.PublicKey.(type) {
+	case *rsa.PublicKey:
+		bits := pub.N.BitLen()
+		if bits >= 4096 {
+			return "rsa4096"
+		}
+		if bits >= 3072 {
+			return "rsa3072"
+		}
+		return "rsa2048"
+	case *ecdsa.PublicKey:
+		switch pub.Curve.Params().BitSize {
+		case 256:
+			return "ecdsa_p256"
+		case 384:
+			return "ecdsa_p384"
+		case 521:
+			return "ecdsa_p521"
+		default:
+			return "ecdsa"
+		}
+	default:
+		return "unknown"
+	}
 }
 
 type enumInfo struct {

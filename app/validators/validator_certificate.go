@@ -8,8 +8,11 @@ type CertificateAddUpdate struct {
 }
 
 type CertificateList struct {
-	Enable int    `form:"enable" json:"enable" zh:"证书开关" en:"Certificate enable" binding:"omitempty,oneof=1 2"`
-	Search string `form:"search" json:"search" zh:"搜索内容" en:"Search content" binding:"omitempty"`
+	Enable       int    `form:"enable" json:"enable" zh:"证书开关" en:"Certificate enable" binding:"omitempty,oneof=1 2"`
+	CaProvider   string `form:"ca_provider" json:"ca_provider" zh:"CA提供商" en:"CA provider" binding:"omitempty"`
+	KeyAlgorithm string `form:"key_algorithm" json:"key_algorithm" zh:"加密算法" en:"Key algorithm" binding:"omitempty"`
+	Issuer       string `form:"issuer" json:"issuer" zh:"颁发者" en:"Issuer" binding:"omitempty"`
+	Search       string `form:"search" json:"search" zh:"搜索内容" en:"Search content" binding:"omitempty"`
 	BaseListPage
 }
 

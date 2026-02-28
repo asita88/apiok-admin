@@ -15,20 +15,55 @@
       <span>启用状态: </span>
       <a-select
         class="select"
-        ref="select"
         v-model:value="data.params.enable"
         placeholder="请选择"
         @change="fn.paramsChange(data.params)"
       >
-        <a-select-option value="0">全部</a-select-option>
-        <a-select-option value="1">启用</a-select-option>
-        <a-select-option value="2">停用</a-select-option>
+        <a-select-option :value="0">全部</a-select-option>
+        <a-select-option :value="1">启用</a-select-option>
+        <a-select-option :value="2">停用</a-select-option>
       </a-select>
+
+      <span>CA提供商: </span>
+      <a-select
+        class="select"
+        v-model:value="data.params.ca_provider"
+        placeholder="请选择"
+        allow-clear
+        @change="fn.paramsChange(data.params)"
+      >
+        <a-select-option value="letsencrypt">Let's Encrypt</a-select-option>
+        <a-select-option value="manual">手动上传</a-select-option>
+      </a-select>
+
+      <span>加密算法: </span>
+      <a-select
+        class="select"
+        v-model:value="data.params.key_algorithm"
+        placeholder="请选择"
+        allow-clear
+        @change="fn.paramsChange(data.params)"
+      >
+        <a-select-option value="rsa2048">RSA 2048</a-select-option>
+        <a-select-option value="rsa3072">RSA 3072</a-select-option>
+        <a-select-option value="rsa4096">RSA 4096</a-select-option>
+        <a-select-option value="ecdsa_p256">ECDSA P-256</a-select-option>
+        <a-select-option value="ecdsa_p384">ECDSA P-384</a-select-option>
+        <a-select-option value="ecdsa_p521">ECDSA P-521</a-select-option>
+      </a-select>
+
+      <a-input
+        v-model:value="data.params.issuer"
+        placeholder="颁发者"
+        allow-clear
+        style="width: 140px; margin-right: 10px"
+        @pressEnter="fn.paramsChange(data.params)"
+      />
 
       <a-input-search
         class="search"
         v-model:value="data.params.search"
-        placeholder="搜索内容"
+        placeholder="搜索域名/ID"
         enter-button
         @search="fn.paramsChange(data.params)"
         @pressEnter="fn.paramsChange(data.params)"
@@ -61,6 +96,21 @@
 
         <template v-if="column.dataIndex === 'sni'">
           {{ record.sni }}
+        </template>
+
+        <template v-if="column.dataIndex === 'ca_provider'">
+          {{ record.ca_provider }}
+        </template>
+
+        <template v-if="column.dataIndex === 'key_algorithm'">
+          {{ record.key_algorithm }}
+        </template>
+
+        <template v-if="column.dataIndex === 'issuer'">
+          <a-tooltip v-if="record.issuer && record.issuer.length > 20" :title="record.issuer">
+            {{ record.issuer }}
+          </a-tooltip>
+          <span v-else>{{ record.issuer }}</span>
         </template>
 
         <template v-if="column.dataIndex === 'expired_at'">
@@ -160,7 +210,10 @@ export default {
     // 数据变量
     const data = reactive({
       params: reactive({
-        enable: null,
+        enable: 0,
+        ca_provider: undefined,
+        key_algorithm: undefined,
+        issuer: undefined,
         search: '',
         page: 1,
         page_size: 10
@@ -181,18 +234,24 @@ export default {
       componentName: null // 动态组件名称
     })
 
-    // 自带文本过长省略属性 ellipsis: true
     data.columns = reactive([
-      { title: 'ID', dataIndex: 'res_id' },
-      { title: '域名', dataIndex: 'sni' },
-      { title: '过期时间', dataIndex: 'expired_at' },
-      { title: '启用', dataIndex: 'enable' },
+      { title: 'ID', dataIndex: 'res_id', width: 140 },
+      { title: '域名', dataIndex: 'sni', width: 150 },
+      { title: 'CA提供商', dataIndex: 'ca_provider', width: 100 },
+      { title: '加密算法', dataIndex: 'key_algorithm', width: 100 },
+      { title: '颁发者', dataIndex: 'issuer', width: 180, ellipsis: true },
+      { title: '过期时间', dataIndex: 'expired_at', width: 160 },
+      { title: '启用', dataIndex: 'enable', width: 70 },
       { title: '操作', dataIndex: 'operation', width: 80 }
     ])
 
-    // 获取路由列表
     const getList = async params => {
-      let { code, data: dataList, msg } = await $sslList(params)
+      const reqParams = { ...params }
+      if (reqParams.enable === 0) delete reqParams.enable
+      if (reqParams.ca_provider === undefined || reqParams.ca_provider === '') delete reqParams.ca_provider
+      if (reqParams.key_algorithm === undefined || reqParams.key_algorithm === '') delete reqParams.key_algorithm
+      if (reqParams.issuer === undefined || reqParams.issuer === '') delete reqParams.issuer
+      let { code, data: dataList, msg } = await $sslList(reqParams)
 
       if (code != 0) {
         message.error(msg)
@@ -206,6 +265,9 @@ export default {
             key: key++,
             res_id: item.res_id,
             sni: item.sni,
+            ca_provider: item.ca_provider === 'letsencrypt' ? "Let's Encrypt" : (item.ca_provider === 'manual' ? '手动上传' : item.ca_provider || '-'),
+            key_algorithm: item.key_algorithm || '-',
+            issuer: item.issuer || '-',
             expired_at: formatDate(item.expired_at),
             enable: item.enable == 1 ? true : false
           })

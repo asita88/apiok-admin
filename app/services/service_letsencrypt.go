@@ -298,12 +298,23 @@ func (s *LetsEncryptService) RequestCertificate(domain string, enable bool) (str
 	})
 
 	// 保存到数据库
+	issuer := ""
+	if len(cert.Issuer.Organization) > 0 {
+		issuer = cert.Issuer.Organization[0]
+	}
+	if issuer == "" && cert.Issuer.CommonName != "" {
+		issuer = cert.Issuer.CommonName
+	}
+
 	certificateData := &models.Certificates{
-		Certificate: string(certPEM),
-		PrivateKey:  string(keyPEM),
-		ExpiredAt:   cert.NotAfter,
-		Enable:      utils.EnableOff, // 默认不启用，等待用户确认
-		Sni:         domain,
+		Certificate:   string(certPEM),
+		PrivateKey:    string(keyPEM),
+		ExpiredAt:     cert.NotAfter,
+		Enable:        utils.EnableOff, // 默认不启用，等待用户确认
+		Sni:           domain,
+		CaProvider:    "letsencrypt",
+		KeyAlgorithm:  "rsa2048",
+		Issuer:        issuer,
 	}
 
 	err = packages.GetDb().Transaction(func(tx *gorm.DB) error {
@@ -380,6 +391,7 @@ func (s *LetsEncryptService) RenewExpiringCertificates() error {
 	err := packages.GetDb().Table((&models.Certificates{}).TableName()).
 		Where("expired_at <= ? AND expired_at > ?", renewBefore, time.Now()).
 		Where("enable = ?", utils.EnableOn).
+		Where("ca_provider = ?", "letsencrypt").
 		Find(&certificates).Error
 
 	if err != nil {
