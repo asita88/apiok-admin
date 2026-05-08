@@ -1,7 +1,7 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : 127.0.0.1
+Source Server         : 127.0.0.1:3306
 Source Server Version : 80044
 Source Host           : 127.0.0.1:3306
 Source Database       : apiok
@@ -10,10 +10,56 @@ Target Server Type    : MYSQL
 Target Server Version : 80044
 File Encoding         : 65001
 
-Date: 2025-12-08 17:10:51
+Date: 2026-05-08 18:05:29
 */
 
 SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------
+-- Table structure for apiok_access_log
+-- ----------------------------
+DROP TABLE IF EXISTS `apiok_access_log`;
+CREATE TABLE `apiok_access_log` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+  `timestamp` int unsigned NOT NULL COMMENT '请求时间戳',
+  `request_method` varchar(10) NOT NULL COMMENT '请求方法',
+  `request_uri` varchar(2048) NOT NULL COMMENT '请求URI',
+  `request_path` varchar(2048) NOT NULL COMMENT '请求路径',
+  `request_query_string` text COMMENT '查询字符串',
+  `request_protocol` varchar(20) DEFAULT NULL COMMENT '协议版本',
+  `remote_addr` varchar(45) NOT NULL COMMENT '客户端IP',
+  `remote_port` int unsigned DEFAULT NULL COMMENT '客户端端口',
+  `server_addr` varchar(45) DEFAULT NULL COMMENT '服务器IP',
+  `server_port` int unsigned DEFAULT NULL COMMENT '服务器端口',
+  `request_host` varchar(255) DEFAULT NULL COMMENT '请求Host',
+  `request_headers` text COMMENT '请求头(JSON)',
+  `request_args` text COMMENT '请求参数(JSON)',
+  `request_body` longtext COMMENT '请求体',
+  `response_status` int unsigned NOT NULL COMMENT '响应状态码',
+  `response_headers` text COMMENT '响应头(JSON)',
+  `response_body` longtext COMMENT '响应体',
+  `upstream_response_time` varchar(50) DEFAULT NULL COMMENT '上游响应时间',
+  `upstream_connect_time` varchar(50) DEFAULT NULL COMMENT '上游连接时间',
+  `request_time` decimal(10,3) NOT NULL COMMENT '请求处理时间(秒)',
+  `bytes_sent` bigint unsigned NOT NULL COMMENT '发送字节数',
+  `service_name` varchar(255) DEFAULT NULL COMMENT '服务名称',
+  `router_name` varchar(255) DEFAULT NULL COMMENT '路由名称',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `block_reason` varchar(255) DEFAULT NULL,
+  `block_rule` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_timestamp` (`timestamp`) USING BTREE,
+  KEY `idx_remote_addr` (`remote_addr`) USING BTREE,
+  KEY `idx_response_status` (`response_status`) USING BTREE,
+  KEY `idx_service_name` (`service_name`) USING BTREE,
+  KEY `idx_router_name` (`router_name`) USING BTREE,
+  KEY `idx_request_method` (`request_method`) USING BTREE,
+  KEY `idx_created_at` (`created_at`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=27096 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of apiok_access_log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for apiok_data
@@ -21,29 +67,50 @@ SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `apiok_data`;
 CREATE TABLE `apiok_data` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '资源类型: services/routers/plugins/upstreams/certificates/upstream_nodes',
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '资源名称',
-  `data` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JSON格式的配置数据',
+  `type` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '资源类型: services/routers/plugins/upstreams/certificates/upstream_nodes',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '资源名称',
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JSON格式的配置数据',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_type_name` (`type`,`name`),
   KEY `idx_type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='数据存储表';
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='数据存储表';
 
 -- ----------------------------
 -- Records of apiok_data
 -- ----------------------------
-INSERT INTO `apiok_data` VALUES ('33', 'upstreams', 'up-m00a4aXgZul43zU', '{\"name\":\"up-m00a4aXgZul43zU\",\"algorithm\":\"ROUNDROBIN\",\"connect_timeout\":30000,\"write_timeout\":3000,\"read_timeout\":3000,\"enabled\":true,\"nodes\":[{\"name\":\"un-rmxmDAvLlJt7dpe\"},{\"name\":\"un-tPdCAkBvo9xZOwz\"},{\"name\":\"un-PiXhYWPg81UqbNG\"}]}', '2025-12-05 18:50:39', '2025-12-08 15:57:47');
 INSERT INTO `apiok_data` VALUES ('34', 'upstream_nodes', 'un-rmxmDAvLlJt7dpe', '{\"name\":\"un-rmxmDAvLlJt7dpe\",\"address\":\"127.0.0.1\",\"port\":8080,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1},\"tags\":{\"123\":\"456\",\"789\":\"123\"}}', '2025-12-05 18:50:39', '2025-12-08 15:57:47');
-INSERT INTO `apiok_data` VALUES ('38', 'routers', 'rt-cMQH880AhzqxQnO', '{\"name\":\"rt-cMQH880AhzqxQnO\",\"methods\":[\"ALL\"],\"paths\":[\"/apple\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-DQ0CASH03pMddn3\"},\"upstream\":{\"name\":\"up-BsYcvp9VClgXIX2\"},\"plugins\":[],\"client_max_body_size\":100}', '2025-12-05 18:58:54', '2025-12-08 17:03:38');
-INSERT INTO `apiok_data` VALUES ('40', 'services', 'sv-GdO0rkKOo5yJ9RM', '{\"name\":\"sv-GdO0rkKOo5yJ9RM\",\"protocols\":[\"http\"],\"hosts\":[\"aa.apple.com\"],\"ports\":[80],\"plugins\":[{\"name\":\"pc-dTETOfGzqFfQYje\"}],\"enabled\":true}', '2025-12-05 19:22:39', '2025-12-08 17:03:30');
-INSERT INTO `apiok_data` VALUES ('41', 'upstreams', 'up-BsYcvp9VClgXIX2', '{\"name\":\"up-BsYcvp9VClgXIX2\",\"algorithm\":\"ROUNDROBIN\",\"connect_timeout\":30000,\"write_timeout\":3000,\"read_timeout\":3000,\"enabled\":true,\"nodes\":[{\"name\":\"un-RTjg5YiOqd2jFVH\"}]}', '2025-12-05 19:49:33', '2025-12-08 17:03:16');
+INSERT INTO `apiok_data` VALUES ('38', 'routers', 'rt-cMQH880AhzqxQnO', '{\"name\":\"rt-cMQH880AhzqxQnO\",\"methods\":[\"ALL\"],\"paths\":[\"/*\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-GdO0rkKOo5yJ9RM\"},\"upstream\":{\"name\":\"up-p6f18nbjdLwS73j\"},\"plugins\":[{\"name\":\"pc-hHUJ9fiBwfhuHHN\"}]}', '2025-12-05 18:58:54', '2026-04-08 17:52:58');
+INSERT INTO `apiok_data` VALUES ('40', 'services', 'sv-GdO0rkKOo5yJ9RM', '{\"name\":\"sv-GdO0rkKOo5yJ9RM\",\"protocols\":[\"http\",\"https\"],\"hosts\":[\"apiok.xmquhu.com\"],\"ports\":[80,443],\"plugins\":[{\"name\":\"pc-8NZxzDiuDu88U8g\"}],\"enabled\":true}', '2025-12-05 19:22:39', '2026-05-08 16:16:17');
+INSERT INTO `apiok_data` VALUES ('41', 'upstreams', 'up-BsYcvp9VClgXIX2', '{\"name\":\"up-BsYcvp9VClgXIX2\",\"algorithm\":\"ROUNDROBIN\",\"connect_timeout\":30000,\"write_timeout\":3000,\"read_timeout\":3000,\"enabled\":true,\"nodes\":[{\"name\":\"un-nprObeKpLG64q6x\"}]}', '2025-12-05 19:49:33', '2026-05-08 12:47:30');
 INSERT INTO `apiok_data` VALUES ('42', 'upstream_nodes', 'un-RTjg5YiOqd2jFVH', '{\"name\":\"un-RTjg5YiOqd2jFVH\",\"address\":\"127.0.0.2\",\"port\":8080,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-05 19:49:33', '2025-12-08 17:03:16');
 INSERT INTO `apiok_data` VALUES ('43', 'upstream_nodes', 'un-tPdCAkBvo9xZOwz', '{\"name\":\"un-tPdCAkBvo9xZOwz\",\"address\":\"127.0.0.2\",\"port\":8080,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-08 15:57:47', '2025-12-08 15:57:47');
 INSERT INTO `apiok_data` VALUES ('44', 'upstream_nodes', 'un-PiXhYWPg81UqbNG', '{\"name\":\"un-PiXhYWPg81UqbNG\",\"address\":\"127.0.0.3\",\"port\":8080,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-08 15:57:47', '2025-12-08 15:57:47');
 INSERT INTO `apiok_data` VALUES ('45', 'plugins', 'pc-dTETOfGzqFfQYje', '{\"config\":{\"time_window\":100,\"count\":1000},\"key\":\"limit-count\",\"name\":\"pc-dTETOfGzqFfQYje\"}', '2025-12-08 17:03:30', '2025-12-08 17:03:30');
-INSERT INTO `apiok_data` VALUES ('46', 'services', 'sv-DQ0CASH03pMddn3', '{\"name\":\"sv-DQ0CASH03pMddn3\",\"protocols\":[\"http\"],\"hosts\":[\"bb.apple.com\"],\"ports\":[80],\"plugins\":[],\"enabled\":true}', '2025-12-08 17:03:32', '2025-12-08 17:03:32');
+INSERT INTO `apiok_data` VALUES ('48', 'upstream_nodes', 'un-Xwrm0WXZs6AMCCa', '{\"name\":\"un-Xwrm0WXZs6AMCCa\",\"address\":\"127.0.0.1\",\"port\":3000,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":false,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-22 10:21:30', '2025-12-22 10:21:30');
+INSERT INTO `apiok_data` VALUES ('50', 'routers', 'rt-0ekGT7OGAs7TFWC', '{\"name\":\"rt-0ekGT7OGAs7TFWC\",\"methods\":[\"GET\"],\"paths\":[\"/.well-known/acme-challenge/*\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-FuCQBgMePI6pdtz\"},\"upstream\":{\"name\":\"up-QRBZhJcSrfWSVva\"},\"plugins\":[]}', '2025-12-22 10:49:20', '2025-12-22 16:03:12');
+INSERT INTO `apiok_data` VALUES ('51', 'routers', 'rt-uVCjaj3kCOUGTKx', '{\"name\":\"rt-uVCjaj3kCOUGTKx\",\"methods\":[\"GET\"],\"paths\":[\"/.well-known/acme-challenge/\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-FuCQBgMePI6pdtz\"},\"upstream\":{\"name\":\"up-QRBZhJcSrfWSVva\"},\"plugins\":[]}', '2025-12-22 16:03:24', '2025-12-22 16:03:24');
+INSERT INTO `apiok_data` VALUES ('53', 'routers', 'rt-wE5yeKLfazS892i', '{\"name\":\"rt-wE5yeKLfazS892i\",\"methods\":[\"GET\"],\"paths\":[\"/.well-known/acme-challenge/*\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-F8SHQWJJAfZ9sQy\"},\"upstream\":{\"name\":\"up-7PRlB26DJxk28y2\"},\"plugins\":[]}', '2025-12-22 16:24:37', '2025-12-22 16:38:26');
+INSERT INTO `apiok_data` VALUES ('55', 'upstream_nodes', 'un-hmwelUWW4Cusib7', '{\"name\":\"un-hmwelUWW4Cusib7\",\"address\":\"127.0.0.1\",\"port\":3000,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":false,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-22 16:38:10', '2025-12-22 16:38:10');
+INSERT INTO `apiok_data` VALUES ('56', 'routers', 'rt-0qOR91UK3wMmvhr', '{\"name\":\"rt-0qOR91UK3wMmvhr\",\"methods\":[\"GET\"],\"paths\":[\"/.well-known/acme-challenge/\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-F8SHQWJJAfZ9sQy\"},\"upstream\":{\"name\":\"up-7PRlB26DJxk28y2\"},\"plugins\":[]}', '2025-12-22 17:37:27', '2025-12-22 17:37:27');
+INSERT INTO `apiok_data` VALUES ('59', 'services', 'sv-BkiWODvz2LI9i66', '{\"name\":\"sv-BkiWODvz2LI9i66\",\"protocols\":[\"http\",\"https\"],\"hosts\":[\"okx.xmquhu.com\"],\"ports\":[80,443],\"plugins\":[{\"name\":\"pc-1kUa75VFx2pTVUq\"}],\"enabled\":true}', '2025-12-22 17:49:48', '2026-05-08 16:16:14');
+INSERT INTO `apiok_data` VALUES ('60', 'routers', 'rt-l417zeVG36pTVxd', '{\"name\":\"rt-l417zeVG36pTVxd\",\"methods\":[\"ALL\"],\"paths\":[\"/*\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-BkiWODvz2LI9i66\"},\"upstream\":{\"name\":\"up-BsYcvp9VClgXIX2\"},\"plugins\":[]}', '2025-12-22 17:49:48', '2025-12-22 18:02:53');
+INSERT INTO `apiok_data` VALUES ('61', 'upstreams', 'up-p6f18nbjdLwS73j', '{\"name\":\"up-p6f18nbjdLwS73j\",\"algorithm\":\"ROUNDROBIN\",\"connect_timeout\":60,\"write_timeout\":60,\"read_timeout\":60,\"enabled\":true,\"nodes\":[{\"name\":\"un-j7SBOsVHwJdpnSe\"}]}', '2025-12-22 17:50:17', '2025-12-22 17:56:43');
+INSERT INTO `apiok_data` VALUES ('62', 'upstream_nodes', 'un-j7SBOsVHwJdpnSe', '{\"name\":\"un-j7SBOsVHwJdpnSe\",\"address\":\"127.0.0.1\",\"port\":3000,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-22 17:50:17', '2025-12-22 17:56:43');
+INSERT INTO `apiok_data` VALUES ('63', 'routers', 'rt-p4alBusTHB5ETL3', '{\"name\":\"rt-p4alBusTHB5ETL3\",\"methods\":[\"GET\"],\"paths\":[\"/.well-known/acme-challenge/\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-BkiWODvz2LI9i66\"},\"upstream\":{\"name\":\"up-p6f18nbjdLwS73j\"},\"plugins\":[]}', '2025-12-22 17:51:00', '2025-12-22 17:51:00');
+INSERT INTO `apiok_data` VALUES ('65', 'upstream_nodes', 'un-edAVlgjcFNrOgEp', '{\"name\":\"un-edAVlgjcFNrOgEp\",\"address\":\"127.0.0.2\",\"port\":9999,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2025-12-22 17:52:33', '2025-12-22 17:56:49');
+INSERT INTO `apiok_data` VALUES ('74', 'upstreams', 'up-a04qPOIQ1qnpFKt', '{\"name\":\"up-a04qPOIQ1qnpFKt\",\"algorithm\":\"ROUNDROBIN\",\"connect_timeout\":3000,\"write_timeout\":3000,\"read_timeout\":3000,\"enabled\":true,\"nodes\":[{\"name\":\"un-2Tf8rueOjl4012l\"}]}', '2026-02-28 09:42:19', '2026-02-28 09:44:42');
+INSERT INTO `apiok_data` VALUES ('75', 'upstream_nodes', 'un-2Tf8rueOjl4012l', '{\"name\":\"un-2Tf8rueOjl4012l\",\"address\":\"127.0.0.1\",\"port\":9876,\"weight\":1,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2026-02-28 09:42:19', '2026-02-28 09:44:42');
+INSERT INTO `apiok_data` VALUES ('76', 'services', 'sv-uGkY5neXwUXMW8r', '{\"name\":\"sv-uGkY5neXwUXMW8r\",\"protocols\":[\"http\",\"https\"],\"hosts\":[\"opseasy.xmquhu.com\"],\"ports\":[80,443],\"plugins\":[],\"enabled\":true}', '2026-02-28 09:43:24', '2026-05-08 12:06:22');
+INSERT INTO `apiok_data` VALUES ('77', 'routers', 'rt-U9Xx9J5HIVygiFy', '{\"name\":\"rt-U9Xx9J5HIVygiFy\",\"methods\":[\"ALL\"],\"paths\":[\"/*\"],\"enabled\":true,\"headers\":{},\"service\":{\"name\":\"sv-uGkY5neXwUXMW8r\"},\"upstream\":{\"name\":\"up-a04qPOIQ1qnpFKt\"},\"plugins\":[{\"name\":\"pc-hHUJ9fiBwfhuHHN\"}]}', '2026-02-28 09:45:01', '2026-02-28 09:45:01');
+INSERT INTO `apiok_data` VALUES ('92', 'certificates', 'ce-jDxfoIhFzjOJqY7', '{\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIIE9zCCA9+gAwIBAgISBVRXJzyTIaDlOgDYv10olUvnMA0GCSqGSIb3DQEBCwUA\\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\\nEwNSMTIwHhcNMjYwNDA4MDgzNTI4WhcNMjYwNzA3MDgzNTI3WjAZMRcwFQYDVQQD\\nEw5hcGkueG1xdWh1LmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\\nALm5vGwlWY/28CMwRJMCn8NJqs+yVwD6NgYOufCcwNYYnTzajLtjxAzMuqoJQH62\\nfRc19wZUydZ1HeFiFF7Hyh4LMjiQ9CV9M4ZhXNpCEUht1OvZUOHp6DleD6iP9Uk8\\n1Id2wsfQCF1Y63ljYEwpAkuPyfQUvaKR0hWxph9n5qBdAZafQuoIZomvr2uRkia1\\n8WqapsGZ5qk24Lh/EDtvdZwuQkiPGNuwAGW+OeNmXNIs27rCg3+7QufaUKovrIDn\\n8+IYCbYGXk7dmtB8kFnBKAyLZmyGta4nFsL2UqzZcmSPyp58XdIswVB0kdMJjNi6\\noCRUtWMlXaEKtkTQoixAkjkCAwEAAaOCAh0wggIZMA4GA1UdDwEB/wQEAwIFoDAT\\nBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRatZEA\\nFrhn6m5PmPJlFz/FMixf7zAfBgNVHSMEGDAWgBQAtSnyLY5vMeibTK14Pvrc6QzR\\n0jAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAKGF2h0dHA6Ly9yMTIuaS5sZW5j\\nci5vcmcvMBkGA1UdEQQSMBCCDmFwaS54bXF1aHUuY29tMBMGA1UdIAQMMAowCAYG\\nZ4EMAQIBMC8GA1UdHwQoMCYwJKAioCCGHmh0dHA6Ly9yMTIuYy5sZW5jci5vcmcv\\nMTA0LmNybDCCAQwGCisGAQQB1nkCBAIEgf0EgfoA+AB2ANgJVTuUT3r/yBYZb5RP\\nhauw+Pxeh1UmDxXRLnK7RUsUAAABnWxxARYAAAQDAEcwRQIgPjf7yxKqYZDfII/A\\nbsKqOP75srhCXaAGqA1krvpqMdICIQCQRHDmNfzk2brXoZniBL1QCS60+Mx/Kcht\\n6Sa8wyd3HQB+AKgmy+MKxjUSRlM/4GXxTxnZbhkIE8Qd2W15ALMSPFUnAAABnWxx\\nAWEACAAABQAGFHFBBAMARzBFAiBC8M8dbvMi8wKz0d5gtbML/xsjWyglQ25s+M+f\\n3rGvawIhAJJKROd796IdQGrSpJHClmPSCUgQDLXcP9OcZWeCWSE6MA0GCSqGSIb3\\nDQEBCwUAA4IBAQCTpCTMgF3pf760HKncKwDD0HrZdBzkBV2LcefS3DjHOSRdhuk3\\nwvbCdgC5XR7jmL5RXQRMM2ZmR6Feh6Iow6jMZvGo9y9f5gj1ZEEKiJy91JMZHrPc\\ncb5pQOCl5eZnGvBkvEb+4V3/cp204aRgnvQFENa0pRmuw3BlLQrGOAn/eUGGSfub\\nefeKQQ8pHxFg8cgylj4uAi9bVOF0BbVYzkqle9mT3f/5G3BtRYgkdho3YucmPTnU\\nElgFaw6rIYnvMpjOxRJTc2fFgioVTHcfNrlOLzwOzMHts0jpHPuIWv0x/6Xr+T/B\\ns3P/bUxkOJfQvs8rMOoIktfNoA0BryHz8U6U\\n-----END CERTIFICATE-----\\n\",\"key\":\"-----BEGIN RSA PRIVATE KEY-----\\nMIIEpAIBAAKCAQEAubm8bCVZj/bwIzBEkwKfw0mqz7JXAPo2Bg658JzA1hidPNqM\\nu2PEDMy6qglAfrZ9FzX3BlTJ1nUd4WIUXsfKHgsyOJD0JX0zhmFc2kIRSG3U69lQ\\n4enoOV4PqI/1STzUh3bCx9AIXVjreWNgTCkCS4/J9BS9opHSFbGmH2fmoF0Blp9C\\n6ghmia+va5GSJrXxapqmwZnmqTbguH8QO291nC5CSI8Y27AAZb4542Zc0izbusKD\\nf7tC59pQqi+sgOfz4hgJtgZeTt2a0HyQWcEoDItmbIa1ricWwvZSrNlyZI/Knnxd\\n0izBUHSR0wmM2LqgJFS1YyVdoQq2RNCiLECSOQIDAQABAoIBAHSEFLSYHf8WgYLh\\n9jNwcwBWSAXzMWgYkSnttTNBdC0c1hBmX+Hz7fvFuNmR4ldcb0/PeEENkm6rnOpX\\n2MW5e5Crn38jWTfnuxp0HIeE6UjSNsEb3gVM9HaBDzvFzLF8qyytEfe/CHBfp6LI\\n+JHvLFRxSdaJ6IqEBxO7FqgfS+2QOaeTSNcYvUYOVZDoTVhMo+AhncHaba3G4KwE\\nnLMFjPXUIsibcOlPpQVGn9OEIYM3MjsZdPBkZgVZjDTTuDuOa7PvHQrz8G3Hzaua\\n4G395FcgKv/4TmodNEv5s8nTKkXcs+iyhKH+Am8VxhtLvvXWwQXQ7guM9meGXVph\\n1js8WQ0CgYEA54tCtzKs6j6P6aKKikVT+2mvmBy6TjJhTgBz2qbOTymJ/ksE4mS1\\nOSTdqQnYJG9BkvW4tB8JqriItEyjdH/JnJfxM3frGWYUefxqbvXtZBD1xdxoSxBZ\\n+eow7EkGtYddQp6F8Q4bx6zHDwjYyLYr1ny4bxag4S60zTLl3LcDSpsCgYEAzVeW\\nADEcm9Ad9osBuWrU1NfO5U3FR4G7uXEZFWRl3+ZgysaT5dpE5upU+YPvofjg4ImK\\nWTHTQhy0VXAPNDeLxN3U3bBi/ThIixLkZaOFjAaQk6eaYFC1NPK8P6IgDprEhiK6\\ndlOWgst1CsmICmDGLDjPr+o7r9fEBP9EiLf26bsCgYEAriZkC34l6BkeDM+f+9eh\\nDtuyomoZBm+GGDDm8nG7gnbvvz+VcOHmHBDKVzV8SAsV+v6t6WvezXT1/QYXeqwS\\na6EsXVW4keXhSM69DrAR2M2YzTS1jJ/DzOCD43QZg7dIQa8RdvjxlAEzxu8UfgHm\\nfvBXl9YhMrz6Z8v8b0GHTDkCgYBVtZhTziwN0WmgTddTaIcbrFScm8Cbn0gXGGEK\\n79QiB8wg95AmIdwesnLzjyGH7xUWQ/KuVkDC2K5g9xwxhHnfm2RNgGFhJowJGMKi\\ntgV5NAhGyW+DgkyQpDz1JpvQ3MLo5jgESdGKGJhq/0G8azZsoO33lIKDXEFigJY/\\npuH2HwKBgQChnE0fuSdhoPGgkfWMajs4cxSJLjxR1vRuy66Ti3Z/aTOWOcuiqHgD\\niEQDdobby0wIGNRDUPxD9AbGic4Z/wzGdy2r6s5LmloCJPqpNpNr7P8SsgWwC6VW\\nwKH4v4ysR4la7ZePvvae9VnKiAZf4Ky/D78Rcfrgc7n6bKGaA6qR0Q==\\n-----END RSA PRIVATE KEY-----\\n\",\"name\":\"ce-jDxfoIhFzjOJqY7\",\"snis\":[\"api.xmquhu.com\"]}', '2026-04-08 17:34:00', '2026-04-08 17:34:00');
+INSERT INTO `apiok_data` VALUES ('97', 'certificates', 'ce-PNKVeRZdYIxy7Zz', '{\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIIE/DCCA+SgAwIBAgISBc+bGqQoXpJhcwq2H+OKt3F6MA0GCSqGSIb3DQEBCwUA\\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\\nEwNSMTMwHhcNMjYwNDI5MjM1ODQwWhcNMjYwNzI4MjM1ODM5WjAbMRkwFwYDVQQD\\nExBhcGlvay54bXF1aHUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\\nAQEA1/hYpgJdJntrFpT9xKGkwDkWwQIJegOl2hSLGGEJbSMMfeysIZ+DoVA4pMIn\\nbmrzRqFB4Q1BjJfYN4o/+sVOXe6uVoRocTiRw5MxWpp8av95g4YfvboV7SaNTXwt\\ndlYI5Apcz+ykMfV5dwlwbVEJzg6PYQ7JCELiq+3+W5PLzF3hR6Gd2XHBm1E5djJX\\nacpYbiIYY94nh2MiccP1ZrIfyc6mwzk884Jemmrc2H9/kuF7/hMPQDHWm8WHWsu1\\nDIykSz4pcITwCcI+YRoMu0echDTE9empUywQrhBs/OWkSDxVXwXCppMqs6AUcXeu\\nTcg9fUleylvjTvOpSzhAGLgdJQIDAQABo4ICIDCCAhwwDgYDVR0PAQH/BAQDAgWg\\nMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFHxM\\nHo88v1+V6Kp91Ke8/INOLtgWMB8GA1UdIwQYMBaAFOernw8sM6BT015PeMiyhA47\\n1pIzMDMGCCsGAQUFBwEBBCcwJTAjBggrBgEFBQcwAoYXaHR0cDovL3IxMy5pLmxl\\nbmNyLm9yZy8wGwYDVR0RBBQwEoIQYXBpb2sueG1xdWh1LmNvbTATBgNVHSAEDDAK\\nMAgGBmeBDAECATAvBgNVHR8EKDAmMCSgIqAghh5odHRwOi8vcjEzLmMubGVuY3Iu\\nb3JnLzEyMy5jcmwwggENBgorBgEEAdZ5AgQCBIH+BIH7APkAfgBGr4Y9Oz7ln6V3\\n3qgkXTaw2e0ioiP0YXdBIpRS7pVQXwAAAZ3b48baAAgAAAUABUGxzwQDAEcwRQIh\\nAIpczy9yMgb4OykI4/FTI0Nm+aZeOEaU9Mw/ajruSHzgAiBNwtxhfoOCeecvp3CD\\nmnHKFJXRVZ7O1WMhOvgO50dhzgB3ANdtfRDRp/V3wsfpX9cAv/mCyTNaZeHQswFz\\nF8DIxWl3AAABndvjxmwAAAQDAEgwRgIhAIyNxMY7S/mSat54ClQ450yHhgDld9WF\\nTFinsh0EhcJVAiEAr6Svp8jmpkfkUQTXk1q3kefTAhhPq6P47qjuIYzjCqMwDQYJ\\nKoZIhvcNAQELBQADggEBABB+H7NNYY83I6AGPJ8lwujU9wuxvN9BYZ6pCrOIcVtL\\nbEWqiqaaXNMhWm/06SCiPDayfIZMMiIym7C9aAyGpmhHtG1uHZRF3TzNWxZf0AIZ\\nHhZzYJ3AVFlxogbAJ1rLmaP2Vl1pDavHOGUwtXCmOygMPCM6hJDZGJxpHf8bUpr8\\nptJVn4o5vgsvLkne12ivchEYP59PpRzPRDVOx6W16jOMFODdFUo8ipUEcx6exCBi\\n7U7gm6CGxI0msN1rk2jZyVUUpVW0attAdIHiO5lOsO38rpl22iJX2ByMLo2/nQwk\\n3RfUisci+C81QcoPx9+UQJul4iIeMxCjIWxnaeuAbeE=\\n-----END CERTIFICATE-----\\n\",\"key\":\"-----BEGIN RSA PRIVATE KEY-----\\nMIIEpAIBAAKCAQEA1/hYpgJdJntrFpT9xKGkwDkWwQIJegOl2hSLGGEJbSMMfeys\\nIZ+DoVA4pMInbmrzRqFB4Q1BjJfYN4o/+sVOXe6uVoRocTiRw5MxWpp8av95g4Yf\\nvboV7SaNTXwtdlYI5Apcz+ykMfV5dwlwbVEJzg6PYQ7JCELiq+3+W5PLzF3hR6Gd\\n2XHBm1E5djJXacpYbiIYY94nh2MiccP1ZrIfyc6mwzk884Jemmrc2H9/kuF7/hMP\\nQDHWm8WHWsu1DIykSz4pcITwCcI+YRoMu0echDTE9empUywQrhBs/OWkSDxVXwXC\\nppMqs6AUcXeuTcg9fUleylvjTvOpSzhAGLgdJQIDAQABAoIBAHlZebYNrflpb4qI\\nvO43RTMc4MQiOODuG8qlsGJKY9mG0AYRbcaWsod5Y9pvnWhVf8w336RspmAxEbRj\\nYf+tzZLKAftq+qRjfMO/eQPHuhEE62oTetJINPnDp7HaDFFpliVMDUpnVPsdStqv\\n2xQRbMjzNWz7ucmCi4q/dyRNrz1smmBnc233JEY2hRhGXKxw0khaXE6eq3RhviOA\\n8KBHuOsMnIQ6JZN/1pIGI2x1OWz8XJ4UoSBX7HGCHSO2Q31lC2H0GrFHOLD3kQmQ\\nngjlX7lffgL4YdtnY9wpMAzGeC70RY33tF/MdNSQRVk2RTUhHAXHyR4b0zsQpItR\\nr2JlAiECgYEA7USx0RauXZH5WKWyk1NQBoL4TuvRlEpB8FErBYyyZQndq247LiTB\\nUaQXbaLxb9MiQNVUb7cMMIhwsdF3N1Vay8vLzcdXydr/Q+LoS1vduCYdh+QkJXUt\\nwTLVPsgTkFeOF3ULqkgDC6zTnq6vVdYUGAoAEatDPOVK4xo9e9HJlA8CgYEA6QU0\\nSr+vvicUDzTcnDEUYoojBmrKtiT0y/rlb4mFMwcXXBkMOjRTo8eTaRLKXSam3DSx\\ngNtXDtiOLvtf5dvXhSL2BjKIylwH++AfWWqDXB4G1g044nGIoeEj2SDPJsGZPkmn\\nxHLNJ8BMQIaxOGjBNUDCt+ssGza+aVdBb4uyt4sCgYEAlieqLLug36CY32wFhkzs\\nUSKjiDafLKyN7EtB4cI3x8+llG8vTrV+Dm+9T+oVx4IjpEodpJGASlqejzoTq1X+\\nHwk7UmA8g4dvkoPQJJjfyUF94NkVswrkSOcloxS1pNx0FQ5CsqHeI45dYogEeFsB\\n3nC9uHDdHXWyneSmUmzimCsCgYEAl5AGAjSJ17HNT1K/x2v46VsWCv99GFoTS3XG\\ns/SLybPsEsBL/rO4T0fpbqeFLm+MiqBPcBO6nXJnkNF5/6UtmnAx+7f010JjAwY0\\n/dDU3h69rY5uGINmLnyk935qnre/uA7qa1GMdTWTo0i4jos8WCnmPQBe8Nh7o0LY\\n0ffYZ58CgYA9xh6aNtD5QCNNK5O8IquexjpY+jRa/QJiEY/uspoJ+KlVnYbYxe2h\\nH5E9KBIvpAMkXYFbZnZ+UJM0n7Zf6kXscG3SryJqzOGoWQq3U5Im2sjmA7DWNEZQ\\nyEugEhph3N2xaOYtvR+RUqF+rMXKDuyVoKbVrrXwUyBAbmJT9qgwaw==\\n-----END RSA PRIVATE KEY-----\\n\",\"name\":\"ce-PNKVeRZdYIxy7Zz\",\"snis\":[\"apiok.xmquhu.com\"]}', '2026-04-30 08:57:12', '2026-04-30 08:57:12');
+INSERT INTO `apiok_data` VALUES ('98', 'certificates', 'ce-EVGDsmlLcFgXk1X', '{\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIIE9jCCA96gAwIBAgISBfY1tk6By95TcD3LWTq3c1CPMA0GCSqGSIb3DQEBCwUA\\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\\nEwNSMTIwHhcNMjYwNDI5MjM1ODQ2WhcNMjYwNzI4MjM1ODQ1WjAZMRcwFQYDVQQD\\nEw5va3gueG1xdWh1LmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\\nALMz2CO0j9RAsdhiqk9Gi7o32V5NbRp9IftqIDaD2ghEmpfYlVTVexguyMvborOF\\nkxo9d+h5/pt8cA3qGvJhzHo3FbtSg9UYBiTgqE+cRfV+8zl+BxicQTgt/FwL/rft\\nQyYf6Vt9C8yKW5izRhU7k8trYqpLGgMdO9iElkQv5O2B8CJ/63aY2UjxXCeQMDJX\\njudkfVFesoTILlnthQlQDBmPKcbwuLWRCxx+agSH1eE3JjcbrjbV1jhZJ8NUIdo9\\nb0Mhm7RpCp2TACv+76H3qcE5PkslbeBeGGZyAdw41NY8+c6c9Ky/Yt1RHaK+DvZJ\\nmT2u8yWyATl2PBfAWJ0KDpECAwEAAaOCAhwwggIYMA4GA1UdDwEB/wQEAwIFoDAT\\nBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRK2n0o\\nlXOwLJamRpLEFYGGrDmQZTAfBgNVHSMEGDAWgBQAtSnyLY5vMeibTK14Pvrc6QzR\\n0jAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAKGF2h0dHA6Ly9yMTIuaS5sZW5j\\nci5vcmcvMBkGA1UdEQQSMBCCDm9reC54bXF1aHUuY29tMBMGA1UdIAQMMAowCAYG\\nZ4EMAQIBMC4GA1UdHwQnMCUwI6AhoB+GHWh0dHA6Ly9yMTIuYy5sZW5jci5vcmcv\\nMTYuY3JsMIIBDAYKKwYBBAHWeQIEAgSB/QSB+gD4AHYA2AlVO5RPev/IFhlvlE+F\\nq7D4/F6HVSYPFdEucrtFSxQAAAGd2+PcTQAABAMARzBFAiAvx0aS5cHw4Ltc/hmX\\n4qS3kRQafome9oVjmYMRTcWtkgIhAL3omb1OdxmSzUDE/0ZSg8mxTNVYv8K7WER5\\nRoJTxTOpAH4AJuNkblhpISO8ND9HJDWbN5LNJFqI2BXTkzP9mRirRyMAAAGd2+Pc\\nGAAIAAAFAAuPdRUEAwBHMEUCIQD9213Ps/VzLLTtHp3AMUoHy8zMjMVmu4QWvAhA\\nkQ5MzgIgLfXPa+mXIREKDa99w4gHDTgl48tG11Q9c3uiHS4RC00wDQYJKoZIhvcN\\nAQELBQADggEBALRFfdoXCBjUn9cXZc+f5fEUgn+GEKecaZr/1iAInw60ekvbw70k\\n23xN8aSMi+2lfuCXh0xgkq1RShlxFRniT4kY2E7XHCSszzj++gKrLXRwpFJxqE5Y\\nwkrovrlcfMxcinhA42mwVi4NJJ0Sr12xOS7z8zVlWEACWc7uy6Q3SQs2Eejg0hs2\\nUrEdWpk8yX0tj4x1mXB0w+iaHBqH0OBKSaMiwamniWI1MV4811eSO+HhTnXbRkNn\\nO+m7Qyaeu5SWV3FlXEbedDyWtAPqJBi2gr+sKGk3QUmLZ9yK1yBfFCqVV2G6sQYB\\nkaJcsIZa0m8sB+hxGVA+5k6rW31YhMkR3ZM=\\n-----END CERTIFICATE-----\\n\",\"key\":\"-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEAszPYI7SP1ECx2GKqT0aLujfZXk1tGn0h+2ogNoPaCESal9iV\\nVNV7GC7Iy9uis4WTGj136Hn+m3xwDeoa8mHMejcVu1KD1RgGJOCoT5xF9X7zOX4H\\nGJxBOC38XAv+t+1DJh/pW30LzIpbmLNGFTuTy2tiqksaAx072ISWRC/k7YHwIn/r\\ndpjZSPFcJ5AwMleO52R9UV6yhMguWe2FCVAMGY8pxvC4tZELHH5qBIfV4TcmNxuu\\nNtXWOFknw1Qh2j1vQyGbtGkKnZMAK/7vofepwTk+SyVt4F4YZnIB3DjU1jz5zpz0\\nrL9i3VEdor4O9kmZPa7zJbIBOXY8F8BYnQoOkQIDAQABAoIBADxm+zF9yQUYEVoI\\nV7OE6dAIxyG8I0xMZUnjCZyWcMVcqmcIP71qf6U1D8V28K5mFaFAmswnYqRyGyr1\\nf8O3Jz8Cljafp4QKJvgDKXg8CnCnK8BzNF0dPfZ7uZYlDORd+sY892E5EuMMt7cO\\npk692CE2vvj7e3cVQXjHqAavxhAvradlVlTXlTCyulUBPCszFsILdbQMinFyTojF\\n4Em91qbwirAIZP8NYxjwUm2D49TgBWDvlZu6MA+rEiZKys9rJSlVM3+/lTC6tlyR\\n/aT08GdTIc2lV4+LAOX4r1k0y3PvKIxbmu6qcC2DPezqSAK+wLn9nB5j2epydhfX\\nrdI/7GkCgYEA1nWa0Pjik1X5MLKfznk1TCgPVj5YUknBpIlNBSr9vg4+owsuflmw\\nBccfUeKljA/pfInCl63vL9ZExtzIK5sZZKoVJeKRpjYHqG3u2EuJMjOzWpy7h13+\\nMERaE6jzzWF0o3Pcj6zgSWO/+M+ziWTiGeRYM6veJ2x0kEfpGRL2tz8CgYEA1en1\\nDZQyEOovmXBmsPyRJPNdUG3tA3kEi5ZOe9cE3Odf/YN4XwhjQXnz8zwp/DWGvz6j\\nnzMfNNwBZd43Bnf/KJuSJAl6n5L1KRIIRxin1vkktupuYgmKqja0FoIGye7+Gr8c\\nL/EvGZFyapx6WCx6lDlBuW0sOX+6HVtf3NlBFi8CgYEApeDTPZ20iuet1efjya1g\\n9yXpLvkMEaHxAJYel8e3+kBEXJIyhRJUHzP0Wr7m813/aA+aDv4/Co4+Jl7xCSFv\\nU7hmoSYNKDWUWMenPW+3j7gDmyuttTeTe7vyvFArO4mM0Ty1tf+uf7WC8C2fHb+F\\nTyeavWTLcUznIA4vEvDjGbsCgYAfaonT4bTsqQgul8RtL9q9O4Sz4EET5n0VZxDF\\nvVF4g/6kA9/0zQ2OuzNpwKdF5DKS+cccBW0K3VjTNiyMpajytM5kvoOk1fdtfbl7\\nf5J+zv5mYs2tVktoLjqKp7QJijEFipXAMMLDFYphP/Pz6Sxjgnk1m2QIWcrirt3I\\nWJvnfwKBgDPF/yBkNJ+RRR9tUvU5C5XWetrKWcnbB8EAVDTgdD7EZWFp56B097ta\\n9UN0cjczN/hZ9E3rE4D6zPGHBkZZu/TTDooNircZbESWq1y2BXGTv2BeZAYfLZTk\\nYLtZlQG2wwwuVHChBojniFfg+opsEHH2FSE3a5MGVAoU/pVjFEpz\\n-----END RSA PRIVATE KEY-----\\n\",\"name\":\"ce-EVGDsmlLcFgXk1X\",\"snis\":[\"okx.xmquhu.com\"]}', '2026-04-30 08:57:17', '2026-04-30 08:57:17');
+INSERT INTO `apiok_data` VALUES ('99', 'certificates', 'ce-nNXWXLM7OJkmf6p', '{\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIIE/zCCA+egAwIBAgISBjlyxGyDJf5zr6IqMWwv58TzMA0GCSqGSIb3DQEBCwUA\\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\\nEwNSMTMwHhcNMjYwNTA4MDA1NTEwWhcNMjYwODA2MDA1NTA5WjAdMRswGQYDVQQD\\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\\nAoIBAQDuMprj+VK/L8SknSEl9NTCY/JgwgIW2JzdYodpyBIq3ZtSvgnBIcTo9nGW\\nvpw276rnrWgk0dCmS3FoIxMLhkff+o/IhAFq8qLRBTV6Ik3dnVNaDncCLl96a//9\\n6t2UPjMwUC/E/shJoMBf7zoHJ0YfTycXQVZfHe0VT9U+sLVBc0g2eCq02M1uTO4R\\nBvScuf18pBic8wfy2EINpThE1UU3Vj8OuCjl2bmjhMR1X9L7mCnVSoFE2+W8pRcv\\n6y7yHqY0Ctd8KIp5ldWudcXt7JxeYcbNKfTrDu7DzU/bl28OMW41vsAb+Nsymonv\\ntsl4cZzt/fE1aIinJJS7dpjJOBHjAgMBAAGjggIhMIICHTAOBgNVHQ8BAf8EBAMC\\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\\n9nA3UF1v4u1ZVYRoU2woRPoAEYMwHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\\nBAwwCjAIBgZngQwBAgEwLwYDVR0fBCgwJjAkoCKgIIYeaHR0cDovL3IxMy5jLmxl\\nbmNyLm9yZy8xMTYuY3JsMIIBDAYKKwYBBAHWeQIEAgSB/QSB+gD4AHUAyzj3FYl8\\nhKFEX1vB3fvJbvKaWc1HCmkFhbDLFMMUWOcAAAGeBUpe0wAABAMARjBEAiBSvHrJ\\n3HNNxhHpuZPzchVwEAOW0yZWk0QgQTkpyUMRNgIgEa2BVZHVwaiVzZ8wZk8ecKzp\\npInh90mHztBLDbqiH+sAfwCoJsvjCsY1EkZTP+Bl8U8Z2W4ZCBPEHdlteQCzEjxV\\nJwAAAZ4FSmJ5AAgAAAUACf0o6AQDAEgwRgIhAKYVxj3vrugu6EfpHnzNAoSV0fPy\\n5XSnkal/FaW7g9uNAiEA3T8LFQFX/YmsHAPaR2Ffj/epCxIx+U4zFGT1Trtm1JUw\\nDQYJKoZIhvcNAQELBQADggEBAGQTWNrzDliMsQPlSRlWaGsbc893jm1TkuMVKfMx\\nMGn+b0W4KcVwHAI+iVEDS7td3TVsxtmyRD3tLl0FPb2tLleEfyq3vBU8dZ2nETbV\\nAZZylFBYyJPmOaCC8ianE240ujXlu10lCvvveb/xllY0qGCrHs89MsW7REFgjtzM\\nxHj+k7ebVm8fuf/xjIHpf4iXfl2GcUo0lDzqk/KOw9aMg338mNrJVMfsM8V9pE0a\\nsHSU832EeAxDwyTDhwZnyqzbgbog3qI8ZtaLng6R1gPPc7gZ0/mPYFOB7T3R47Eb\\nCnjpIvT5snqv3HUIDS3GqhGtUNjI4L3tY66QiE8BvAxx/O4=\\n-----END CERTIFICATE-----\\n\",\"key\":\"-----BEGIN RSA PRIVATE KEY-----\\nMIIEpAIBAAKCAQEA7jKa4/lSvy/EpJ0hJfTUwmPyYMICFtic3WKHacgSKt2bUr4J\\nwSHE6PZxlr6cNu+q561oJNHQpktxaCMTC4ZH3/qPyIQBavKi0QU1eiJN3Z1TWg53\\nAi5femv//erdlD4zMFAvxP7ISaDAX+86BydGH08nF0FWXx3tFU/VPrC1QXNINngq\\ntNjNbkzuEQb0nLn9fKQYnPMH8thCDaU4RNVFN1Y/Drgo5dm5o4TEdV/S+5gp1UqB\\nRNvlvKUXL+su8h6mNArXfCiKeZXVrnXF7eycXmHGzSn06w7uw81P25dvDjFuNb7A\\nG/jbMpqJ77bJeHGc7f3xNWiIpySUu3aYyTgR4wIDAQABAoIBAQCZ9L1mMkUIa6CG\\n4USGmutVRXJolZzyFUm2UbPCbF1JtXhqD4iQevohtQAP9d1UKK5nFg6lFbPtd/+x\\n1lG99inIm9OJP8EG1hLkVKCO81MutTwljgnfsAdoQhvwi3hyE43UYU+u3RqpdCxD\\nFYWFEB5jqC5U+pcP3XDagIINBfvxc4lydM3jKCEEqHTwXNdLlTg+Kft0IpDiW30m\\njjKJ/HH/19ags1qDyw2O8mAKfYt5z2uGHMYmLHU0Hbem+Fgaj+NhYlZZeMNsAlkl\\nV55Kwu9/iED5Z19JBdqb/CmhiDuir6CFyN/7XIlEfIZF5TOAxPYLDi6f6hd1jKtH\\nJUGlCYnpAoGBAPmEpDiMC3nKhRQBU6lpKt3FKXgcue60+19ME9amtB7lIY/vyr9p\\nke+c67uLxHnNGIcheufC5HqAkC0hpcK2f+MPd/YzZOnsrpQKuCh3YtINzrM/kX8g\\n1P7PfxmB052/BOIZLvPz5z49Ez1yQGPUGzPHouVy8OgkY8w+jA0o9HSlAoGBAPRi\\nrf8ITj3DZ2L5QwrYyAmPAoTnuatrDfHJRwO2IO6lWral2bVsEvv52KM0uAyuCvyE\\n04tlb+bDElKvIItetxy5pwZeaV3u8yGP6cJ1pHWDsttD6P4hduzhDVMgP71+LGB3\\n6HPBchhWsUE46dCemXDztYa723oNNGRPiasIYb3nAoGAQv42CWiwfBa//EsO52Fx\\nPPH+3Fz6HvlAtKl8ehlwKwtiI39CdHon0KnVMRmpuvoyJ7X5hdhx9+Ik07lBBDJz\\ny8cPcm8CHTyK8vydzV+gjL1gTgg3TGbISVH00ihlZOkwqnQQgzdtUuybCdhvKV59\\nnz1uoyRlQi7jDKeOesoQOHECgYEAzzJK6wsTqvHc2eETokKhdtk0/ZGprVgafoB0\\nIQVtbmfrPSfoKRT0E4aE0fqEgNuenPHQmULrWO7Svh+UrBUlkskkfxXUp7tLj40A\\nV8p+INQD9Drjc3LT7YnxTiTtZa9v2GpRPrMoFNKLfgzOz/1ngohdw1nKfvRrExEM\\nW2HD3MkCgYAM6zo2Ccl3oWHBU/tkn7QjLhKes5I8FyLXGVNTRdDqA09qKjwYJJz8\\nAKoErQ/buBYgp9w8jBGG1NH/rCgBLDG+aXOpTfn4osVNd6vaIyW8F4D6a0o/qLtP\\nkZlDQCiDd8EcqmQJy1dKeeIt63QnccvI7+WQr0Zr8YaMXBNxfoVi1Q==\\n-----END RSA PRIVATE KEY-----\\n\",\"name\":\"ce-nNXWXLM7OJkmf6p\",\"snis\":[\"opseasy.xmquhu.com\"]}', '2026-05-08 09:53:42', '2026-05-08 09:53:42');
+INSERT INTO `apiok_data` VALUES ('100', 'upstream_nodes', 'un-nprObeKpLG64q6x', '{\"name\":\"un-nprObeKpLG64q6x\",\"address\":\"127.0.0.1\",\"port\":9999,\"weight\":100,\"health\":\"HEALTH\",\"check\":{\"enabled\":false,\"tcp\":true,\"method\":\"\",\"host\":\"\",\"uri\":\"/\",\"interval\":1,\"timeout\":1}}', '2026-05-08 12:47:31', '2026-05-08 12:47:31');
+INSERT INTO `apiok_data` VALUES ('101', 'plugins', 'pc-1kUa75VFx2pTVUq', '{\"config\":{\"enabled\":true,\"uri_rewrite\":{\"type\":\"replace\",\"value\":{\"pattern\":\"\",\"replacement\":\"\",\"flags\":\"\",\"from\":\"/admin-api\",\"to\":\"/admin\",\"remove\":\"\",\"add\":\"\"}},\"headers\":{},\"query_args\":{}},\"key\":\"request-rewrite\",\"name\":\"pc-1kUa75VFx2pTVUq\"}', '2026-05-08 16:16:14', '2026-05-08 16:16:14');
+INSERT INTO `apiok_data` VALUES ('102', 'plugins', 'pc-8NZxzDiuDu88U8g', '{\"config\":{\"enabled\":true,\"uri_rewrite\":{\"type\":\"replace\",\"value\":{\"pattern\":\"\",\"replacement\":\"\",\"flags\":\"\",\"from\":\"/3721-api\",\"to\":\"/admin\",\"remove\":\"\",\"add\":\"\"}},\"headers\":{},\"query_args\":{}},\"key\":\"request-rewrite\",\"name\":\"pc-8NZxzDiuDu88U8g\"}', '2026-05-08 16:16:17', '2026-05-08 16:16:17');
 
 -- ----------------------------
 -- Table structure for apiok_sync_hash
@@ -51,43 +118,17 @@ INSERT INTO `apiok_data` VALUES ('46', 'services', 'sv-DQ0CASH03pMddn3', '{\"nam
 DROP TABLE IF EXISTS `apiok_sync_hash`;
 CREATE TABLE `apiok_sync_hash` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
-  `hash_key` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '哈希键名',
-  `hash_value` text COLLATE utf8mb4_unicode_ci COMMENT '哈希值（JSON格式）',
+  `hash_key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '哈希键名',
+  `hash_value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '哈希值（JSON格式）',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_hash_key` (`hash_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=2499017 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='同步哈希表';
+) ENGINE=InnoDB AUTO_INCREMENT=2499118 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='同步哈希表';
 
 -- ----------------------------
 -- Records of apiok_sync_hash
 -- ----------------------------
-INSERT INTO `apiok_sync_hash` VALUES ('2499016', 'sync/update', '{\"old\":\"bd0a57b3a6ce39f912f9babfa19404cc\",\"new\":\"bd0a57b3a6ce39f912f9babfa19404cc\"}', '2025-12-08 15:51:04');
-
--- ----------------------------
--- Table structure for ok_certificates
--- ----------------------------
-DROP TABLE IF EXISTS `ok_certificates`;
-CREATE TABLE `ok_certificates` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Certificate id',
-  `sni` varchar(150) NOT NULL DEFAULT '' COMMENT 'SNI',
-  `ca_provider` varchar(50) NOT NULL DEFAULT '' COMMENT 'CA provider e.g. letsencrypt, manual',
-  `key_algorithm` varchar(50) NOT NULL DEFAULT '' COMMENT 'Key algorithm e.g. rsa2048, rsa4096, ecdsa_p256',
-  `issuer` varchar(255) NOT NULL DEFAULT '' COMMENT 'Certificate issuer e.g. Let''s Encrypt Authority X3',
-  `certificate` text NOT NULL COMMENT 'Certificate content',
-  `private_key` text NOT NULL COMMENT 'Private key content',
-  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Certificate enable  1:on  2:off',
-  `expired_at` timestamp NULL DEFAULT NULL COMMENT 'Expiration time',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  KEY `IDX_SNI` (`sni`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Certificates';
-
--- ----------------------------
--- Records of ok_certificates
--- ----------------------------
+INSERT INTO `apiok_sync_hash` VALUES ('2499115', 'sync/update', '{\"new\":\"35c83f4455a8c694d08544d3fefac415\",\"old\":\"35c83f4455a8c694d08544d3fefac415\"}', '2026-05-08 16:16:18');
 
 -- ----------------------------
 -- Table structure for ok_acme_challenges
@@ -103,255 +144,71 @@ CREATE TABLE `ok_acme_challenges` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQ_TOKEN` (`token`),
   KEY `IDX_EXPIRED_AT` (`expired_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='ACME Challenges';
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='ACME Challenges';
 
 -- ----------------------------
 -- Records of ok_acme_challenges
 -- ----------------------------
+INSERT INTO `ok_acme_challenges` VALUES ('2', 'q8YUlWWfuXGl8jNM9hQoUm_F_WQQXX4Xr7v7it8aLto', 'q8YUlWWfuXGl8jNM9hQoUm_F_WQQXX4Xr7v7it8aLto.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-22 00:11:18', '2026-02-21 23:11:18', '2026-02-21 23:11:18');
+INSERT INTO `ok_acme_challenges` VALUES ('3', 'HFv2jCINyPBS9cP57l5X-J8qCL-u0-OfKWiUSVXcRng', 'HFv2jCINyPBS9cP57l5X-J8qCL-u0-OfKWiUSVXcRng.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-23 00:11:18', '2026-02-22 23:11:18', '2026-02-22 23:11:18');
+INSERT INTO `ok_acme_challenges` VALUES ('4', 'cMj_iNwAOExgObL-hRlPXPL1xBf_CVwZuGh6VL-uWGk', 'cMj_iNwAOExgObL-hRlPXPL1xBf_CVwZuGh6VL-uWGk.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-24 00:11:17', '2026-02-23 23:11:17', '2026-02-23 23:11:17');
+INSERT INTO `ok_acme_challenges` VALUES ('5', 'TUZ4IBxRW3h6jvZW7tv1ekVOQ5xkbLcm4vZSlp9evN4', 'TUZ4IBxRW3h6jvZW7tv1ekVOQ5xkbLcm4vZSlp9evN4.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-25 00:11:17', '2026-02-24 23:11:17', '2026-02-24 23:11:17');
+INSERT INTO `ok_acme_challenges` VALUES ('6', 'Qs8nKcLvq04ztNlvbYUDoPFqWhpqt_DURIEHtm_TTRs', 'Qs8nKcLvq04ztNlvbYUDoPFqWhpqt_DURIEHtm_TTRs.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-26 00:11:17', '2026-02-25 23:11:17', '2026-02-25 23:11:17');
+INSERT INTO `ok_acme_challenges` VALUES ('7', 'WSbuvJ0GZPQLQ49fLQPsZ_YE7LgNIXyeTdSae-A-I0U', 'WSbuvJ0GZPQLQ49fLQPsZ_YE7LgNIXyeTdSae-A-I0U.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 00:11:19', '2026-02-26 23:11:19', '2026-02-26 23:11:19');
+INSERT INTO `ok_acme_challenges` VALUES ('8', 'jvzIkE-Y67WNZffe9Sx57cd8au3arZHXmCv7fVe9feg', 'jvzIkE-Y67WNZffe9Sx57cd8au3arZHXmCv7fVe9feg.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 12:21:58', '2026-02-27 11:21:58', '2026-02-27 11:21:58');
+INSERT INTO `ok_acme_challenges` VALUES ('9', 'smpRx3_8uMQYhVkJoySFc-b__GA8OZPbCczrpKMYPi4', 'smpRx3_8uMQYhVkJoySFc-b__GA8OZPbCczrpKMYPi4.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 12:44:24', '2026-02-27 11:44:24', '2026-02-27 11:44:24');
+INSERT INTO `ok_acme_challenges` VALUES ('10', 'Xo3PxSI9Chxv5CrJ9Z_r_NViE4G1aQsEQ7Y53u5gnb4', 'Xo3PxSI9Chxv5CrJ9Z_r_NViE4G1aQsEQ7Y53u5gnb4.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 12:46:38', '2026-02-27 11:46:38', '2026-02-27 11:46:38');
+INSERT INTO `ok_acme_challenges` VALUES ('11', 'ksYfT_sFscbjNqhLjIpmSY5Ib2MbGEns1KN_5hQy99M', 'ksYfT_sFscbjNqhLjIpmSY5Ib2MbGEns1KN_5hQy99M.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 12:49:38', '2026-02-27 11:49:38', '2026-02-27 11:49:38');
+INSERT INTO `ok_acme_challenges` VALUES ('12', 'dkPlEmTzO5m6oAeLCu-DCM50FFmSswyC2cwu0dM8Mbk', 'dkPlEmTzO5m6oAeLCu-DCM50FFmSswyC2cwu0dM8Mbk.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 16:48:11', '2026-02-27 15:48:11', '2026-02-27 15:48:11');
+INSERT INTO `ok_acme_challenges` VALUES ('13', 'bRPBQtqoXfG9UDmTr4cj1-ZX75lqnYKzQzuYpiDlvnk', 'bRPBQtqoXfG9UDmTr4cj1-ZX75lqnYKzQzuYpiDlvnk.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-27 18:40:50', '2026-02-27 17:40:50', '2026-02-27 17:40:50');
+INSERT INTO `ok_acme_challenges` VALUES ('14', 'LRQaeelR3alJXwnTy_McA76COAiWcuaSks3bpjglc_o', 'LRQaeelR3alJXwnTy_McA76COAiWcuaSks3bpjglc_o.dPWMl6y-e5FHS6Jf9m4scINU04qadtaLWovr6-ek_00', '2026-02-28 10:33:38', '2026-02-28 09:33:39', '2026-02-28 09:33:39');
+INSERT INTO `ok_acme_challenges` VALUES ('15', 'h4AcLpiYA3ZSr8SLT36uXP-7IRAz_027xRDzh-v736M', 'h4AcLpiYA3ZSr8SLT36uXP-7IRAz_027xRDzh-v736M.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-28 15:15:52', '2026-02-28 14:15:52', '2026-02-28 14:15:52');
+INSERT INTO `ok_acme_challenges` VALUES ('16', '1eR9coYbwbKDIiMnR8BMu_lzJvtpve7_nTEN6EHFzwE', '1eR9coYbwbKDIiMnR8BMu_lzJvtpve7_nTEN6EHFzwE.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-28 15:16:00', '2026-02-28 14:16:00', '2026-02-28 14:16:00');
+INSERT INTO `ok_acme_challenges` VALUES ('17', 'AEVWdLlf65oo-9pLQtD4531cl6Rc9Rd1qZC6NKVbiXo', 'AEVWdLlf65oo-9pLQtD4531cl6Rc9Rd1qZC6NKVbiXo.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-28 15:22:35', '2026-02-28 14:22:35', '2026-02-28 14:22:35');
+INSERT INTO `ok_acme_challenges` VALUES ('18', 'wOGQxjaZ0KJWopI6nzKrSN4oeg9xtM6W5-yyMfQdQvU', 'wOGQxjaZ0KJWopI6nzKrSN4oeg9xtM6W5-yyMfQdQvU.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-02-28 15:22:43', '2026-02-28 14:22:43', '2026-02-28 14:22:43');
+INSERT INTO `ok_acme_challenges` VALUES ('31', 'hFLEVoCaTxa-q9V0kttmI8lPqfoqHmU5nIav64eFe04', 'hFLEVoCaTxa-q9V0kttmI8lPqfoqHmU5nIav64eFe04.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-04-08 20:29:40', '2026-04-08 19:29:40', '2026-04-08 19:29:40');
+INSERT INTO `ok_acme_challenges` VALUES ('32', 'AcWBW-rEHysXg8fHt0S0Q7kGJFQF4lAhGh_Y9YvJCkY', 'AcWBW-rEHysXg8fHt0S0Q7kGJFQF4lAhGh_Y9YvJCkY.9h8e00yPIUp_wbHVeT0W4WBGCvSKCAgX0wlsDGjRnig', '2026-04-08 20:29:49', '2026-04-08 19:29:49', '2026-04-08 19:29:49');
 
 -- ----------------------------
--- Table structure for ok_plugins
+-- Table structure for ok_certificates
 -- ----------------------------
-DROP TABLE IF EXISTS `ok_plugins`;
-CREATE TABLE `ok_plugins` (
+DROP TABLE IF EXISTS `ok_certificates`;
+CREATE TABLE `ok_certificates` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Plugin id',
-  `plugin_key` varchar(20) NOT NULL DEFAULT '' COMMENT 'Plugin key',
-  `icon` varchar(50) NOT NULL DEFAULT '' COMMENT 'Plugin icon',
-  `type` tinyint NOT NULL DEFAULT '0' COMMENT 'Plugin type',
-  `description` varchar(200) NOT NULL DEFAULT '' COMMENT 'Plugin description',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Certificate id',
+  `sni` varchar(150) NOT NULL DEFAULT '' COMMENT 'SNI',
+  `ca_provider` varchar(50) NOT NULL DEFAULT '' COMMENT 'CA provider e.g. letsencrypt, manual',
+  `key_algorithm` varchar(50) NOT NULL DEFAULT '' COMMENT 'Key algorithm e.g. rsa2048, rsa4096, ecdsa_p256',
+  `issuer` varchar(255) NOT NULL DEFAULT '' COMMENT 'Certificate issuer',
+  `certificate` text NOT NULL COMMENT 'Certificate content',
+  `private_key` text NOT NULL COMMENT 'Private key content',
+  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Certificate enable  1:on  2:off',
+  `expired_at` timestamp NULL DEFAULT NULL COMMENT 'Expiration time',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  UNIQUE KEY `UNIQ_KEY` (`plugin_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Plugins';
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  KEY `IDX_SNI` (`sni`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
--- Records of ok_plugins
+-- Records of ok_certificates
 -- ----------------------------
-INSERT INTO `ok_plugins` VALUES ('1', 'pl-dIhZpgqcCHQzNgT', 'cors', 'icon-cors', '3', '配置服务端CORS（Cross-Origin Resource Sharing，跨域资源共享）的响应头信息', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('2', 'pl-5xO9hzfcHJtpcQT', 'mock', 'icon-mock', '99', '配置模拟API数据，且请求不会转发到上游', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('3', 'pl-xZjvnLQfq2i5GTS', 'key-auth', 'icon-key-auth', '1', '配置身份验证密钥（key密钥字符串）', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('4', 'pl-0FnmajmiO7C8PtX', 'jwt-auth', 'icon-jwt-auth', '1', '配置用于JWT身份验证的密钥', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('5', 'pl-m5BzSXbCQfGzoQi', 'limit-req', 'icon-limit-req', '2', '使用漏桶算法限制客户端对服务的请求速率', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('6', 'pl-rLYsoeNVfPUMUAA', 'limit-conn', 'icon-limit-conn', '2', '限制客户端对服务的并发请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('7', 'pl-XZxaqOgRZsBKpoE', 'limit-count', 'icon-limit-count', '2', '限制客户端在指定的时间范围内对服务的总请求数', '2025-12-04 15:20:19', '2025-12-04 15:20:19');
-INSERT INTO `ok_plugins` VALUES ('8', 'pl-WafZxaqOgRZsBKpE', 'waf', 'icon-waf', '3', 'Web应用防火墙，提供SQL注入、XSS攻击等安全防护', '2025-12-08 17:20:19', '2025-12-08 17:20:19');
-
--- ----------------------------
--- Table structure for ok_plugin_configs
--- ----------------------------
-DROP TABLE IF EXISTS `ok_plugin_configs`;
-CREATE TABLE `ok_plugin_configs` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Plugin config id',
-  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Plugin config name',
-  `type` tinyint NOT NULL DEFAULT '0' COMMENT 'Plugin relation type 1:service  2:router',
-  `target_id` char(20) NOT NULL DEFAULT '' COMMENT 'Target id',
-  `plugin_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Plugin res id',
-  `plugin_key` varchar(20) NOT NULL DEFAULT '' COMMENT 'Plugin key',
-  `config` text NOT NULL COMMENT 'Plugin configuration',
-  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Plugin config enable  1:on  2:off',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Plugin Configs';
-
--- ----------------------------
--- Records of ok_plugin_configs
--- ----------------------------
-INSERT INTO `ok_plugin_configs` VALUES ('1', 'pc-cIvvY2IdZ1U9eQD', 'plugin-limit-req', '2', 'rt-Vany67MXLtgTHwG', 'pl-m5BzSXbCQfGzoQi', 'limit-req', '{\"rate\":1,\"burst\":500}', '1', '2025-12-04 15:56:32', '2025-12-04 15:56:32');
-
--- ----------------------------
--- Table structure for ok_routers
--- ----------------------------
-DROP TABLE IF EXISTS `ok_routers`;
-CREATE TABLE `ok_routers` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Router id',
-  `service_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
-  `upstream_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
-  `router_name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Router name',
-  `request_methods` varchar(150) NOT NULL DEFAULT '' COMMENT 'Request method',
-  `router_path` varchar(200) NOT NULL DEFAULT '' COMMENT 'Routing path',
-  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Router enable  1:on  2:off',
-  release tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
-  `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size (e.g., "100M", "1G")',
-  `chunked_transfer_encoding` tinyint unsigned DEFAULT NULL COMMENT 'Chunked transfer encoding 1:enable 2:disable',
-  `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
-  `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',
-  `proxy_set_header` text COMMENT 'Proxy set header configuration (JSON)',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Routers';
-
--- ----------------------------
--- Records of ok_routers
--- ----------------------------
-INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-DQ0CASH03pMddn3', 'up-BsYcvp9VClgXIX2', 'sss', 'ALL', '/apple', '1', '3', '100', null, null, null, null, '2025-12-05 18:58:50', '2025-12-08 17:03:37');
-
--- ----------------------------
--- Table structure for ok_services
--- ----------------------------
-DROP TABLE IF EXISTS `ok_services`;
-CREATE TABLE `ok_services` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
-  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Service name',
-  `protocol` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS',
-  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Service enable  1:on  2:off',
-  release tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
-  `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size (e.g., "100M", "1G")',
-  `chunked_transfer_encoding` tinyint unsigned DEFAULT NULL COMMENT 'Chunked transfer encoding 1:enable 2:disable',
-  `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
-  `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',
-  `proxy_set_header` text COMMENT 'Proxy set header configuration (JSON)',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  KEY `IDX_NAME` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Services';
-
--- ----------------------------
--- Records of ok_services
--- ----------------------------
-INSERT INTO `ok_services` VALUES ('3', 'sv-GdO0rkKOo5yJ9RM', 'aa', '1', '1', '2', null, null, null, null, null, '2025-12-05 19:22:32', '2025-12-08 17:07:08');
-INSERT INTO `ok_services` VALUES ('4', 'sv-DQ0CASH03pMddn3', 'bb', '1', '1', '3', null, null, null, null, null, '2025-12-08 16:13:03', '2025-12-08 17:03:32');
-
--- ----------------------------
--- Table structure for ok_service_domains
--- ----------------------------
-DROP TABLE IF EXISTS `ok_service_domains`;
-CREATE TABLE `ok_service_domains` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Domain id',
-  `service_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
-  `domain` varchar(50) NOT NULL DEFAULT '' COMMENT 'Domain name',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  UNIQUE KEY `UNIQ_SERVICE_ID_DOMAIN` (`service_res_id`,`domain`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Service domains';
-
--- ----------------------------
--- Records of ok_service_domains
--- ----------------------------
-INSERT INTO `ok_service_domains` VALUES ('5', 'sd-aAREmDKmlalbqcU', 'sv-DQ0CASH03pMddn3', 'bb.apple.com', '2025-12-08 16:13:03', '2025-12-08 16:13:03');
-INSERT INTO `ok_service_domains` VALUES ('6', 'sd-6lC97dnRG8juBeC', 'sv-GdO0rkKOo5yJ9RM', 'aa.apple.com', '2025-12-08 16:13:24', '2025-12-08 16:13:24');
-
--- ----------------------------
--- Table structure for ok_upstreams
--- ----------------------------
-DROP TABLE IF EXISTS `ok_upstreams`;
-CREATE TABLE `ok_upstreams` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
-  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Upstream name',
-  `algorithm` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Load balancing algorithm  1:round robin  2:chash',
-  `connect_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Connect timeout',
-  `write_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Write timeout',
-  `read_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Read timeout',
-  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Enable  1:on  2:off',
-  release tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Release status 1:unpublished  2:to be published  3:published',
-  `check_enabled` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Health check enabled  0:false  1:true',
-  `check_tcp` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Health check type  0:http  1:tcp',
-  `check_method` varchar(10) NOT NULL DEFAULT '' COMMENT 'HTTP method for health check',
-  `check_host` varchar(150) NOT NULL DEFAULT '' COMMENT 'HTTP Host header for health check',
-  `check_uri` varchar(150) NOT NULL DEFAULT '/' COMMENT 'HTTP URI for health check',
-  `check_interval` int unsigned NOT NULL DEFAULT '1' COMMENT 'Health check interval in seconds',
-  `check_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Health check timeout in seconds',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Upstreams';
-
--- ----------------------------
--- Records of ok_upstreams
--- ----------------------------
-INSERT INTO `ok_upstreams` VALUES ('3', 'up-BsYcvp9VClgXIX2', 'test1', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:12:04', '2025-12-08 17:03:16');
-INSERT INTO `ok_upstreams` VALUES ('4', 'up-m00a4aXgZul43zU', 'test2', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:31:39', '2025-12-08 15:57:47');
-
--- ----------------------------
--- Table structure for ok_upstream_nodes
--- ----------------------------
-DROP TABLE IF EXISTS `ok_upstream_nodes`;
-CREATE TABLE `ok_upstream_nodes` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service node id',
-  `upstream_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
-  `node_ip` varchar(60) NOT NULL DEFAULT '' COMMENT 'Node IP',
-  `ip_type` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'IP Type  1:IPV4  2:IPV6',
-  `node_port` smallint unsigned NOT NULL DEFAULT '0' COMMENT 'Node port',
-  `node_weight` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Node weight',
-  `health` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Health type  1:HEALTH  2:UNHEALTH',
-  `health_check` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Health check  1:on  2:off',
-  `tags` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  UNIQUE KEY `UNIQ_UPSTREAM_ID_NODE_IP_PORT` (`upstream_res_id`,`node_ip`,`node_port`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Upstream nodes';
-
--- ----------------------------
--- Records of ok_upstream_nodes
--- ----------------------------
-INSERT INTO `ok_upstream_nodes` VALUES ('4', 'un-RTjg5YiOqd2jFVH', 'up-BsYcvp9VClgXIX2', '127.0.0.2', '1', '8080', '100', '1', '2', null, '2025-12-05 18:19:07', '2025-12-08 15:58:03');
-INSERT INTO `ok_upstream_nodes` VALUES ('8', 'un-rmxmDAvLlJt7dpe', 'up-m00a4aXgZul43zU', '127.0.0.1', '1', '8080', '100', '1', '2', '{\"123\":\"456\",\"789\":\"123\"}', '2025-12-05 18:50:36', '2025-12-08 15:57:30');
-INSERT INTO `ok_upstream_nodes` VALUES ('9', 'un-tPdCAkBvo9xZOwz', 'up-m00a4aXgZul43zU', '127.0.0.2', '1', '8080', '100', '1', '2', '', '2025-12-08 15:56:53', '2025-12-08 15:57:30');
-INSERT INTO `ok_upstream_nodes` VALUES ('10', 'un-PiXhYWPg81UqbNG', 'up-m00a4aXgZul43zU', '127.0.0.3', '1', '8080', '100', '1', '2', '', '2025-12-08 15:57:30', '2025-12-08 15:57:30');
-
--- ----------------------------
--- Table structure for ok_users
--- ----------------------------
-DROP TABLE IF EXISTS `ok_users`;
-CREATE TABLE `ok_users` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'User iD',
-  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'User name',
-  `password` char(32) NOT NULL DEFAULT '' COMMENT 'Password',
-  `email` varchar(80) NOT NULL DEFAULT '' COMMENT 'Email',
-  `role` varchar(32) NOT NULL DEFAULT 'admin' COMMENT 'admin|viewer|operator',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  UNIQUE KEY `UNIQ_EMAIL` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Users';
-
--- ----------------------------
--- Records of ok_users
--- ----------------------------
-INSERT INTO `ok_users` VALUES ('1', 'us-Ew2h6VglDSz5Jgi', 'apple', '550e1bafe077ff0b0b67f4e32f29d751', 'apple@apple.com', 'admin', '2025-12-04 15:25:01', '2025-12-04 15:25:01');
-
--- ----------------------------
--- Table structure for ok_user_tokens
--- ----------------------------
-DROP TABLE IF EXISTS `ok_user_tokens`;
-CREATE TABLE `ok_user_tokens` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
-  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'User tokenID',
-  `token` text NOT NULL COMMENT 'Token',
-  `user_email` varchar(80) NOT NULL DEFAULT '' COMMENT 'Email',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
-  `expired_at` timestamp NULL DEFAULT NULL COMMENT 'Expired time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ID` (`res_id`),
-  UNIQUE KEY `UNIQ_USER_EMAIL` (`user_email`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User token';
-
--- ----------------------------
--- Records of ok_user_tokens
--- ----------------------------
-INSERT INTO `ok_user_tokens` VALUES ('2', 'ut-fRxOwcPbZkePkrB', 'eyJlbmNyeXB0aW9uIjoiYXBwbGVAYXBwbGUuY29tIiwidGltZXN0YW1wIjoiNzk3NmY5YTIzZWZmYjA5MDAzYzZiMzdkMGYwYzljZmYiLCJzZWNyZXQiOiJGUF9WbFdWM292TXY1SHNnUkJFRXIzbzgwWEttOXFlbkVjc1dQWGJPQW8wPSIsImlzc3VlciI6InphbmVoeSJ9', 'apple@apple.com', '2025-12-08 15:56:21', '2025-12-08 17:08:01', '2025-12-08 19:08:01');
+INSERT INTO `ok_certificates` VALUES ('12', 'ce-YxWMN0I8CLKWeSH', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/jCCA+agAwIBAgISBVAe5cti/x0cjCnB9gzvrE+MMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTIwHhcNMjYwMjI4MDYyODA0WhcNMjYwNTI5MDYyODAzWjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDG+rduMPRZAkqto4txm1L2q8JEA5uPzNjVYWzP+Tm3FFZRyfVHY6pkw8G2\ngdWMXrMwhs2dHTELZPDtNfScNF4fVH6YMJfauP3Qwb2h5QGZr8pyvafeYmuLuFC+\nrEm2xYFz7tJAC8GKhny4yxmkDkigy1TUDNQKXMheNn4xWsNflhqwXAY7XjeH7i7b\nZaojjnWc0J/+gLhC2sYPawXK44O2Qm9RNXsNZsRaNHZeLWtseBTZ6QJkxe+Oq3mT\nNwS42U15OW3MROaj0HKxye4O+bSoJqgGGwSN3mVQHSnpEadUa+FAqGaK9OmrPkpi\nSnbXtu0SAypB47Fi5qrB5a4ld4XBAgMBAAGjggIgMIICHDAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nxLADFvaJZtaGZfpoxGK2l9oR6IAwHwYDVR0jBBgwFoAUALUp8i2ObzHom0yteD76\n3OkM0dIwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEyLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL3IxMi5jLmxl\nbmNyLm9yZy8xMy5jcmwwggEMBgorBgEEAdZ5AgQCBIH9BIH6APgAfgAai51pSleY\nyJmgyoi99I/AtFZgzMNgDR9x9Gn/x9GsowAAAZyjJFr0AAgAAAUAT62kLwQDAEcw\nRQIhANJXTPJ0UutvOF4dLwlQjHV7JsUp2dC3DFaENNeoIT9AAiBWRmVUgoPjQo25\nkzO6h9YQPa8rj+bXY7zfP36quXXqGAB2AJaXZL9VWJet90OHaDcIQnfp8DrV9qTz\nNm5GpD8PyqnGAAABnKMkYagAAAQDAEcwRQIgWggmuJXe4x2ddXo/S90IlIqiWWQ4\nQoAqcvPY9yBmgWICIQDBs9/WZ5azEeWMh0dD7b00xqJ8FAblYhk08DPY59zBEjAN\nBgkqhkiG9w0BAQsFAAOCAQEAAcdIrLOt4PfeD638Da+0K85Ie48Mk6yGguxEDy06\nX7rkRSGbHoSUqIxSIKkoDmCPnjvXQPyP3PDJvwO4eiMqFKuVOhfSXli6yknAX+Nb\nzrFTgBeslPvWB6mOt4iJukrCbIKzTW51BIP8wXtYFwpfmIpBhEp+zn3UXESaBMQ7\nuRTvF28aD7mMTQdm6mbMCDgL2wJrJmwJnN0ypCC478eYkSuZjW0Zjgu+9TQh1LgF\nr6sOwh1A6PjE5zbsWehn8oPc2czCemV+CorkoqYxVo5f8k3fRcE/G8yPrJYKDgPy\nrjJO8+lQRFzkwLPcGCvGg8aFikO6lZDFMh0xRFJxFl+s3A==\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAxvq3bjD0WQJKraOLcZtS9qvCRAObj8zY1WFsz/k5txRWUcn1\nR2OqZMPBtoHVjF6zMIbNnR0xC2Tw7TX0nDReH1R+mDCX2rj90MG9oeUBma/Kcr2n\n3mJri7hQvqxJtsWBc+7SQAvBioZ8uMsZpA5IoMtU1AzUClzIXjZ+MVrDX5YasFwG\nO143h+4u22WqI451nNCf/oC4QtrGD2sFyuODtkJvUTV7DWbEWjR2Xi1rbHgU2ekC\nZMXvjqt5kzcEuNlNeTltzETmo9ByscnuDvm0qCaoBhsEjd5lUB0p6RGnVGvhQKhm\nivTpqz5KYkp217btEgMqQeOxYuaqweWuJXeFwQIDAQABAoIBAQCiBsqTSf3O9RTG\nbCRCcE6QWrCoHZ/w6seuidTHTZR3xnG7zA6VAU1hHB6DdRnlYb/cRgjsZTbopluh\nbYwwHlx+eplTaE5fZsAX24uFZyt0cDcUU+d8KPyWG5J0kWq9D/sn4lMGoAwLtxOc\njpXkh1UQykHbIk8P2Rm3zfvYSKZLEEnRW4OhCZMh/rZTwib2a6wTP3PmfyZ29v9A\nOxcxVhpWpjKkhNLEHpnsf5O+SQWbYN8j/frm3R7Qkwii8LRqm6fuWT4UP7Z1p4wu\nWj4QqtugtgkjucBUhY85QMcjmVSxL03JX7RP4JdEtlE16jGzu71gocgFHGEW4d2l\nPUz5hLO5AoGBANcfmJIRBslfbrUbb8F/M0UTda8kYpHHabSqGHNFFDYmAe/cPbZJ\n6QBx6Z2uxyN/RrD68uGvifWhsd3Gv1lqdyjky8AfJ6DWpg5BEGp3GBVR2/S9kj7U\nqWKXdu+kys3iW+AemwdLkLGSrDP5IFaQfk0aRpxfIOYb42jrmUS1jzrrAoGBAOzJ\n0DgEZozBg+9wTtBlGV8ckdoiJTnmcBuFc54GJOc/hkAkUAdD/Qf2fAZVq+9QM7Wb\n1egKf0VgFge5HoiC9+oG3wCNfjywpt4G8ooc6LYHfL52LcgLPzhR2531GpI060/U\nkpGb84Vju6ZP261BLfhWYIPCe/+AcrqQct+pXj8DAoGBAIvh8LyyM56H3p4HXDEP\nPFBjaffcCfhPGe4vWLzDo3PeXQ4SQVKiVs9CQy2Uc8siPN5iH8Me+O9vGBBk5xIG\nh7tgoxinaYZNbScBqeIA1PkwBH3tMwaGFCqW4PDNUE52LVXbsOUaftjoze7xxNRl\nGquaNWYC+YqHgeU8paonAR7HAoGALFMq8xF/0OF4vR2c403JjhBfDSJPLaOBYOV+\nWxpzVgaCLwedI38Koq71UIpBAS9WPqzJQgKVCHuQJCn3GT7LAbf/jq7t7pZy5iUO\nyePXfBuyskSVFVlloDlSjyMOskfNtMfqF+/Fija9LcjNKoWFAXPJ5WBGrfFxiJL5\nrfyac9kCgYANodC6K1FTMkxeQjGA23ieeIiIASG21iG/tNfYqJXyQTrUEPuFfm2l\nVtuyOXP3xSLpqFTrVf73e7x6mgIurx9meIXdDPerazdnJTvUARKPi63S9NrsSLtD\nssiN/LWfejrUnRaQUEpXA/Buzp/yfZN99H6NUncR0erhqfM6eLieLQ==\n-----END RSA PRIVATE KEY-----\n', '2', '2026-05-29 14:28:03', '2026-02-28 15:26:37', '2026-05-08 09:53:42');
+INSERT INTO `ok_certificates` VALUES ('13', 'ce-YN9hd06psw4Pz6G', 'apiok.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE+zCCA+OgAwIBAgISBSjLu1ceiaujLd7OARDC4YB+MA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwMjI4MDYzMDAxWhcNMjYwNTI5MDYzMDAwWjAbMRkwFwYDVQQD\nExBhcGlvay54bXF1aHUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\nAQEAspRzx15fCPU2WICWPefXHrNCiE7EuRWfl2US9B2ba+utftJQwQqqOe48rh4X\n1B0RvNa+5QaOlY0vFKC8SiCI9juutFDVlSzCo3rDNDPs3D7LKA1taP/sPmHgyYtX\nZvjznWTUa5p1rVkO2lIvzkRvWQQPmV6lpifA10wSBL8Xmc9UILQwf+ZWbhwuTcnj\n7NZcu/Z72hMD9mjEE4NQGV1xsGMLTNUuBR9mZJ8QbeHA8ZDrO6Mq1NM2qu/kHeBR\nItwgVaXeSP/CRqFV8lOPKREp3u/C7KAlId4UUZtQfVNMrjN9anNPhabCfDH9aMjk\nw/QPbddhN5A/JoHZFvhVJCr83wIDAQABo4ICHzCCAhswDgYDVR0PAQH/BAQDAgWg\nMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFFi9\nh98RWM15vWxkWldzBD4mNksKMB8GA1UdIwQYMBaAFOernw8sM6BT015PeMiyhA47\n1pIzMDMGCCsGAQUFBwEBBCcwJTAjBggrBgEFBQcwAoYXaHR0cDovL3IxMy5pLmxl\nbmNyLm9yZy8wGwYDVR0RBBQwEoIQYXBpb2sueG1xdWh1LmNvbTATBgNVHSAEDDAK\nMAgGBmeBDAECATAvBgNVHR8EKDAmMCSgIqAghh5odHRwOi8vcjEzLmMubGVuY3Iu\nb3JnLzEyNy5jcmwwggEMBgorBgEEAdZ5AgQCBIH9BIH6APgAdgAWgy2r8KklDw/w\nOqVF/8i/yCPQh0v2BCkn+OcfMxP1+gAAAZyjJiHqAAAEAwBHMEUCIQDBAlSnTdZ4\nFsbdedHyKJ3SW33iq5ex+CwtPa8bBRCEcQIgA11BXu6SsFgmTxarDNkGFnazEmtC\nZl6SwGHIfznmCtkAfgClyXiSXVdGF4KHDdiJZgtcVWSLfQBA8uwHaFHRiGkZ9wAA\nAZyjJiI1AAgAAAUAM7FuvQQDAEcwRQIhAKyEIFbK/b1wDzPRm/0Gaggt4voByhUH\n4f3+Mn6CyNUPAiAaAP6eyet+yDcBCyI1jLjyY0xcqvM6Sd2e61zxsLJ5gzANBgkq\nhkiG9w0BAQsFAAOCAQEAQdOBb9kEuCvsO820MfKlgFa/fVT4GDOQ6Rvpoa9PeQnW\nrySL7MwDvGww3Hv9hdun6HqxMGJt/fbhrlw2Z++Qv4CFHUugjnRW2NPTjFw/0z7C\nkDo98k1gOC8lyS0BWg9La1xxU7N55rylopiNa7X42xUXQtqMecazoKUwMxwQCSP2\n8Blaw0RiZMDyeAR8cYPqYPjmbC9IXq0IHfsLqts+8/MnN4ubQ2e33LpLyUAkJqmj\nxkNdlHmMnSGBeOvZ+3d/Vb/YJyzbPOvaJXDL3fp3UDuDs9Lu29kIY1VIVmQrTRA6\nKk0NCMcHgH3J0wlwCViIskD6psgUMTRZo9Tovov0fw==\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAspRzx15fCPU2WICWPefXHrNCiE7EuRWfl2US9B2ba+utftJQ\nwQqqOe48rh4X1B0RvNa+5QaOlY0vFKC8SiCI9juutFDVlSzCo3rDNDPs3D7LKA1t\naP/sPmHgyYtXZvjznWTUa5p1rVkO2lIvzkRvWQQPmV6lpifA10wSBL8Xmc9UILQw\nf+ZWbhwuTcnj7NZcu/Z72hMD9mjEE4NQGV1xsGMLTNUuBR9mZJ8QbeHA8ZDrO6Mq\n1NM2qu/kHeBRItwgVaXeSP/CRqFV8lOPKREp3u/C7KAlId4UUZtQfVNMrjN9anNP\nhabCfDH9aMjkw/QPbddhN5A/JoHZFvhVJCr83wIDAQABAoIBAF16CbTFeFeXC9B9\n1qcm8Vr3mI8DNERxxi0YUjiIOu/d2N42tuCldX+HbinyRKTaZouDmT8HFKHB2nAg\nxw7CQw8pJITsfzBr0qKCQyXTPFv5Xpxjku7Qb9gjoee90Y1sKREtU2fT3V9U68pq\nFO4SsnpU/tlYSrtTucS45AGqCW+P0EtxGuMmt7WFGu4kfa7CvOxuXSYDXNphBxE5\niq0yIvQ9IJxgPDmaaXM6FFJskSEq4xU5xhsl8IwrNQXEYgExz+2fb6kFSgiOOoKd\ntdQUsPcK2OIWYlD17bT/VEXgxllC2Z9A+e2zi8aXf82V8AxcnPM0VqTrIbLf60tP\nFLw/y0kCgYEA3ay+u4zllNps/mRMWxrnw0js/3HRsvaUIRT79D3sgsBCd6R9oeIQ\ndWX3V553Ww36KxlZzPbPDEb0BTsJy1MzTT8bDFbCIpkCiTCEunrNMqU9pSmjC1cB\nLrvN5kW3gzfEpO4Y64PVkvavCI2WVnakjrUI21uTcowuoP0Rh65VQYUCgYEAzjtp\npwkQoT9pe/122XFTxTzlCtsCWV3foCYv7eRnq9rlWxLJrIZ398BAAwsIu4fBbxkf\nrciNymwifMyxnXKtsG3ZthINuMSnrf93+rBKmXny82PoSPAPu8+RsNVAumzsoF4B\nl+dMp/UQ4dlEQnODcl2Pm6IFTUVLCBQXzQKUoBMCgYEAugVAeXqfHe6+ECxytvE5\nE/OajjIhWyD45VoKpMdiNcbJAEWU98gRL7NFgM2GM27jRE+dwBZNYWwZUlpcubc0\nEdqnBA+6EfZ83ktM1oA+ugVYWcU7AUUdxO3stxRCD2c5KX50gw66pv1DnNXUFvKw\n3OCmcg3DChkA+C/mCgoNmVECgYEAy7LrXE0b2+kia5GjPostTvgi02IXI+YQ58JQ\nPQ0JSTngqOAZywrWnCOMFnVjnrcsXGvYWnJperLsLZCRLw8Cd+1IyQlz/Dhh1v8q\nprZSON23Fqhr2v8iy0LuiFdao8jKwGuZ70xK7uqkTi+nuGsYPnIjUnnp+rSis8wE\n5j3SR3kCgYEAhb6uf4kEpLLNNNseRZqrDhlN4Pb0EhHJIfnU22/GP02AFdxAPZ8I\n9iwlBGeJKUKkU1j2i0b7FSSDves/1kqlMMk2yzZAlct0MpewkOC14eWivEou+St+\n2YhxGX3N76xb0Hy0SwWLKwnQ5QBkeciIz0YqF408pOv8HTbVnBbMIZ4=\n-----END RSA PRIVATE KEY-----\n', '2', '2026-05-29 14:30:00', '2026-02-28 15:28:32', '2026-04-30 08:57:12');
+INSERT INTO `ok_certificates` VALUES ('14', 'ce-ShUZcpgra98PxnL', 'okx.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE7jCCA9agAwIBAgISBbaJ5HTJuEPbQwatHwav+M91MA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwMjI4MDY0MzUyWhcNMjYwNTI5MDY0MzUxWjAZMRcwFQYDVQQD\nEw5va3gueG1xdWh1LmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\nAKqVh7l//rI1k8Nf4zCqyVKccRBxFYzi96iYvRlNGgSiZzoOloe/YGSHFF+V9Y/3\nYaLCeoqo1V8jqSCSY0eUkHG0wUEmPL/1tlbD+MS62p+b6NMQ6em5v54V0UGEKYgK\nV6ynMFZBnjkF7b+L0dPuislY7aHkHDKqDAxGLR3NxKQWwX+mAMPlVbocH8Q507iA\ndxhI4XLsbxjfM88MHojuLihu5azQ/0a+rxOw3SAByQa2Yhyy1/Cj1Pi1MjP3pmmA\n2q/ylOX/RqG9J6ZqxbSmDae6f4gNUZvjfS7KGgaDbIcxL848RGZHCBGMGjKVmqvF\nSqYcTaHs5M3xBAWkqyPReN8CAwEAAaOCAhQwggIQMA4GA1UdDwEB/wQEAwIFoDAT\nBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRlIULb\nx2Ql3jzVpbVHJnCCruO71DAfBgNVHSMEGDAWgBTnq58PLDOgU9NeT3jIsoQOO9aS\nMzAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAKGF2h0dHA6Ly9yMTMuaS5sZW5j\nci5vcmcvMBkGA1UdEQQSMBCCDm9reC54bXF1aHUuY29tMBMGA1UdIAQMMAowCAYG\nZ4EMAQIBMC8GA1UdHwQoMCYwJKAioCCGHmh0dHA6Ly9yMTMuYy5sZW5jci5vcmcv\nMTE4LmNybDCCAQMGCisGAQQB1nkCBAIEgfQEgfEA7wB2ABaDLavwqSUPD/A6pUX/\nyL/II9CHS/YEKSf45x8zE/X6AAABnKMy0TQAAAQDAEcwRQIgeti9uOPEFWNulc/m\nrxofrU5Y0dd1It8buB5Lxxz3aU8CIQDrY4J4m3chUsbZwy76Y9BHyBY1qZxwNrwY\n0L563XIt9wB1AA5XlLzzrqk+MxssmQez95Dfm8I9cTIl3SGpJaxhxU4hAAABnKMy\n0QQAAAQDAEYwRAIgbUN6pB41JUWNnjLpr4uinM7vNDhttRd84bEy5N0l8w8CIAMS\n/UxfAwHBBZR06+aT5UVGUOfSndOeuUJvkoCzKZrNMA0GCSqGSIb3DQEBCwUAA4IB\nAQA4jUazFchhMOzi/pPBIjselYFhL/mkhWaf4+3IM3WqF2jo8X+nHqva4IDbQbCr\njOw6bG9HuV2DfAcOBb3GNhYNJcmyY6Okr4PRRHgDCCLJqOhTqBBU6zZMq1VIGnaf\nGVrJY6AWVxRZDjFOQJIMg4djPyNdt/DJhrAs/mBvklMI1XQOlPXDpgI3KA63ynU2\nN3we+tRij4F1m3TPoQIYtfHaoMTnoh+xB2YGdt8NKKaGPG9eFSdDORdRAAIu/pmG\neJwxrnFzE3EfoeU0bDFXOhPI9anUrpwQtUekpBroRDxmdD3yFr6vcUXXqshbgMRJ\nz640LCDz9odNyjsDGjY1vLge\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAqpWHuX/+sjWTw1/jMKrJUpxxEHEVjOL3qJi9GU0aBKJnOg6W\nh79gZIcUX5X1j/dhosJ6iqjVXyOpIJJjR5SQcbTBQSY8v/W2VsP4xLran5vo0xDp\n6bm/nhXRQYQpiApXrKcwVkGeOQXtv4vR0+6KyVjtoeQcMqoMDEYtHc3EpBbBf6YA\nw+VVuhwfxDnTuIB3GEjhcuxvGN8zzwweiO4uKG7lrND/Rr6vE7DdIAHJBrZiHLLX\n8KPU+LUyM/emaYDar/KU5f9Gob0npmrFtKYNp7p/iA1Rm+N9LsoaBoNshzEvzjxE\nZkcIEYwaMpWaq8VKphxNoezkzfEEBaSrI9F43wIDAQABAoIBAHcPcvHIIk7kEkQ1\nMu8O5QFh65BcPXxeFhl4sdNs+xHtADuHXw1UR8UietfUZNadBWqCbuFEwdhrnWn8\ngoq9aKvUS2Zbd99Lcn7QvVsiR+FLAo/+qCTX3qRJ+gnOYuZuwY7iClzJ49NNDgm5\nXzSatAegqAtsmTnLcilG+cppiiw0CVId1rwARdYYwBIm1FqzsDqDKYJ5UxPV9coJ\nsW0SMnhDPQshR4Ybz1smeECcDqQ0Lnag00MWNZL2HldVmYm5nB4O5sqTN9XZyUrt\nFV//oFb/an1bN3GjP/Idds9J/PpqZOYoGkv8sO6Mp7y1vRXdUa0fRvUn/8s7KJiw\nMFaDlyECgYEA4L8fU2XU6vr1LzwR2hUWNk0pHmo6elE/a5R6GHzd2Kv7HELYymKO\nEu71IyVnxi5Ue1Aj+bNay5pVn523kb80xwJvYv4Wmr6xq29eZvtkVf7ExXXlU7qi\nxz+b+at6YvGazBxbEQJlqxaaYmZPhj5GqhtzebGNARTW85rVJSPp0ccCgYEAwk4/\ngYkkI+zW6xkdS0MKjp5mPtJeq4OB9E7ED28Xn49tKg3Y/C3EQF1ti5O2O8AFebd2\nfWsodezR5I7Rf4Iba7yVg3OOLAgyf5SILS0rBARAyplWm2LSUHirc54iWANOjiLs\n8JxmiPC0aT9dhQAF0kJpw86fJfUl6FLxO02qICkCgYB8wFoJFutbC7ZxY6ydGztb\nJPWAFoMjRlonwyEK2rTiAoS+qTRhEte+FronqimyTiFC2bc+cZoijiadFRTCaBpJ\npUZi8ptlhhhlCsqh60VEnshmuwxyr5SPePWBXvfuWCIOzmaWSHhawY8ss5HM+GCN\nJ/OvRyj3wrOWQQmzNf4iHQKBgQC8UdZfF6n9X6iVR0wLC7kJrR/vtzimBtlHDagc\nRVGiBgKJhc5N65WPxH1NkCZJFry30UZ4HAmk8Zgkav9FE7a73pUSSEb9ChzXZf/t\nuR89z1l0gtVb2JV6BNo3PoaOwvW58MOwGAWQp6pTb2SWaQU7Wb7kVjgNM+I/n1PK\nZGWEsQKBgAUR+JKm77O02wk73KgbIrv5SZiavpVnZOw1WccfkkV4ja4z0SKtVdP7\n6hy1OpJRsFaNkbcwYO2/wVa3hMIiVU/62HNG1Kap0YdOrOV5iZ1uR6TvRaYIvK30\nQRjOij6TK6tDVIfRKSqIsMW8TR/+Vh6uI5HJvV48Yrnuez8a1fc2\n-----END RSA PRIVATE KEY-----\n', '2', '2026-05-29 14:43:51', '2026-02-28 15:42:23', '2026-04-30 08:57:17');
+INSERT INTO `ok_certificates` VALUES ('16', 'ce-jDxfoIhFzjOJqY7', 'api.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE9zCCA9+gAwIBAgISBVRXJzyTIaDlOgDYv10olUvnMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTIwHhcNMjYwNDA4MDgzNTI4WhcNMjYwNzA3MDgzNTI3WjAZMRcwFQYDVQQD\nEw5hcGkueG1xdWh1LmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\nALm5vGwlWY/28CMwRJMCn8NJqs+yVwD6NgYOufCcwNYYnTzajLtjxAzMuqoJQH62\nfRc19wZUydZ1HeFiFF7Hyh4LMjiQ9CV9M4ZhXNpCEUht1OvZUOHp6DleD6iP9Uk8\n1Id2wsfQCF1Y63ljYEwpAkuPyfQUvaKR0hWxph9n5qBdAZafQuoIZomvr2uRkia1\n8WqapsGZ5qk24Lh/EDtvdZwuQkiPGNuwAGW+OeNmXNIs27rCg3+7QufaUKovrIDn\n8+IYCbYGXk7dmtB8kFnBKAyLZmyGta4nFsL2UqzZcmSPyp58XdIswVB0kdMJjNi6\noCRUtWMlXaEKtkTQoixAkjkCAwEAAaOCAh0wggIZMA4GA1UdDwEB/wQEAwIFoDAT\nBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRatZEA\nFrhn6m5PmPJlFz/FMixf7zAfBgNVHSMEGDAWgBQAtSnyLY5vMeibTK14Pvrc6QzR\n0jAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAKGF2h0dHA6Ly9yMTIuaS5sZW5j\nci5vcmcvMBkGA1UdEQQSMBCCDmFwaS54bXF1aHUuY29tMBMGA1UdIAQMMAowCAYG\nZ4EMAQIBMC8GA1UdHwQoMCYwJKAioCCGHmh0dHA6Ly9yMTIuYy5sZW5jci5vcmcv\nMTA0LmNybDCCAQwGCisGAQQB1nkCBAIEgf0EgfoA+AB2ANgJVTuUT3r/yBYZb5RP\nhauw+Pxeh1UmDxXRLnK7RUsUAAABnWxxARYAAAQDAEcwRQIgPjf7yxKqYZDfII/A\nbsKqOP75srhCXaAGqA1krvpqMdICIQCQRHDmNfzk2brXoZniBL1QCS60+Mx/Kcht\n6Sa8wyd3HQB+AKgmy+MKxjUSRlM/4GXxTxnZbhkIE8Qd2W15ALMSPFUnAAABnWxx\nAWEACAAABQAGFHFBBAMARzBFAiBC8M8dbvMi8wKz0d5gtbML/xsjWyglQ25s+M+f\n3rGvawIhAJJKROd796IdQGrSpJHClmPSCUgQDLXcP9OcZWeCWSE6MA0GCSqGSIb3\nDQEBCwUAA4IBAQCTpCTMgF3pf760HKncKwDD0HrZdBzkBV2LcefS3DjHOSRdhuk3\nwvbCdgC5XR7jmL5RXQRMM2ZmR6Feh6Iow6jMZvGo9y9f5gj1ZEEKiJy91JMZHrPc\ncb5pQOCl5eZnGvBkvEb+4V3/cp204aRgnvQFENa0pRmuw3BlLQrGOAn/eUGGSfub\nefeKQQ8pHxFg8cgylj4uAi9bVOF0BbVYzkqle9mT3f/5G3BtRYgkdho3YucmPTnU\nElgFaw6rIYnvMpjOxRJTc2fFgioVTHcfNrlOLzwOzMHts0jpHPuIWv0x/6Xr+T/B\ns3P/bUxkOJfQvs8rMOoIktfNoA0BryHz8U6U\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAubm8bCVZj/bwIzBEkwKfw0mqz7JXAPo2Bg658JzA1hidPNqM\nu2PEDMy6qglAfrZ9FzX3BlTJ1nUd4WIUXsfKHgsyOJD0JX0zhmFc2kIRSG3U69lQ\n4enoOV4PqI/1STzUh3bCx9AIXVjreWNgTCkCS4/J9BS9opHSFbGmH2fmoF0Blp9C\n6ghmia+va5GSJrXxapqmwZnmqTbguH8QO291nC5CSI8Y27AAZb4542Zc0izbusKD\nf7tC59pQqi+sgOfz4hgJtgZeTt2a0HyQWcEoDItmbIa1ricWwvZSrNlyZI/Knnxd\n0izBUHSR0wmM2LqgJFS1YyVdoQq2RNCiLECSOQIDAQABAoIBAHSEFLSYHf8WgYLh\n9jNwcwBWSAXzMWgYkSnttTNBdC0c1hBmX+Hz7fvFuNmR4ldcb0/PeEENkm6rnOpX\n2MW5e5Crn38jWTfnuxp0HIeE6UjSNsEb3gVM9HaBDzvFzLF8qyytEfe/CHBfp6LI\n+JHvLFRxSdaJ6IqEBxO7FqgfS+2QOaeTSNcYvUYOVZDoTVhMo+AhncHaba3G4KwE\nnLMFjPXUIsibcOlPpQVGn9OEIYM3MjsZdPBkZgVZjDTTuDuOa7PvHQrz8G3Hzaua\n4G395FcgKv/4TmodNEv5s8nTKkXcs+iyhKH+Am8VxhtLvvXWwQXQ7guM9meGXVph\n1js8WQ0CgYEA54tCtzKs6j6P6aKKikVT+2mvmBy6TjJhTgBz2qbOTymJ/ksE4mS1\nOSTdqQnYJG9BkvW4tB8JqriItEyjdH/JnJfxM3frGWYUefxqbvXtZBD1xdxoSxBZ\n+eow7EkGtYddQp6F8Q4bx6zHDwjYyLYr1ny4bxag4S60zTLl3LcDSpsCgYEAzVeW\nADEcm9Ad9osBuWrU1NfO5U3FR4G7uXEZFWRl3+ZgysaT5dpE5upU+YPvofjg4ImK\nWTHTQhy0VXAPNDeLxN3U3bBi/ThIixLkZaOFjAaQk6eaYFC1NPK8P6IgDprEhiK6\ndlOWgst1CsmICmDGLDjPr+o7r9fEBP9EiLf26bsCgYEAriZkC34l6BkeDM+f+9eh\nDtuyomoZBm+GGDDm8nG7gnbvvz+VcOHmHBDKVzV8SAsV+v6t6WvezXT1/QYXeqwS\na6EsXVW4keXhSM69DrAR2M2YzTS1jJ/DzOCD43QZg7dIQa8RdvjxlAEzxu8UfgHm\nfvBXl9YhMrz6Z8v8b0GHTDkCgYBVtZhTziwN0WmgTddTaIcbrFScm8Cbn0gXGGEK\n79QiB8wg95AmIdwesnLzjyGH7xUWQ/KuVkDC2K5g9xwxhHnfm2RNgGFhJowJGMKi\ntgV5NAhGyW+DgkyQpDz1JpvQ3MLo5jgESdGKGJhq/0G8azZsoO33lIKDXEFigJY/\npuH2HwKBgQChnE0fuSdhoPGgkfWMajs4cxSJLjxR1vRuy66Ti3Z/aTOWOcuiqHgD\niEQDdobby0wIGNRDUPxD9AbGic4Z/wzGdy2r6s5LmloCJPqpNpNr7P8SsgWwC6VW\nwKH4v4ysR4la7ZePvvae9VnKiAZf4Ky/D78Rcfrgc7n6bKGaA6qR0Q==\n-----END RSA PRIVATE KEY-----\n', '1', '2026-07-07 16:35:27', '2026-04-08 17:34:00', '2026-04-08 17:34:00');
+INSERT INTO `ok_certificates` VALUES ('17', 'ce-PNKVeRZdYIxy7Zz', 'apiok.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/DCCA+SgAwIBAgISBc+bGqQoXpJhcwq2H+OKt3F6MA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNDI5MjM1ODQwWhcNMjYwNzI4MjM1ODM5WjAbMRkwFwYDVQQD\nExBhcGlvay54bXF1aHUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\nAQEA1/hYpgJdJntrFpT9xKGkwDkWwQIJegOl2hSLGGEJbSMMfeysIZ+DoVA4pMIn\nbmrzRqFB4Q1BjJfYN4o/+sVOXe6uVoRocTiRw5MxWpp8av95g4YfvboV7SaNTXwt\ndlYI5Apcz+ykMfV5dwlwbVEJzg6PYQ7JCELiq+3+W5PLzF3hR6Gd2XHBm1E5djJX\nacpYbiIYY94nh2MiccP1ZrIfyc6mwzk884Jemmrc2H9/kuF7/hMPQDHWm8WHWsu1\nDIykSz4pcITwCcI+YRoMu0echDTE9empUywQrhBs/OWkSDxVXwXCppMqs6AUcXeu\nTcg9fUleylvjTvOpSzhAGLgdJQIDAQABo4ICIDCCAhwwDgYDVR0PAQH/BAQDAgWg\nMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFHxM\nHo88v1+V6Kp91Ke8/INOLtgWMB8GA1UdIwQYMBaAFOernw8sM6BT015PeMiyhA47\n1pIzMDMGCCsGAQUFBwEBBCcwJTAjBggrBgEFBQcwAoYXaHR0cDovL3IxMy5pLmxl\nbmNyLm9yZy8wGwYDVR0RBBQwEoIQYXBpb2sueG1xdWh1LmNvbTATBgNVHSAEDDAK\nMAgGBmeBDAECATAvBgNVHR8EKDAmMCSgIqAghh5odHRwOi8vcjEzLmMubGVuY3Iu\nb3JnLzEyMy5jcmwwggENBgorBgEEAdZ5AgQCBIH+BIH7APkAfgBGr4Y9Oz7ln6V3\n3qgkXTaw2e0ioiP0YXdBIpRS7pVQXwAAAZ3b48baAAgAAAUABUGxzwQDAEcwRQIh\nAIpczy9yMgb4OykI4/FTI0Nm+aZeOEaU9Mw/ajruSHzgAiBNwtxhfoOCeecvp3CD\nmnHKFJXRVZ7O1WMhOvgO50dhzgB3ANdtfRDRp/V3wsfpX9cAv/mCyTNaZeHQswFz\nF8DIxWl3AAABndvjxmwAAAQDAEgwRgIhAIyNxMY7S/mSat54ClQ450yHhgDld9WF\nTFinsh0EhcJVAiEAr6Svp8jmpkfkUQTXk1q3kefTAhhPq6P47qjuIYzjCqMwDQYJ\nKoZIhvcNAQELBQADggEBABB+H7NNYY83I6AGPJ8lwujU9wuxvN9BYZ6pCrOIcVtL\nbEWqiqaaXNMhWm/06SCiPDayfIZMMiIym7C9aAyGpmhHtG1uHZRF3TzNWxZf0AIZ\nHhZzYJ3AVFlxogbAJ1rLmaP2Vl1pDavHOGUwtXCmOygMPCM6hJDZGJxpHf8bUpr8\nptJVn4o5vgsvLkne12ivchEYP59PpRzPRDVOx6W16jOMFODdFUo8ipUEcx6exCBi\n7U7gm6CGxI0msN1rk2jZyVUUpVW0attAdIHiO5lOsO38rpl22iJX2ByMLo2/nQwk\n3RfUisci+C81QcoPx9+UQJul4iIeMxCjIWxnaeuAbeE=\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA1/hYpgJdJntrFpT9xKGkwDkWwQIJegOl2hSLGGEJbSMMfeys\nIZ+DoVA4pMInbmrzRqFB4Q1BjJfYN4o/+sVOXe6uVoRocTiRw5MxWpp8av95g4Yf\nvboV7SaNTXwtdlYI5Apcz+ykMfV5dwlwbVEJzg6PYQ7JCELiq+3+W5PLzF3hR6Gd\n2XHBm1E5djJXacpYbiIYY94nh2MiccP1ZrIfyc6mwzk884Jemmrc2H9/kuF7/hMP\nQDHWm8WHWsu1DIykSz4pcITwCcI+YRoMu0echDTE9empUywQrhBs/OWkSDxVXwXC\nppMqs6AUcXeuTcg9fUleylvjTvOpSzhAGLgdJQIDAQABAoIBAHlZebYNrflpb4qI\nvO43RTMc4MQiOODuG8qlsGJKY9mG0AYRbcaWsod5Y9pvnWhVf8w336RspmAxEbRj\nYf+tzZLKAftq+qRjfMO/eQPHuhEE62oTetJINPnDp7HaDFFpliVMDUpnVPsdStqv\n2xQRbMjzNWz7ucmCi4q/dyRNrz1smmBnc233JEY2hRhGXKxw0khaXE6eq3RhviOA\n8KBHuOsMnIQ6JZN/1pIGI2x1OWz8XJ4UoSBX7HGCHSO2Q31lC2H0GrFHOLD3kQmQ\nngjlX7lffgL4YdtnY9wpMAzGeC70RY33tF/MdNSQRVk2RTUhHAXHyR4b0zsQpItR\nr2JlAiECgYEA7USx0RauXZH5WKWyk1NQBoL4TuvRlEpB8FErBYyyZQndq247LiTB\nUaQXbaLxb9MiQNVUb7cMMIhwsdF3N1Vay8vLzcdXydr/Q+LoS1vduCYdh+QkJXUt\nwTLVPsgTkFeOF3ULqkgDC6zTnq6vVdYUGAoAEatDPOVK4xo9e9HJlA8CgYEA6QU0\nSr+vvicUDzTcnDEUYoojBmrKtiT0y/rlb4mFMwcXXBkMOjRTo8eTaRLKXSam3DSx\ngNtXDtiOLvtf5dvXhSL2BjKIylwH++AfWWqDXB4G1g044nGIoeEj2SDPJsGZPkmn\nxHLNJ8BMQIaxOGjBNUDCt+ssGza+aVdBb4uyt4sCgYEAlieqLLug36CY32wFhkzs\nUSKjiDafLKyN7EtB4cI3x8+llG8vTrV+Dm+9T+oVx4IjpEodpJGASlqejzoTq1X+\nHwk7UmA8g4dvkoPQJJjfyUF94NkVswrkSOcloxS1pNx0FQ5CsqHeI45dYogEeFsB\n3nC9uHDdHXWyneSmUmzimCsCgYEAl5AGAjSJ17HNT1K/x2v46VsWCv99GFoTS3XG\ns/SLybPsEsBL/rO4T0fpbqeFLm+MiqBPcBO6nXJnkNF5/6UtmnAx+7f010JjAwY0\n/dDU3h69rY5uGINmLnyk935qnre/uA7qa1GMdTWTo0i4jos8WCnmPQBe8Nh7o0LY\n0ffYZ58CgYA9xh6aNtD5QCNNK5O8IquexjpY+jRa/QJiEY/uspoJ+KlVnYbYxe2h\nH5E9KBIvpAMkXYFbZnZ+UJM0n7Zf6kXscG3SryJqzOGoWQq3U5Im2sjmA7DWNEZQ\nyEugEhph3N2xaOYtvR+RUqF+rMXKDuyVoKbVrrXwUyBAbmJT9qgwaw==\n-----END RSA PRIVATE KEY-----\n', '1', '2026-07-29 07:58:39', '2026-04-30 08:57:12', '2026-04-30 08:57:12');
+INSERT INTO `ok_certificates` VALUES ('18', 'ce-EVGDsmlLcFgXk1X', 'okx.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE9jCCA96gAwIBAgISBfY1tk6By95TcD3LWTq3c1CPMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTIwHhcNMjYwNDI5MjM1ODQ2WhcNMjYwNzI4MjM1ODQ1WjAZMRcwFQYDVQQD\nEw5va3gueG1xdWh1LmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\nALMz2CO0j9RAsdhiqk9Gi7o32V5NbRp9IftqIDaD2ghEmpfYlVTVexguyMvborOF\nkxo9d+h5/pt8cA3qGvJhzHo3FbtSg9UYBiTgqE+cRfV+8zl+BxicQTgt/FwL/rft\nQyYf6Vt9C8yKW5izRhU7k8trYqpLGgMdO9iElkQv5O2B8CJ/63aY2UjxXCeQMDJX\njudkfVFesoTILlnthQlQDBmPKcbwuLWRCxx+agSH1eE3JjcbrjbV1jhZJ8NUIdo9\nb0Mhm7RpCp2TACv+76H3qcE5PkslbeBeGGZyAdw41NY8+c6c9Ky/Yt1RHaK+DvZJ\nmT2u8yWyATl2PBfAWJ0KDpECAwEAAaOCAhwwggIYMA4GA1UdDwEB/wQEAwIFoDAT\nBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRK2n0o\nlXOwLJamRpLEFYGGrDmQZTAfBgNVHSMEGDAWgBQAtSnyLY5vMeibTK14Pvrc6QzR\n0jAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAKGF2h0dHA6Ly9yMTIuaS5sZW5j\nci5vcmcvMBkGA1UdEQQSMBCCDm9reC54bXF1aHUuY29tMBMGA1UdIAQMMAowCAYG\nZ4EMAQIBMC4GA1UdHwQnMCUwI6AhoB+GHWh0dHA6Ly9yMTIuYy5sZW5jci5vcmcv\nMTYuY3JsMIIBDAYKKwYBBAHWeQIEAgSB/QSB+gD4AHYA2AlVO5RPev/IFhlvlE+F\nq7D4/F6HVSYPFdEucrtFSxQAAAGd2+PcTQAABAMARzBFAiAvx0aS5cHw4Ltc/hmX\n4qS3kRQafome9oVjmYMRTcWtkgIhAL3omb1OdxmSzUDE/0ZSg8mxTNVYv8K7WER5\nRoJTxTOpAH4AJuNkblhpISO8ND9HJDWbN5LNJFqI2BXTkzP9mRirRyMAAAGd2+Pc\nGAAIAAAFAAuPdRUEAwBHMEUCIQD9213Ps/VzLLTtHp3AMUoHy8zMjMVmu4QWvAhA\nkQ5MzgIgLfXPa+mXIREKDa99w4gHDTgl48tG11Q9c3uiHS4RC00wDQYJKoZIhvcN\nAQELBQADggEBALRFfdoXCBjUn9cXZc+f5fEUgn+GEKecaZr/1iAInw60ekvbw70k\n23xN8aSMi+2lfuCXh0xgkq1RShlxFRniT4kY2E7XHCSszzj++gKrLXRwpFJxqE5Y\nwkrovrlcfMxcinhA42mwVi4NJJ0Sr12xOS7z8zVlWEACWc7uy6Q3SQs2Eejg0hs2\nUrEdWpk8yX0tj4x1mXB0w+iaHBqH0OBKSaMiwamniWI1MV4811eSO+HhTnXbRkNn\nO+m7Qyaeu5SWV3FlXEbedDyWtAPqJBi2gr+sKGk3QUmLZ9yK1yBfFCqVV2G6sQYB\nkaJcsIZa0m8sB+hxGVA+5k6rW31YhMkR3ZM=\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAszPYI7SP1ECx2GKqT0aLujfZXk1tGn0h+2ogNoPaCESal9iV\nVNV7GC7Iy9uis4WTGj136Hn+m3xwDeoa8mHMejcVu1KD1RgGJOCoT5xF9X7zOX4H\nGJxBOC38XAv+t+1DJh/pW30LzIpbmLNGFTuTy2tiqksaAx072ISWRC/k7YHwIn/r\ndpjZSPFcJ5AwMleO52R9UV6yhMguWe2FCVAMGY8pxvC4tZELHH5qBIfV4TcmNxuu\nNtXWOFknw1Qh2j1vQyGbtGkKnZMAK/7vofepwTk+SyVt4F4YZnIB3DjU1jz5zpz0\nrL9i3VEdor4O9kmZPa7zJbIBOXY8F8BYnQoOkQIDAQABAoIBADxm+zF9yQUYEVoI\nV7OE6dAIxyG8I0xMZUnjCZyWcMVcqmcIP71qf6U1D8V28K5mFaFAmswnYqRyGyr1\nf8O3Jz8Cljafp4QKJvgDKXg8CnCnK8BzNF0dPfZ7uZYlDORd+sY892E5EuMMt7cO\npk692CE2vvj7e3cVQXjHqAavxhAvradlVlTXlTCyulUBPCszFsILdbQMinFyTojF\n4Em91qbwirAIZP8NYxjwUm2D49TgBWDvlZu6MA+rEiZKys9rJSlVM3+/lTC6tlyR\n/aT08GdTIc2lV4+LAOX4r1k0y3PvKIxbmu6qcC2DPezqSAK+wLn9nB5j2epydhfX\nrdI/7GkCgYEA1nWa0Pjik1X5MLKfznk1TCgPVj5YUknBpIlNBSr9vg4+owsuflmw\nBccfUeKljA/pfInCl63vL9ZExtzIK5sZZKoVJeKRpjYHqG3u2EuJMjOzWpy7h13+\nMERaE6jzzWF0o3Pcj6zgSWO/+M+ziWTiGeRYM6veJ2x0kEfpGRL2tz8CgYEA1en1\nDZQyEOovmXBmsPyRJPNdUG3tA3kEi5ZOe9cE3Odf/YN4XwhjQXnz8zwp/DWGvz6j\nnzMfNNwBZd43Bnf/KJuSJAl6n5L1KRIIRxin1vkktupuYgmKqja0FoIGye7+Gr8c\nL/EvGZFyapx6WCx6lDlBuW0sOX+6HVtf3NlBFi8CgYEApeDTPZ20iuet1efjya1g\n9yXpLvkMEaHxAJYel8e3+kBEXJIyhRJUHzP0Wr7m813/aA+aDv4/Co4+Jl7xCSFv\nU7hmoSYNKDWUWMenPW+3j7gDmyuttTeTe7vyvFArO4mM0Ty1tf+uf7WC8C2fHb+F\nTyeavWTLcUznIA4vEvDjGbsCgYAfaonT4bTsqQgul8RtL9q9O4Sz4EET5n0VZxDF\nvVF4g/6kA9/0zQ2OuzNpwKdF5DKS+cccBW0K3VjTNiyMpajytM5kvoOk1fdtfbl7\nf5J+zv5mYs2tVktoLjqKp7QJijEFipXAMMLDFYphP/Pz6Sxjgnk1m2QIWcrirt3I\nWJvnfwKBgDPF/yBkNJ+RRR9tUvU5C5XWetrKWcnbB8EAVDTgdD7EZWFp56B097ta\n9UN0cjczN/hZ9E3rE4D6zPGHBkZZu/TTDooNircZbESWq1y2BXGTv2BeZAYfLZTk\nYLtZlQG2wwwuVHChBojniFfg+opsEHH2FSE3a5MGVAoU/pVjFEpz\n-----END RSA PRIVATE KEY-----\n', '1', '2026-07-29 07:58:45', '2026-04-30 08:57:17', '2026-04-30 08:57:17');
+INSERT INTO `ok_certificates` VALUES ('19', 'ce-FDxoLpJ32J3Zojk', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/TCCA+WgAwIBAgISBQHYvEaoCHeyP8H4XlNPzCrQMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNDMwMjM1ODQwWhcNMjYwNzI5MjM1ODM5WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQCnUBCEjOhFAswaC0vw9VWyszwxBaEM7vonFi9M/02HqGnPF22wlOABDgKY\nikEb2xx1HWCkm9MGFeebfGRKHUZn/F3Zs9+wrgOoznPyqevdds2t8nevHgAwFeRR\nlW3nc4/JgJh3eOlInQtotva/7wKmK6RLvKl0/a5RNaBzzZAnT+cwwywo7nhNtoY3\nvQZzQaeUjJpxANgwbRiEToE+i+ZfO6yBHbea6yC1Q0hfeEwrDKot4OeDh59tX3Ve\nq1xWX8MljMklfahDMvXQO01fxxdSPLJNOYx8ijx+XjWsejgHFzWMlwqeJ//ER62R\n4L8cqTI2Ipn7Pg5WnIBQmEYIgVJBAgMBAAGjggIfMIICGzAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nyQtNVPa7NTc6lPmH+YtvCETiXtgwHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL3IxMy5jLmxl\nbmNyLm9yZy84MS5jcmwwggELBgorBgEEAdZ5AgQCBIH8BIH5APcAdQDYCVU7lE96\n/8gWGW+UT4WrsPj8XodVJg8V0S5yu0VLFAAAAZ3hCiLOAAAEAwBGMEQCID3mVtVg\nurNFP+4Ymxooa/iGvtU2URDUffm8w4wAWuLAAiATC0qs5DywXpQEaRzhp/NU6W9A\nZM22hWzjz3SzuuX7mgB+AKgmy+MKxjUSRlM/4GXxTxnZbhkIE8Qd2W15ALMSPFUn\nAAABneEKJEoACAAABQAJC1+kBAMARzBFAiEAin/51agUdqUMr6ldu1o/skjC7Zdx\n8R+X2KFYqA4UyKECIE6b4m6tQUXZhPlwL36qFj2T+3VAjuZCtPb6MPlUTc6tMA0G\nCSqGSIb3DQEBCwUAA4IBAQCK0Xs11v0KqYlimnun8eKDh8ytLs4xD3piPKXXsbAS\nBsmokd6kdh0Rsi389qLK/wx2M7hDivTjMFdza6Er3tAPO9HOKMpUvhLktWV7q2sj\nd5zdK9loy5lclmI50h+IwUJjJsY54nn1QKsqFLNgxV2HSG0Y0RoSGgelB+Ina7H5\nFQnXPK5rkcbJL2Wv2f1tXHHkWRAyAGNlyELL2Dl8vbBk0Z0XrQxyxnq00CwGDlKx\n2K7OznhOxBetDQAg7JftB0oEhH5YVg15AMBFZ+5tfKVu9SvlsqcHvot8dMVyJ0St\nZlgD/tpyCPTqy2mvaHTk4ax9sOMbw9AUa06dFxckBB16\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEAp1AQhIzoRQLMGgtL8PVVsrM8MQWhDO76JxYvTP9Nh6hpzxdt\nsJTgAQ4CmIpBG9scdR1gpJvTBhXnm3xkSh1GZ/xd2bPfsK4DqM5z8qnr3XbNrfJ3\nrx4AMBXkUZVt53OPyYCYd3jpSJ0LaLb2v+8CpiukS7ypdP2uUTWgc82QJ0/nMMMs\nKO54TbaGN70Gc0GnlIyacQDYMG0YhE6BPovmXzusgR23musgtUNIX3hMKwyqLeDn\ng4efbV91XqtcVl/DJYzJJX2oQzL10DtNX8cXUjyyTTmMfIo8fl41rHo4Bxc1jJcK\nnif/xEetkeC/HKkyNiKZ+z4OVpyAUJhGCIFSQQIDAQABAoIBAAqZj/JV2wFERBoC\nTTVe1acUo+OXL7TaDw8a4LRIGGlXyhxMp65gQDDQ6mkvmSBiqVLiIZVMKfpguOOo\n5dGsOSGtY2S/eJSA8cpoCgB9s2u8cxtqGRsHE4v4Vxa0GNpo/9sMQpyPFHh9OpPP\nw6I1Sj2s1iPWOAYpbDnI4/lyNIfI9eIJE6Ce0vysvKa8TTt06KPaQiF94IX1tTVR\nHfP8ssObv9ANrN6121yPgxTpEowR83rbEs5Of5+p/iGUaBaPQ0rqKhZkoALJed17\nae+Pmryv91V7ml2n5MuHbzY0+wjbAXyg310Gsps2KnBmcYJP9lMqxoQrFnd+4dg1\nWTq28oECgYEAxEyF+ZJhlsevVN1t8azZOqzouVPkFvy9zJvFMttgGj7vBQCEO31n\nqc4+SNLV47ErVzIfalS0e64jCtnQn/ZF01ut9zxGBf3L5V9Bllu6SXP2R+lswGCZ\nj1s6FesVMHALwJCr4oQL7I3jZE7/2KHiJxUdNzjaAX2k+MAlwpp+aq0CgYEA2jK7\nHz8Xwb1KMaHFthWwrnYDM7/i62KnNYZ7Sxz3GI/d9DdCXj/fk1y7CCfBBgBDBEJh\ncr1LnyyjpIDAfYyIzhzk7IMxUegV4iOztVpGX5uEz6onkNc8+txYPX8KMaZ03pA+\nRVVrgxBdCD1l9jeanHJXKZtTHfPEJfSgynRprGUCgYB3rX/xDMHav5uxzd59/bfj\nAhBRDUh+i1DcMgwkWYNZ/QyUrB/ydR6CdG+czo4A579YxgJJPaNb1Gsg7nM3U1p2\n5epGVcULWhS5nz3JgdstdTmt1i6rizmUITZkrpKYmXdQy+M/kuoCKu979H4fgXL0\nCPdq94pSZlvyHJPo9XAlcQKBgA/QiXt0STaDj7MVNI1D+TBL4WOIztucpN3eR2Vk\nTgx7sOyYbLkEDCJUIEIxD25t6m2Omh2E1sxMofe0VT9ERk4aDgWOZK65EYz4ZXgJ\nePxI+1FJ1eBLmWHdQpACeyyqEeJntfu0ezxenT+Ro6g603vvVZ3wYg/TsS3HEzhZ\nQ6d5AoGAVM6CtaEdKPIyx2onSnaPpnf6RmwwCBS5LI5zsX3yMsSWQLMRpPpMv9uz\n2iZpkCKfzzqBZM30953AKr7PBciQEyefgm3seRljxXg1i7+U0IuODaBkKiTeO42q\nL3HxaZP21EWQmSynWQU9HKEkORdILplMumdvdOqszOCG2n5fnwI=\n-----END RSA PRIVATE KEY-----\n', '2', '2026-07-30 07:58:39', '2026-05-01 08:57:12', '2026-05-01 08:57:12');
+INSERT INTO `ok_certificates` VALUES ('20', 'ce-N4JjYTWWa3Zfqpf', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/zCCA+egAwIBAgISBl8db69XcZDwwIjiPK8PjkHEMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTIwHhcNMjYwNTAxMjM1ODM4WhcNMjYwNzMwMjM1ODM3WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQCWRLMpSu3wcwVqw/Z7yMrRc/d4tZo3Ta0SFOaO4ybG0zq662xWOTP62b73\nvJTXKjMZIllcPlFm5pd8n9/Gpr0NwcKVxPFi+3IQK1pMzkKJeeaZvLVwS0WfZBtZ\nUpcmHOuZH28zBS6zsiE50ZvvKMa5/CIg/7lYHJUbK4s6pYEqQ5yYgtkVJOenK0zR\nWhWnf31R9klJSzuopMs/9Ho3E42/o1uRGeoQfKyqoW+Vn5KagNWfrj2ZWOp+XJtY\nF2B+3gn0nAYFnicU9jCfV8YTKbB3cwJW/6ml7tBikAy4ilgU8uL6BxiYg/EiMxLb\naS61eIHjOAp4bQnGaQm+/cq6RFFdAgMBAAGjggIhMIICHTAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nr0IaI1rO4OLMqFKkld8k1aWve54wHwYDVR0jBBgwFoAUALUp8i2ObzHom0yteD76\n3OkM0dIwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEyLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL3IxMi5jLmxl\nbmNyLm9yZy82OS5jcmwwggENBgorBgEEAdZ5AgQCBIH+BIH7APkAdgDXbX0Q0af1\nd8LH6V/XAL/5gskzWmXh0LMBcxfAyMVpdwAAAZ3mMHcKAAAEAwBHMEUCIB70LGlC\nT/xvbCuYcrb/vkHxZHVmIzQ7pbEHljAeuXVSAiEArd2iy+L85Wtf7bWZn/iZY4Pv\nJWwEPtbRfwk9eP9LWh4AfwBGr4Y9Oz7ln6V33qgkXTaw2e0ioiP0YXdBIpRS7pVQ\nXwAAAZ3mMHfSAAgAAAUABXFhVgQDAEgwRgIhANOMQbTQ5sKQyVydZ8hYSuzanYnv\nYlHM5kLkhTEJ7w/EAiEA3OD2j+eva5AJlCehARosw1a5iX6WJ6MfwBjFIi15IT8w\nDQYJKoZIhvcNAQELBQADggEBAMQMitn51uIS8mxqwoUUG+sxCT+s9YjmwkYyIndY\nREivwWeyyFnNbnBnDV7ZwLyCHCY7bOpDh6eitoRgDpp+fL5lLlNiOZ3zSwQ7ulr3\n2zxo+PyfqM7/JxQQ/AFYCHI7PA6wdFrHmYP0AEnmks88ye9vHpUbxVZcrqIR2yEI\n0sppMLByAZmo+vyRCfgb94A82XPtyBn4Eb4vFadtkAEWzIIC2ujVusBxzeoqRxe9\nq01tYVmxRJIk7FyI2DyD1vWd49hEeZ4xT4UVtgpvlL1y7kor8IERWZJoOmxODkZq\nTsNzIfiCeX1v+eqkfgmXAw6kQrs/a9XYbeDdeiNZ7+zGIiY=\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAlkSzKUrt8HMFasP2e8jK0XP3eLWaN02tEhTmjuMmxtM6uuts\nVjkz+tm+97yU1yozGSJZXD5RZuaXfJ/fxqa9DcHClcTxYvtyECtaTM5CiXnmmby1\ncEtFn2QbWVKXJhzrmR9vMwUus7IhOdGb7yjGufwiIP+5WByVGyuLOqWBKkOcmILZ\nFSTnpytM0VoVp399UfZJSUs7qKTLP/R6NxONv6NbkRnqEHysqqFvlZ+SmoDVn649\nmVjqflybWBdgft4J9JwGBZ4nFPYwn1fGEymwd3MCVv+ppe7QYpAMuIpYFPLi+gcY\nmIPxIjMS22kutXiB4zgKeG0JxmkJvv3KukRRXQIDAQABAoIBAQCD8Gg6/m5y7Bs6\nhjt6rm/efmswkouIuWwX70AM/8eBVeBAVQt3nZxVSjESBoPNdGEPVYiOpK0Go7sp\nEpsCKk7esF0w8Y5csZiSN+5+d7AWU3E1VWsd4QmNjPEyeYD7VvNKLD6P1qIN536i\n7Ld0wyHSFV7GCKLtiZMmGxKReNYzi3eIV9f6jvPbcc+Y6s3hZmOeoN0jTASqQA25\nhGoSbdSwrL9eJA0J9HHsfC5DvaWIS+ssUuU5NjdLUZkfZ3n/l+R49RSkoWGigVsT\n0hILOFl4e1dmsXnryid7iR6PlTjMyrWe6bnima/Vi5D/u9X3HjPudiNrWsU8oxYo\nh3fDeb8hAoGBAMAUovpIFVOfM6TVqFI3b/FTZmcGTUjOWzYUIcDATs9xQFkf3GJ7\nOhMyk8lUIDfdQZmXub87BdeLJSQeaZkTfiJbokGVBqnAu1J8jZT4lJp3ZPa5j2bb\nS3PvIQCxXgMiWIlcTqxRbaFCNRPWG8CY75Sn1JNdAq2H2Llj3huASjqFAoGBAMhG\nEuo6cwxUo+t4DRzNAmDQVPkmeWQWhqykCOnK3rX1Obg34ScooWjOysH30zEW4oOU\nr2RGhpJWAhvWSxoNUCoTzSkYpHPLr5yczHzu4lCZ5robhhodVBlpoVqnYIqy1djb\n95WKDrvTQNsAYyDkndcqzYxtn/dftezj7W72j675AoGBAKQC+wbq9grpLZfaOFe7\nroJJzG68GtHIImoS1p9XlfPbqC5x3iTZQ8WQslB+3OPWsWUNATYgl+Rsk9I7hb+H\nvXRo+is1rPLV9x1/7QT/HSSoPjXOTHxvVAYyceO9j6DtetwPTb4l6Y6AkgHWGOxj\nqm8sv371NIwoKw5iEA07hiZhAoGACCcyJe7zOBFKCw/8GKwP6LkSfIIgdv6jxOt4\noWvs3SN6khFUTS/OQmIIxxS7uEfiONEYwtBMMjDmLRPwQsM//DaKJ54lM8GbCJkp\nifx/oiBh0DnGn9GJ1u8B7prZx0u4gPeTgLb6GpNjFIdTgcdM1bGcZJch6AQxd89f\nnyDSgKECgYA9pg0+BdZcAWjM5wunqZdrTZVX8IDqpGLvPIz839k5IdccKeTdipVx\ndCBLMO0c26YX0xcuwZQ7vDWqtJKyCt8oLEevmwe5dOVrJ5DsDT9GKErzIqYeioAw\n59bavp0h0xjYPfiksGFyqGSTaJmjgT5zpmQLzt4gK0bOOswv8aFdqg==\n-----END RSA PRIVATE KEY-----\n', '2', '2026-07-31 07:58:37', '2026-05-02 08:57:10', '2026-05-02 08:57:10');
+INSERT INTO `ok_certificates` VALUES ('21', 'ce-3sIesUqUXYIwYmj', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIFADCCA+igAwIBAgISBTICuNGvCnosqi0Zs9akuEp4MA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNTAyMjM1ODM4WhcNMjYwNzMxMjM1ODM3WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDKOX8e/uKIO1GtaycsMPc0ap5SUZmprDbmgtuA7YCT2sOyo/INi+1OKwkI\noOCm1e4OrYt0SZOd3dCAO4Sm4pqgZ3Fr7Y7kHLdRr1HyYDEQ8w+SdJ0DOY8EZZE6\nz8MwwDRfuvsbIQvyFQZ1i3jbxhXw8wmK80Cch6qn2ddH7nD0yodXip9GHBgxpsFx\nuhn8cIMEsBMnvscryWcINiWxNRJVxrLq7Ws08ZyTDM2Fh6aVCk+mJpKfR6LoQQSs\nIcHw0sfzUKnj94wrqPZUpBbpyp4YmI+l5VIwMyEpPTFCJIVHRFtxr12KVxiKBHZW\nx4hJQF7o9bhtBRCh7kEvAI4kutAZAgMBAAGjggIiMIICHjAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nEpvep1M4pswG7Y2TkIGDOF17BOcwHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLwYDVR0fBCgwJjAkoCKgIIYeaHR0cDovL3IxMy5jLmxl\nbmNyLm9yZy8xMjEuY3JsMIIBDQYKKwYBBAHWeQIEAgSB/gSB+wD5AHcAwjF+V0UZ\no0XufzjespBB68fCIVoiv3/Vta12mtkOUs0AAAGd61bR7QAABAMASDBGAiEAp+IU\nQiwf8L4PDC8ri4HTdoW07jHXEpnLt5C0wZw9Hp4CIQDkRQd675b5M1zs5Hm8zTXb\nPYUgR2IAJfdL4g2yAfQtyAB+AEavhj07PuWfpXfeqCRdNrDZ7SKiI/Rhd0EilFLu\nlVBfAAABnetW0kIACAAABQAFins1BAMARzBFAiEAmag03hIcg/vme19X3Uunf6rg\nSyTLUcJqD3mJLYWjUrYCIFgZ4kGmp+iy1Lpi1mkPKKpnqUxiSO1DsIJ8aGU/nHF0\nMA0GCSqGSIb3DQEBCwUAA4IBAQCgtvjYnT7YY/krM2tjN+FpEQNQ1Ny/E3e3pzhL\nkCZJwCBTEQ3IIgmBohIj+xfXJBVY1RtwZj0pN99lbUta62FW2751Mwq/2aZdGWWj\nw529yh6qfRy4FamuJtlYp7q6Gjd9A88gp/Fqc9tJZe9fUfvtvp72+d7shGFAfn16\na/wOgJB0Byoe2EbdKeBXZgWZMNcUOVDlDF2jZ1Vq/ftL3xDJv+KC2x/2NxB6abv7\nItI8DTuuWyfvHvworgmIp+dFR5SGo9R/YMBr+yUqcTjE/vRSDh8eZzP8z22+LV64\nVaTcaCYyiDSrSSfIO2ysjjlWHekC/lNfB2xYgSo0PPMDgK+T\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAyjl/Hv7iiDtRrWsnLDD3NGqeUlGZqaw25oLbgO2Ak9rDsqPy\nDYvtTisJCKDgptXuDq2LdEmTnd3QgDuEpuKaoGdxa+2O5By3Ua9R8mAxEPMPknSd\nAzmPBGWROs/DMMA0X7r7GyEL8hUGdYt428YV8PMJivNAnIeqp9nXR+5w9MqHV4qf\nRhwYMabBcboZ/HCDBLATJ77HK8lnCDYlsTUSVcay6u1rNPGckwzNhYemlQpPpiaS\nn0ei6EEErCHB8NLH81Cp4/eMK6j2VKQW6cqeGJiPpeVSMDMhKT0xQiSFR0Rbca9d\nilcYigR2VseISUBe6PW4bQUQoe5BLwCOJLrQGQIDAQABAoIBAQCYc/Yo6ODg8U9n\nHLQAdb23z3Uh/BCLQKB28UoIDYT0cmU8hKpTmhzB5GHAFoCmZfs9J4pNlbZqujGY\nqsYbhhQqPzHbutERmbB+LVzrC6eR7pvbvnwsVTVDjEqLetvdIdmaHf12e1hlHYKs\nFQR9Mv2Rk7erAC3Ck+iM+AZ7XP/dGoWTbz9O5jFXFfmfIhTT1ALaYeAEomUfmHzX\nzMvBFL7zRQO6YQ7mK8QyZL0lgf6yY8cGxF+IQP7CpcE/hbY1zQshn81zgT8vwDkT\n6V7esPuy/xNdLDgQOWaYinDLThxm9NA4VeRhWlt9TYKnDqYBjTHSv3/LbFHoV+xX\n4HCzr0TxAoGBAPnTZ2klW5kqS8F7t63zw919mjBIeiZQHAvkH4rCrVULrKxlP/GN\nsaojTrnSrMxqXUoIo2ypOx41r/ZXkPLtE9WXWWRg43QJkgj0hCcCwIeRILLbOjlA\n5MXyHIDdniyLGKNmcnUENyg5AgLO8Kp52B91QX4fVU+oe9HDHZA4/y5VAoGBAM84\n7f/PXUEudVASIsvBqdcDgQFnX1Bn360O6Iyxmqgfhp5M59PIks087voInMRZzcwy\nYOcLcLzoY42R33BGOPxdyPGbcCT1D4TG3Y2xZDOozo0taIO3j8XoLCtdimpjTXWp\n3hQue1sc9Orl4ZDZWsTamyGT9kQ3lsuMdq5VRNa1AoGALoV7gE0AnakOql0Le00l\ncB1vlQYqGPBaCKzWYtSVynx+Dyxbl/O23ePtSRU+MGKuNJcfN6Db7Wg5+DmeOF6F\njwS8FMEmGfmeRCSkZ09P4u7Xk/bXBMpcz6+iNy0Nw2WzlNoC/l9mlgrnoPZAQr6l\nzFXdeEsFa+wIAqu+2ZiDjHECgYBJZCVOw3eIvVaJLFMsjQOFBlWrVJw6Uv+yQCR2\np/RZdQjtidlVdaUgkWMmJOS42gF8P594VOHx1fBkVHSpRAWsw96GS4H1ZOHBKdmP\n9HLDpRa6g4mPlPSTqD30geWi9laZxLbFuQyxYVkQ1KgF8CUosS/ePZQr5vA+WRoz\ndjmyPQKBgQDgm2PznPITYolpdyr6oyHN1VQ4pPtlkcdbC76s8pR55KOm8DLlCPjd\nnUMezKjAaDixV4oSD8SLalElTiEvAokkfhK0TT6mla+S8cmb94q5IRH40WlhAxoz\nVWB1ek2ck8LjePcfdAPhRLWMxCu+HrK1u41KthVTCFP35lxjyuBa6w==\n-----END RSA PRIVATE KEY-----\n', '2', '2026-08-01 07:58:37', '2026-05-03 08:57:09', '2026-05-03 08:57:09');
+INSERT INTO `ok_certificates` VALUES ('22', 'ce-TwcPzNH7bfhSSKK', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/jCCA+agAwIBAgISBVXT27ed3TmgtZIeEGhOKjreMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNTAzMjM1ODM4WhcNMjYwODAxMjM1ODM3WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDct7nCR/LsyUTmEmQeA+VfYBooyHMkimA/6eTqLmOwnd+7FESYqRIsbZ/Y\nXYhMwdA/JEQjCdmVIdBf5ImGLSdH0T0HTRmX+BwSoSNX7Sk0piMJWBrntNLwbvGe\n/LaFSkpPDleNAK/5A+vAaI4TgBBeUmJ7nl0SQm/ZHCYl7vV36APMan/vzfDEKRI3\nHei8adcThngcZqVKY3Lw5AuZzLqtC7lYSBJOekp0LFHyZn86uvijoZ8GPJMdmniD\ndAXjb7OvnR8eZRCtYkyrNl1zOLkxbZUv10zf5LZtrxrGxRYTTxUe6caxHgdHka0u\nDwBeYWwEIGCocko4Wfl5AFkdgLIFAgMBAAGjggIgMIICHDAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nU+vFu5MnC4pL1RzRv2Ufn3EgyB4wHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL3IxMy5jLmxl\nbmNyLm9yZy85NS5jcmwwggEMBgorBgEEAdZ5AgQCBIH9BIH6APgAdwDXbX0Q0af1\nd8LH6V/XAL/5gskzWmXh0LMBcxfAyMVpdwAAAZ3wfS1oAAAEAwBIMEYCIQDVmi4O\nMh1oUGDHxav7xHCeQi7+C0V14awUDgJh3R7+9gIhAIlQkQVActlwsgr74r7JTSe6\nXtJ1FW4GbJpdM/aUc04bAH0AqCbL4wrGNRJGUz/gZfFPGdluGQgTxB3ZbXkAsxI8\nVScAAAGd8H0wegAIAAAFAAlyBDoEAwBGMEQCIDZIAp1zIF6uixuHkfvk+zDjRhBd\ng0jCOcyPEqypojgfAiBV7FI/Hm+c+q+N/DrYdn5RJwLA8mOFvgJ/61xQR6h/XzAN\nBgkqhkiG9w0BAQsFAAOCAQEAn89XL72C2JZEbNS+iu9ompIstdn8QcrW40NjbI1r\nZL6kQ3XfxFU6CiBDhVkPyADV5aezQiFypUF6OVmzylK4hv/sZRpUe4w8lYXkgvdB\nxEn0lX0PFsbt97F79ztJSmqqTHFdT2xtI1kwhmtv0+CbvIlZAQtQxo9kioBb7zND\nGhSFgDrABMMfd753601We9r76XO6HRnxizcxpg9uvTFzoqMRo9y2FwFVjcIMI6QX\nC2zOdfyfUpJPAWpu9pBBuTLLi82tRimenksnM6n5gSJ6PLX/588xE7FYCJHWrXQi\n7VReZ71Svkzi+P5A65eYfvkk9c9zmTffjoC5t8SXXFro3Q==\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA3Le5wkfy7MlE5hJkHgPlX2AaKMhzJIpgP+nk6i5jsJ3fuxRE\nmKkSLG2f2F2ITMHQPyREIwnZlSHQX+SJhi0nR9E9B00Zl/gcEqEjV+0pNKYjCVga\n57TS8G7xnvy2hUpKTw5XjQCv+QPrwGiOE4AQXlJie55dEkJv2RwmJe71d+gDzGp/\n783wxCkSNx3ovGnXE4Z4HGalSmNy8OQLmcy6rQu5WEgSTnpKdCxR8mZ/Orr4o6Gf\nBjyTHZp4g3QF42+zr50fHmUQrWJMqzZdczi5MW2VL9dM3+S2ba8axsUWE08VHunG\nsR4HR5GtLg8AXmFsBCBgqHJKOFn5eQBZHYCyBQIDAQABAoIBAA/HPotJ827D8J31\n4JxYsPQBfb0+nySUk87d3JR1HoFIt+66wzCanYb5izy/avf5vvZUlF5g3OIRWcER\nKFekMLOsnI1CELtRbEhUpp8pgBGYcta/KqU3wwCXHcS80htzNR6zqsSUsP+/LQJD\nNyzjscfcYdfueT7N6wr9PSjnDTs2A9ka/2E5mu3xY/M6DyEKKq9ZecrpCBsJcblf\n9pFFaiw7a+oFvWIR0wJUaL8usmju8iffE2heNUgxSGnEWyCr26X+EvXYVIrdgFMv\nrL56rho/vcPVzmnOGohSBvKT//iT19pP7auVQYWFCo77k9/P+XdJSbcg7KT/iCwB\nw7zGdmECgYEA8uC3jII12O03RF7FfbnHbnqdZpJOxCQQ7tHsJ0iIWXuaAefyaJTA\nQ8vxQ7Rz3GwhLRwUFub0aSec8frpGVL+oD945kbQb3qVFeQz9z4103T3MtdESBXx\nyiPfX7EhWvmw+qzNkmBVF5L4GnbFj+hgGh4+WieUHr3a2pq/I40zHMkCgYEA6KSC\nIO7hCEqM8J5ehL3SyD+BrVvSGaVyANMyQNB5y7Xrc7Znujzpc40a6/LmQSBhkCSj\nJ6dq04yb2KiFaTPE00vDx9iMW4TDUDQFaIxciK8VZJwGyuOaRkLlWsV7X+zEKmSS\nH6/54+o6YbNKYEP1/mPY5mfOf/XCpj4n3n0c1V0CgYEAj+zCWC1BI49O1OEkPuC8\nYaefZo0EyA5nSl5zhsPgqMYp+T8t0vNzC7nq+qgQkGozLrwY24l5BGdJBcweHbek\n0+lJB4ynL6iAeDyG3tiqpOgHJMWT3PPEGHkxgU9B6NtWGPYVy8vyIMoi4+vGHwUh\nDdkmMd6KU71F140j/zlJNKECgYBQnLhumvek/NgrhGTyECiatM7FeFysAFUpjgUK\nynJ5sRbeKKV2tiaaoJlkiu1YQdUsslVKp0tv9HgIMhTQaFzabpVviUzRZYacIvqA\nyKpDvo9mJl6ALS/HCuUYd/eRPKSYn/K2Qi8P15jVQ+AQzVvPA2AkLnIyisEhA8ai\n5K16DQKBgADpPOY35hHBO0PPkXv8Q4f2AvoP80uGVuZ9+2CjU/dZaQ032JCNRAuR\n+hsIoKcAk/JlAKpjj+TPnXw3zxQgoSS5v6jttroqaIw5TNdfMIcMAWEkV/nCzdat\n5BBDOQqeos8c07FtSbtjF781G+i4Fm2XoLTdqNlyWdaniJbWzLIN\n-----END RSA PRIVATE KEY-----\n', '2', '2026-08-02 07:58:37', '2026-05-04 08:57:10', '2026-05-04 08:57:10');
+INSERT INTO `ok_certificates` VALUES ('23', 'ce-W1xImC9ARv5VUhc', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/zCCA+egAwIBAgISBSyfNXYt73cTG3XmyuiP1fztMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTIwHhcNMjYwNTA0MjM1ODM5WhcNMjYwODAyMjM1ODM4WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQC/3Ew0sXwLpz9Fqai+86jkWYovOiMsl6ZIV/E9Q6XPcnsvXus94HvD15dI\nkGDa43Vq7t6HslXvhyP1zFHOjgEQ0/y22eLauJcql9kon4kOjmtNqRETZYgr9vwa\nyQEe22tUuiW+QdwSRrffpIbd3GFqiNsrgnrAWDL/vMqemMbwI3lqDO0xWuX4snj2\nedQUmZqaezZoPY4VVF3p9es8B9P5FZUw9t5KjuEX1jbvUxXG6Ri+PqDHNPCcHt8U\nwF8sNSpudq/XZO98ZMjLixun6Yf/k8N8tUZYX6wnrXgRiunfUPpjbwOUtbcSj3MW\nIf0qYPpck6Jjj9MWRQ61++Kwg5hlAgMBAAGjggIhMIICHTAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nxcCMLkOQF9V+QwMJ0NrWvHRGucIwHwYDVR0jBBgwFoAUALUp8i2ObzHom0yteD76\n3OkM0dIwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEyLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLwYDVR0fBCgwJjAkoCKgIIYeaHR0cDovL3IxMi5jLmxl\nbmNyLm9yZy8xMTAuY3JsMIIBDAYKKwYBBAHWeQIEAgSB/QSB+gD4AHYA1219ENGn\n9XfCx+lf1wC/+YLJM1pl4dCzAXMXwMjFaXcAAAGd9aOLPAAABAMARzBFAiEAkd7N\nCtN2+EkfOAhUdaKOGqO41tE2KEw0bowen2XtccACIAwZzwqzGhzlZ4R7PVCT8U9g\nX/q3COUGePq8zt3lyOWmAH4AJuNkblhpISO8ND9HJDWbN5LNJFqI2BXTkzP9mRir\nRyMAAAGd9aOLWQAIAAAFAA1WHb0EAwBHMEUCIQCpfj5SnF9Xf3OAOuwEnfHzITqB\nzEpvEeKV8MTFic9igwIgX3XhmykRwFg89f7bzR8f5u39mdEHEBDP5LWwASpJCUsw\nDQYJKoZIhvcNAQELBQADggEBACpTqVHsPrbQqJ5aNI8V5JB9I4ks/iTz8AukmMyD\nHhKEOMaLIVdty+zNKV/f+cB5qqbLJu1pevhplkcTTBr3PWD/eMS34iJ1+aqOs8xs\nPln+CUlHqvrreAqqUmBn/GKk46Vg8894UQwGLhuph94PA7ZrKhO6hVCHHtPVnJOA\n5vSTVQfhda5hgE4cnCzinhDbMvxkHV0aK6uNInSobWmw9jlWpj/+Uv1ABxosjWiO\nd718Qmu0NCdg+fqU3aWV1G2ngjq06OngwtcGSkVSM+eLGVwiZutV0AwbEbRM3VFK\nybLF7fpf3CR2zSp0ZPHzj/nYpbahS448eE1s9eB060DhgJA=\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAv9xMNLF8C6c/RamovvOo5FmKLzojLJemSFfxPUOlz3J7L17r\nPeB7w9eXSJBg2uN1au7eh7JV74cj9cxRzo4BENP8ttni2riXKpfZKJ+JDo5rTakR\nE2WIK/b8GskBHttrVLolvkHcEka336SG3dxhaojbK4J6wFgy/7zKnpjG8CN5agzt\nMVrl+LJ49nnUFJmamns2aD2OFVRd6fXrPAfT+RWVMPbeSo7hF9Y271MVxukYvj6g\nxzTwnB7fFMBfLDUqbnav12TvfGTIy4sbp+mH/5PDfLVGWF+sJ614EYrp31D6Y28D\nlLW3Eo9zFiH9KmD6XJOiY4/TFkUOtfvisIOYZQIDAQABAoIBAHllL4arwlwxP5SZ\na98elv+dNBT7ySO+9ISTuF1WP0TKH+1yNpBZSJY7BEryp4X4I+Q8LetYSI2dSYCN\n/jkemsgGCcG8jZBs+aEGoW3Vu8fND1H9JoPKW2XOCef8xMu8c+YRPi5qx4981X0Z\nQgiBF9Zrr5mRHpAzfllYIDBHZKCuCEM6lAM9VxegvRSSdqKguP+x8kz683gkFveh\nbuk7aLYuGpXyPQWwx50EgHe8G223/BT2vRbkGHo+AjO5Ypx+e8ZEGjU2HOwAiYaD\nrZE3WYj4KUqi3GhUjYjfTqQY4cqLVgj2Otc75+TNpjhwAy0PAXjmuKRuPd2dheb0\njv8btOUCgYEA7lMpGcT/B9H36CT8kS0hoqvBIL/ZXkv/wvnZN7wCu8d3ep+jUSgP\nezwL5XkyRLBmdYRbG9a4Nh++8mHYIDx66+fwNEhFQwVnS/4Ip7EtZESzI76sPL24\nhOO4zpcnPgIiBM6r9PsqcWFP78VYnXQMWOZsaFeGazrekQSfRTCmYpcCgYEAzhb3\nCvGFWJYDzG2zypSZMNtHywaZQ61awnaDxaC2ldwSRgeG4oWj9LqYH7zpND/FoN4+\nNXtDFvB43PbLY3ELhI9nWKn+z5XqwOv5lx3puhLENigiMdFR/VgdCk7pZ3oBB8qU\n5GaFW25tlICWVUQeQCEfjkjdo6rnilbsDwo3SGMCgYEAoGFYTF40ncegBBo32V68\nvuLEgcx5dCrCwCwxEH+2ezWdYujhF/FUkcLz4oYv3Oe026qpQU+7AblVX3mW3wK0\nWeLo09Y6vgJ55DrdCjSCbnKI9yoOcIXgEZXJvUUdBG6dBA0szRzlEA3DpIByxOre\nkEjodUNJUwn30zGAGSjHH5sCgYBUdJLOuEVGFUv/NaGtThItNF+KcuzSEDOWZ4z+\nqyrH5QTUD/eV0uBqxSDcOMV0tQGfOBRURGws9WUCYFzfJo9qxn26lwemODCY2NtS\ns15584DXFMFWmwo3gSl9dPMvhY7wi3NS2jSiUHG1nrB8xsqCy1AsNe4mST5TseVR\nEIWxMwKBgGY+SsbXoEKnIJumMgAnPU4CFCnw+T0RAOl+LgaV2Y5rOFlKpbIQ9Rz8\n6G2GulbO0BFMObCH8MowtJAfFnirsPmsL3QX8FECHx0sy+D8/5ypOhUMFAPEAElB\nVvP/KO+LMeVuOUBU4erGCq76J3iVsvwAn8COqaK2UQuJZzSDXJ3p\n-----END RSA PRIVATE KEY-----\n', '2', '2026-08-03 07:58:38', '2026-05-05 08:57:10', '2026-05-05 08:57:10');
+INSERT INTO `ok_certificates` VALUES ('24', 'ce-xEeEm7ct5LA6BZ2', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/jCCA+agAwIBAgISBjEGL4FZDUQuJtriV+byr/E+MA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTIwHhcNMjYwNTA1MjM1ODQxWhcNMjYwODAzMjM1ODQwWjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDPT5vvbE/q5dMy7W2HNSJpRHtXBmu38B4hx4lVfB49evCHCiIyw9sETtco\nJb6RQM5GJl2PID2PzCEcZzaONeWOZf4sktwWBZvGjvsO4qGV71nkD5jWWugX383P\nhGuFkJaypRjVwHsQ8brlIf2WRn5FiF2e2Q8BMEu4bXAUsy4YRQIRquVkiBbE83Pl\na2FedOwZfXDc13DQ1XtBi7txT5nzM422gzzyk0V0RzzbkvkLZXE/H4HXpHASGBTr\nBsPJufBJhH7ULfL1o4sGYNq2uYCVe8RXLCwy/sG4T4nicUm+IPUGppgzvKIBZcAM\nNgZs00NjNOm9KYYLQry3PmlwpME9AgMBAAGjggIgMIICHDAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\npNAG5hBEn8xfaUuZUnyTBSzAtp4wHwYDVR0jBBgwFoAUALUp8i2ObzHom0yteD76\n3OkM0dIwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEyLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL3IxMi5jLmxl\nbmNyLm9yZy82My5jcmwwggEMBgorBgEEAdZ5AgQCBIH9BIH6APgAdgCvZ4g7V7BO\n3Y+m2X72LqjrgQrHcWDwJF5V1gwv54WHOgAAAZ36yfCAAAAEAwBHMEUCIDGuVlNG\nBZws9oJAjRjPzs39LanzvZb983RdE2F8A9qEAiEAoqXSgaDc1PrmekL4i6ajRl04\nrC1+SAbQJIR9ex2IQRAAfgBs/lAZQ6heqRa8UtEz5NzJHvFBHH0lhCDRc4CeGBjr\nOgAAAZ36yfLXAAgAAAUACjBbiQQDAEcwRQIhAOqKom/hMwyjTQmZeQSrsMUS9EeQ\nyKVxg1VFm7p11kW+AiBZnJ8uG+fxyv5W32CDkuP50K276spUTG6KKy8EHYebWTAN\nBgkqhkiG9w0BAQsFAAOCAQEAs7hQMI8OE5gkPrQY8FMjndKcHDHIHMboSyFSFQ21\n7MRdKCkSQMSQZwPEcqeCp4eiCzGLBGpgXEOvWtexViRvf4CeZegDkS34VufTedxJ\ng3SS7MsiEUGkQD3/rSLUfBprLx0RZbxPe8WOCsMfmt3Ro4uN5RcKg0CTbT/hfc/X\nYKNyo9+QnZD3Whdtfz6D+0oB/cDcyhGtZkd5NNeR+F9A6fQfQC+w5z3IJYPGe+AB\niNkRq7cXkNCJg7GQrilCkY06/IMkM+KKRBRmw2YzTI9ceNkmV3RslW3eLi+o0Yv4\nHYySVllvtDPdKWhmz+grHfE0sTKGYDzVxfhDTse9JJhP/w==\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAz0+b72xP6uXTMu1thzUiaUR7VwZrt/AeIceJVXwePXrwhwoi\nMsPbBE7XKCW+kUDORiZdjyA9j8whHGc2jjXljmX+LJLcFgWbxo77DuKhle9Z5A+Y\n1lroF9/Nz4RrhZCWsqUY1cB7EPG65SH9lkZ+RYhdntkPATBLuG1wFLMuGEUCEarl\nZIgWxPNz5WthXnTsGX1w3Ndw0NV7QYu7cU+Z8zONtoM88pNFdEc825L5C2VxPx+B\n16RwEhgU6wbDybnwSYR+1C3y9aOLBmDatrmAlXvEVywsMv7BuE+J4nFJviD1BqaY\nM7yiAWXADDYGbNNDYzTpvSmGC0K8tz5pcKTBPQIDAQABAoIBADXIJ2IjrU/5M6Ng\nqSuMg1Lf60eWaNedOZP12hENVCMLA99kp56X5PfnJDZMJHY2Y80bIuaArLfjcyuV\nMzgNj3Izz47swqAL8G/ApC0malklcSKTUUk66D9ZVmFhrytFaXMLFbhOaR7qN1w+\nRzV3MEcFq5QMJ7JdPyenbI5SNcEhng4i00fZiU5WL1uh9xvABdIu3rEa47IvicG5\nsBj3KGBnBBVvej3T4fbr4S6aG0fvcVktxvb3/mMg4Ekc7QAdUY9a+DKygQwUVhoB\nMha5jLEP2DkqcwREtrRKNlvN3jc0HQGirSAw7rH+PkAsFMMMhcHPogwPaQ5lM4nu\nGdUgaFkCgYEA+buQ4OOeO8xmlqivWbhDhh99ZDsWe2ADKhQkd66/ZxE+/7yChULW\nJ3F65Feppvx6Pyb/S8AE0Jqjn7lMIJUArSRPOSbByChdPxK8foatjvJykC8HNU/x\nbcj4jRDXHeMEr2teyDi0pk4puCUbaTF2rGCzotsERnkCbF8/4HmK5l8CgYEA1IOA\nHPnmUInMWW443y4cak9VSgjuVCIlGgT3732sZT1zemz8LNc/H3lzPI/oVBr7zKFm\nKgkQYTvmeoZNJBQiqqMq3AMWKkf3/05i67Zzi5Ip+oiHjiOmn8b5HLWXu1VeZjlS\n+SnjSnb2SG5XZocUTcwgyx5443SGVIM2pCPJZeMCgYEA+aIz7Ym6d54YAov2VKIr\n5Vt+9X1XONa98wcVeQmWTMnhhrQCaIFqHx2BsdWrQb/p10z9L9RvO7MI0rXgUkV/\n2pOMGd4TISiwJUduYq/vuA/E0zofY3xZItwdEK3/yuFOoqeapFyCwCcr7uYw41NN\nhHxZtPZn7KYz9O61pIb6gNMCgYEApZeuLWYAtEMby5fakvWASMp2oBDjfQV6OZMj\niyc3PVAr+nqP6XT0B9eAFvHfzCGWkXY2gIy9iba+Oj0KQRG7jZFFJVj2XY3kzbjL\n1fY+hMQpF8JpNjXLcXb+yAMsL1ovC6KhZ+ve4zhdYkUwr4CULqbf6sZc1ogG4DW6\nTx5foZcCgYEAyfPsILXWNcYSugZoBk3C0InytMr9+ymSb/EKVXx/JzfgFciornPY\nXq6ksUU92bXvbFYbT9Z4Sfti56/lB1VCGIF5BL8Dolphzlq4jvsM9zwHxKmQTvfl\nuiTiCtVtcPiaWkZFKJDUdtiphCJ+RRCAFqnBDkKlL3PbHultTwwKV5Y=\n-----END RSA PRIVATE KEY-----\n', '2', '2026-08-04 07:58:40', '2026-05-06 08:57:13', '2026-05-06 08:57:13');
+INSERT INTO `ok_certificates` VALUES ('25', 'ce-dXIiAteFRGydLMv', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/jCCA+agAwIBAgISBljZmL+eJXQ36CYueNX4CvH8MA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNTA2MjM1ODM4WhcNMjYwODA0MjM1ODM3WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDE/3PqASiROnXMh2XIsHRVNOMIbzEED0RcTPsQlEdG1ucF7erXQ1vehgck\ntwMmk2NivNI/SZVHAYKY16VgpRz4hZEMiQK94qcNJSYMy9uOgFwa8b98CIBDHNTp\nIkCF64pASidWiLINEjP/c9VrD//lbc9utTcMkWLSOFljrMugVgBIb1n81Jylxsos\nTVPJjMHPvbusDy+0GevCcYz8kGAhGHNJjF2NUVN2A8dClva3OuEHYiR4F97FfcVK\nr7qNuIHJPwjLXAUBdLd28FKoeoqkBl4D9NUqik6OBNZKUD6IwPf4KPeMQMiA8jhS\nGInw8JTEVi77xgmxtM87rE8ku8/9AgMBAAGjggIgMIICHDAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nZd7b6UmFNrQL8Zw0k6zZ5pMk6AgwHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLwYDVR0fBCgwJjAkoCKgIIYeaHR0cDovL3IxMy5jLmxl\nbmNyLm9yZy8xMjUuY3JsMIIBCwYKKwYBBAHWeQIEAgSB/ASB+QD3AHYAlE5Dh/rs\nwe+B8xkkJqgYZQHH0184AgE/cmd9VTcuGdgAAAGd//BBrQAABAMARzBFAiEA316G\nF5vAO0rgwS9FA4WOf1kC7G8G9JBBpIPyczjo9PQCIAgEfavQJCiLtIXeb7wbs0f4\n2JaRp4rtLGYQisVGHWpnAH0AqCbL4wrGNRJGUz/gZfFPGdluGQgTxB3ZbXkAsxI8\nVScAAAGd//BEeQAIAAAFAAnYMsEEAwBGMEQCIAv/oOIDA+4SbzJXybLU7vKcii6w\nZEM1tCRrdj6LslLaAiA2+ajb4rpGhiMTsc9l5VKLx2IpyOMpQ4/PZnR0z8VZuDAN\nBgkqhkiG9w0BAQsFAAOCAQEAhSelvqdH4zv3P1YuXNgdVF1Ds3mWE7488znSY15Z\nHqOuOW0fOsamyvI9uuIPcqY92jFEiQemw/20vx313vGnNz0BGCcmi6AT67I6C7XT\no45Ee25kheH9JDIhkORoCQtWzojv9Th+GidO1JTVahX1MrTSm+kNRcef9il54FjY\nJkQHCMDmMz3PWArALnXO9W5JuphlPz4XO4ek1VVziMVZHnW9vFvIBmmWjCr8tONp\nHdilDh7go4yyRgUSFsJ1PJ5JomCwJ0e/TeKUD+aVbo0jMeUSggZUn5T3Y17CKYxn\nSzj2AwWfjbyPXB2mQMxNvB9EpzSgsjq5S1CmDQbUnwDANw==\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAxP9z6gEokTp1zIdlyLB0VTTjCG8xBA9EXEz7EJRHRtbnBe3q\n10Nb3oYHJLcDJpNjYrzSP0mVRwGCmNelYKUc+IWRDIkCveKnDSUmDMvbjoBcGvG/\nfAiAQxzU6SJAheuKQEonVoiyDRIz/3PVaw//5W3PbrU3DJFi0jhZY6zLoFYASG9Z\n/NScpcbKLE1TyYzBz727rA8vtBnrwnGM/JBgIRhzSYxdjVFTdgPHQpb2tzrhB2Ik\neBfexX3FSq+6jbiByT8Iy1wFAXS3dvBSqHqKpAZeA/TVKopOjgTWSlA+iMD3+Cj3\njEDIgPI4UhiJ8PCUxFYu+8YJsbTPO6xPJLvP/QIDAQABAoIBAQC8V0K6KctgNdUj\n6xsr6U//mqWoja3+JJ6F5G9wpWMT3ihXqeSJU/QEZn1z46kWe3lckAwux6n5jf8P\nI7UQFiwBiqlno6JEauqtjaO4Pjq2HhBxDkm1SuddwrXoAoBPySaPWpYLjHs2Nf4S\nr+sOBejwr7DPNl/gGyuwsoD749t2eLTYHQpmb8giQDmSVvsPBY72JVQsl/K1ZkBl\nY++QotlsofBuyjw9FbiEGcaty1vn5BRYfkR/AC0HwhSxXfxiiYSR+zkx8mi2kqKo\nEb/CPItsBZERS4rNmgu7grhrg2N6BpuXo6UQPKm175F5iCH0Yt81SCgmAItod7VQ\ntSIP6+3BAoGBANdJ9wJo568JMRCJq0HphEeVf7PGO2poJiJAlmXQPT+WVsXVX+Gh\nR0mka5/pi8KMpQZ8M3i0Li0xeVioUossqSJZMv9MKc8vojiblC5X2DCkJs/OCYMp\nPy1qFILfAPX2+shanFc9+KmWUnx2oxizy4GKZ6noLhCJkNJ7+NewOhrtAoGBAOpA\nBrUea0G+uUvZZ3qOR3Jnj2OJfTR32YAWiN/oSpqhSbQmxEoci5UU8Df0OmIMU5Lr\nGs9roCJJn60pm3cIW+5PTPmedjkJALZjJ+kWlCajtQ80wJZTfroTTcuoSThkbikN\nf16DftdcTN6LdSJIsRtyOCvxA2K3QVo1Vv695hdRAoGANX/d8C1dlbO1C6UKd+Ct\nzJQsHeKfFTw4bb6bIUX0Un7rpVH297z6WCSR0jVZU8lboRbwO4ibCQQIYa3ChW9d\nwHlmIOcuZJwztdmDo1iVEtFYC7/pwTxYxNJdsn/0Xys2+t75hvyRdKM0cFWTBip3\n4gMg66oU+GsXIBdKqV7TsakCgYEAjSkaIaj8D3lkZi3Tqsn0ih+YC+59cdHLUuHB\nh9SOqJILPTGjVdnPz333qHBXgmBVOJLO7DG6JQ9i1tHc6qUx6PEGvOHd8k7XjBFC\nqra9fm9mm4w5hh04n98kIVb/EKmMrNaCa60oEZWAiRdW9dsCRzzUVr59QM6X5kmA\nbDB5aJECgYBgCX1VOoZ79aZ6OOhbHMK9XXg6NhPtoEoAQKoZNF+E18yjsjtgep+0\nXTm8SSq4rouZYuEtFW0aS9EI9Fm5/wnPVrBCOpnqRib9IiBctvtQ181eLpFbo7/N\nx6oz7iFFzSJFY7nZUtnfAl91yWVtm3a6u3MGGnvLuCBxWptNQcU/PQ==\n-----END RSA PRIVATE KEY-----\n', '2', '2026-08-05 07:58:37', '2026-05-07 08:57:10', '2026-05-07 08:57:10');
+INSERT INTO `ok_certificates` VALUES ('26', 'ce-fqwnDg6P4WEsKGS', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/TCCA+WgAwIBAgISBY2Xgaqi4vHfwnSFeu9+bdmlMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNTA3MjM1ODM4WhcNMjYwODA1MjM1ODM3WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQCi4UlZCJYI0Ly8BQiXWySkwKcxfMuV7uXfRQRk1EJvESx8x9YPulVpcqXA\nGSvVWpQmZKfRXsFOtRcbyVjvcKos3Z9M8ws49bhRX8z8UNqmPQfJCs+tEmMius8P\nOwgqMna3vigVTQgFSeX+FfmIBQ5Dh7xN5NGQO5CaYdKnF7HyO4Si1AkR8gJ3iZHD\nKkwOGPPjvkK6WI3czFK4fY4fbebAs6CnXLXG09UhkOkKYxRKWSSb5u+/SeHgTa94\nx7A031O+UqwnlbcFQQLx0QiZTIKul9L2vO5SqDuKEeAxESGCUi8KmWucGObe3yVq\nDsAuitPpdMOQ5utX76CPq9Qi4BC/AgMBAAGjggIfMIICGzAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\nNy4bm6RVRxb1B5dmTp6213mSY04wHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL3IxMy5jLmxl\nbmNyLm9yZy8zOC5jcmwwggELBgorBgEEAdZ5AgQCBIH8BIH5APcAdQCUTkOH+uzB\n74HzGSQmqBhlAcfTXzgCAT9yZ31VNy4Z2AAAAZ4FFpwxAAAEAwBGMEQCID0/060I\nHG5T/cbGAIC4Lf5OSx4BxYu81Fxiw4x1HoCEAiA6ShWBAejLFdz+BX2cPNfG6Wwm\nie29dSEPX1bMsJbBSwB+AGz+UBlDqF6pFrxS0TPk3Mke8UEcfSWEINFzgJ4YGOs6\nAAABngUWnx4ACAAABQAKfHftBAMARzBFAiBhwfgB/jOI4tX79hXkOL/nvdMktcrb\nWxwytUWXtVwbIQIhAO7bT/fwL2AeGb3BBfm11eEfyN20/ssKCbNQ/A8GhYY5MA0G\nCSqGSIb3DQEBCwUAA4IBAQB2/ZJZxLV5qJ1Ou+D+biPWYYF2x8SMM3oL4jr1xsgx\nFEYwd5jmi22EdJn5dsfJ7kntBt/yNMAwkC+9WHuEY4AZhQNMiCt3mZAZht5moToK\nUUUJQUuXFV7GA9anXGYMn/XFveQbuhpoJNVlNcnXf8LnIWtqqJ3imA2qKLLqguLp\n4DNXHnFnqxYiuQAUIGDtJ/+P7Ax0JGWtx6YssxsamSKP/IAhMCiF2uC9hcrqAHjf\nQbxg6LyvNrHqeiwzG8YjWBJjAWDcXUlx4yYu3CnC/uiO8399AColf698k2RicvSp\nJ8PwQ0CAuadTOu8rcU5TiGmdF9Wpkk8e/8A/gG0vTIpI\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAouFJWQiWCNC8vAUIl1skpMCnMXzLle7l30UEZNRCbxEsfMfW\nD7pVaXKlwBkr1VqUJmSn0V7BTrUXG8lY73CqLN2fTPMLOPW4UV/M/FDapj0HyQrP\nrRJjIrrPDzsIKjJ2t74oFU0IBUnl/hX5iAUOQ4e8TeTRkDuQmmHSpxex8juEotQJ\nEfICd4mRwypMDhjz475CuliN3MxSuH2OH23mwLOgp1y1xtPVIZDpCmMUSlkkm+bv\nv0nh4E2veMewNN9TvlKsJ5W3BUEC8dEImUyCrpfS9rzuUqg7ihHgMREhglIvCplr\nnBjm3t8lag7ALorT6XTDkObrV++gj6vUIuAQvwIDAQABAoIBAAGq6tRViSu372bB\nanAaR8rECjIwg+kaFBJwI3Zg0flPJLR2W1O35a35tYa8+zzo+4FVIH69SJ9krULk\nkduJvMRO1JW2G1RO978livS+Yy62i0DcsnmkKY2uefY+9XtxHtQMx15Idp+PPSKX\n2QEyhA3e8uedQyQF6BocjEqXrIO9YhS48VIltEoiHjWCQ3DOeEFUXQ6f2tA/XeIw\n8PeAPfgRn/HAn8FK/SIGAMm1cxHy1kRrENzxZXRs236nckZ5IV2KJV2heJ77aQ0E\nyldK4SJJ7cGFnYrYUIVP3HVWSUeYlfqoMkuadb/HkSoDpdxbWeQ2P6tH3rEvcsX0\nsUjg75ECgYEAyXxAMLYoKPZh/LO+oel7NXjUe+utqCaWfSWdyXTJK7WS2JlcWKes\nx+CAQiObPqMdL4U5T+QchmgF6V/ooH/PIX2L8gvdUbz4rjmVA9cpoYihyK+PDguF\nDEbUrnUyeCiPLIxlPAjOyPTSPHbW0GwTmjVehkeMSnc7YpIHQk9KR+kCgYEAzvMQ\nNEVE6fjL4whfeanNB11S7boZXv8DCsYQiuNpCMFEo6qW3t7F+7MWclyUaemndrVD\ndFwIMrccsUzH0MmCtsQ0pBC36wXi1YKALGehw1NWjDRX0Zq+tI5AtzC2XdrEUP5T\n3sT7AfjPIAx4dg2LWer46GMXfcG/UnBNfcUA0mcCgYEAiUCe6Y/s45qTPXWkUt+e\nEtrwxEnTzkwbD71kMyvfLmtOUUaHZc0zIiWIuYVP5+dtpkV2uTmHRPfvrv6qlUr7\narD/eC8k4N19+hE3tZoIvgU5UGBnbwXh6G8HyqADdV8LySkKfU7yrmo4HQBHbUty\nPwZEEe0DYGbAiXE4iK9CxqECgYEAp1axtqKAW/S64KTHlvgvepIC2YmOtFreGdsY\nS0Yhi1vD5det0R8v1hv0vZqQw6eUqw9dMPyuAFxCjjc4p2IaGTFEI5oFLbx/tAen\nHsDZc7iylgJJNIq9RAB24eo4vGGGNrvAE7USBoEq8o5C5aqEELxIcpiVyTFeRAnd\nDyK6TGcCgYBU8G9zj9DHs0afXu26wVS9Md3DaItAGND/ivghO/dXLSEqHf+2BOxa\nVKo083TC9wVQr9xYH3Ar2dfFWGMpO2ixwe1tEDBuBEXAJazir85PSyfQsI/RbXjH\nblW/kQWdAi03x0fmwaXobB8O3SkGJyBnYJ9GQhs2WJKJNFO7CSbS4w==\n-----END RSA PRIVATE KEY-----\n', '2', '2026-08-06 07:58:37', '2026-05-08 08:57:10', '2026-05-08 08:57:10');
+INSERT INTO `ok_certificates` VALUES ('27', 'ce-nNXWXLM7OJkmf6p', 'opseasy.xmquhu.com', 'letsencrypt', 'rsa2048', 'Let\'s Encrypt', '-----BEGIN CERTIFICATE-----\nMIIE/zCCA+egAwIBAgISBjlyxGyDJf5zr6IqMWwv58TzMA0GCSqGSIb3DQEBCwUA\nMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD\nEwNSMTMwHhcNMjYwNTA4MDA1NTEwWhcNMjYwODA2MDA1NTA5WjAdMRswGQYDVQQD\nExJvcHNlYXN5LnhtcXVodS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDuMprj+VK/L8SknSEl9NTCY/JgwgIW2JzdYodpyBIq3ZtSvgnBIcTo9nGW\nvpw276rnrWgk0dCmS3FoIxMLhkff+o/IhAFq8qLRBTV6Ik3dnVNaDncCLl96a//9\n6t2UPjMwUC/E/shJoMBf7zoHJ0YfTycXQVZfHe0VT9U+sLVBc0g2eCq02M1uTO4R\nBvScuf18pBic8wfy2EINpThE1UU3Vj8OuCjl2bmjhMR1X9L7mCnVSoFE2+W8pRcv\n6y7yHqY0Ctd8KIp5ldWudcXt7JxeYcbNKfTrDu7DzU/bl28OMW41vsAb+Nsymonv\ntsl4cZzt/fE1aIinJJS7dpjJOBHjAgMBAAGjggIhMIICHTAOBgNVHQ8BAf8EBAMC\nBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU\n9nA3UF1v4u1ZVYRoU2woRPoAEYMwHwYDVR0jBBgwFoAU56ufDywzoFPTXk94yLKE\nDjvWkjMwMwYIKwYBBQUHAQEEJzAlMCMGCCsGAQUFBzAChhdodHRwOi8vcjEzLmku\nbGVuY3Iub3JnLzAdBgNVHREEFjAUghJvcHNlYXN5LnhtcXVodS5jb20wEwYDVR0g\nBAwwCjAIBgZngQwBAgEwLwYDVR0fBCgwJjAkoCKgIIYeaHR0cDovL3IxMy5jLmxl\nbmNyLm9yZy8xMTYuY3JsMIIBDAYKKwYBBAHWeQIEAgSB/QSB+gD4AHUAyzj3FYl8\nhKFEX1vB3fvJbvKaWc1HCmkFhbDLFMMUWOcAAAGeBUpe0wAABAMARjBEAiBSvHrJ\n3HNNxhHpuZPzchVwEAOW0yZWk0QgQTkpyUMRNgIgEa2BVZHVwaiVzZ8wZk8ecKzp\npInh90mHztBLDbqiH+sAfwCoJsvjCsY1EkZTP+Bl8U8Z2W4ZCBPEHdlteQCzEjxV\nJwAAAZ4FSmJ5AAgAAAUACf0o6AQDAEgwRgIhAKYVxj3vrugu6EfpHnzNAoSV0fPy\n5XSnkal/FaW7g9uNAiEA3T8LFQFX/YmsHAPaR2Ffj/epCxIx+U4zFGT1Trtm1JUw\nDQYJKoZIhvcNAQELBQADggEBAGQTWNrzDliMsQPlSRlWaGsbc893jm1TkuMVKfMx\nMGn+b0W4KcVwHAI+iVEDS7td3TVsxtmyRD3tLl0FPb2tLleEfyq3vBU8dZ2nETbV\nAZZylFBYyJPmOaCC8ianE240ujXlu10lCvvveb/xllY0qGCrHs89MsW7REFgjtzM\nxHj+k7ebVm8fuf/xjIHpf4iXfl2GcUo0lDzqk/KOw9aMg338mNrJVMfsM8V9pE0a\nsHSU832EeAxDwyTDhwZnyqzbgbog3qI8ZtaLng6R1gPPc7gZ0/mPYFOB7T3R47Eb\nCnjpIvT5snqv3HUIDS3GqhGtUNjI4L3tY66QiE8BvAxx/O4=\n-----END CERTIFICATE-----\n', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA7jKa4/lSvy/EpJ0hJfTUwmPyYMICFtic3WKHacgSKt2bUr4J\nwSHE6PZxlr6cNu+q561oJNHQpktxaCMTC4ZH3/qPyIQBavKi0QU1eiJN3Z1TWg53\nAi5femv//erdlD4zMFAvxP7ISaDAX+86BydGH08nF0FWXx3tFU/VPrC1QXNINngq\ntNjNbkzuEQb0nLn9fKQYnPMH8thCDaU4RNVFN1Y/Drgo5dm5o4TEdV/S+5gp1UqB\nRNvlvKUXL+su8h6mNArXfCiKeZXVrnXF7eycXmHGzSn06w7uw81P25dvDjFuNb7A\nG/jbMpqJ77bJeHGc7f3xNWiIpySUu3aYyTgR4wIDAQABAoIBAQCZ9L1mMkUIa6CG\n4USGmutVRXJolZzyFUm2UbPCbF1JtXhqD4iQevohtQAP9d1UKK5nFg6lFbPtd/+x\n1lG99inIm9OJP8EG1hLkVKCO81MutTwljgnfsAdoQhvwi3hyE43UYU+u3RqpdCxD\nFYWFEB5jqC5U+pcP3XDagIINBfvxc4lydM3jKCEEqHTwXNdLlTg+Kft0IpDiW30m\njjKJ/HH/19ags1qDyw2O8mAKfYt5z2uGHMYmLHU0Hbem+Fgaj+NhYlZZeMNsAlkl\nV55Kwu9/iED5Z19JBdqb/CmhiDuir6CFyN/7XIlEfIZF5TOAxPYLDi6f6hd1jKtH\nJUGlCYnpAoGBAPmEpDiMC3nKhRQBU6lpKt3FKXgcue60+19ME9amtB7lIY/vyr9p\nke+c67uLxHnNGIcheufC5HqAkC0hpcK2f+MPd/YzZOnsrpQKuCh3YtINzrM/kX8g\n1P7PfxmB052/BOIZLvPz5z49Ez1yQGPUGzPHouVy8OgkY8w+jA0o9HSlAoGBAPRi\nrf8ITj3DZ2L5QwrYyAmPAoTnuatrDfHJRwO2IO6lWral2bVsEvv52KM0uAyuCvyE\n04tlb+bDElKvIItetxy5pwZeaV3u8yGP6cJ1pHWDsttD6P4hduzhDVMgP71+LGB3\n6HPBchhWsUE46dCemXDztYa723oNNGRPiasIYb3nAoGAQv42CWiwfBa//EsO52Fx\nPPH+3Fz6HvlAtKl8ehlwKwtiI39CdHon0KnVMRmpuvoyJ7X5hdhx9+Ik07lBBDJz\ny8cPcm8CHTyK8vydzV+gjL1gTgg3TGbISVH00ihlZOkwqnQQgzdtUuybCdhvKV59\nnz1uoyRlQi7jDKeOesoQOHECgYEAzzJK6wsTqvHc2eETokKhdtk0/ZGprVgafoB0\nIQVtbmfrPSfoKRT0E4aE0fqEgNuenPHQmULrWO7Svh+UrBUlkskkfxXUp7tLj40A\nV8p+INQD9Drjc3LT7YnxTiTtZa9v2GpRPrMoFNKLfgzOz/1ngohdw1nKfvRrExEM\nW2HD3MkCgYAM6zo2Ccl3oWHBU/tkn7QjLhKes5I8FyLXGVNTRdDqA09qKjwYJJz8\nAKoErQ/buBYgp9w8jBGG1NH/rCgBLDG+aXOpTfn4osVNd6vaIyW8F4D6a0o/qLtP\nkZlDQCiDd8EcqmQJy1dKeeIt63QnccvI7+WQr0Zr8YaMXBNxfoVi1Q==\n-----END RSA PRIVATE KEY-----\n', '1', '2026-08-06 08:55:09', '2026-05-08 09:53:42', '2026-05-08 09:53:42');
 
 -- ----------------------------
 -- Table structure for ok_logs
@@ -374,8 +231,271 @@ CREATE TABLE `ok_logs` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
   PRIMARY KEY (`id`),
-  KEY `idx_res_id` (`res_id`),
-  KEY `idx_username` (`username`),
-  KEY `idx_resource_type` (`resource_type`),
-  KEY `idx_created_at` (`created_at`)
-) COMMENT='Operation logs';
+  KEY `idx_res_id` (`res_id`) USING BTREE,
+  KEY `idx_username` (`username`) USING BTREE,
+  KEY `idx_resource_type` (`resource_type`) USING BTREE,
+  KEY `idx_created_at` (`created_at`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1535 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_logs
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for ok_plugins
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_plugins`;
+CREATE TABLE `ok_plugins` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(56) NOT NULL DEFAULT '' COMMENT 'Plugin id',
+  `plugin_key` varchar(20) NOT NULL DEFAULT '' COMMENT 'Plugin key',
+  `icon` varchar(50) NOT NULL DEFAULT '' COMMENT 'Plugin icon',
+  `type` tinyint NOT NULL DEFAULT '0' COMMENT 'Plugin type',
+  `description` varchar(200) NOT NULL DEFAULT '' COMMENT 'Plugin description',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  UNIQUE KEY `UNIQ_KEY` (`plugin_key`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_plugins
+-- ----------------------------
+INSERT INTO `ok_plugins` VALUES ('52', 'pl-dIhZpgqcCHQzNgT', 'cors', 'icon-cors', '3', '配置服务端CORS（Cross-Origin Resource Sharing，跨域资源共享）的响应头信息', '2026-05-08 08:57:04', '2026-05-08 08:57:04');
+INSERT INTO `ok_plugins` VALUES ('53', 'pl-5xO9hzfcHJtpcQT', 'mock', 'icon-mock', '99', '配置模拟API数据，且请求不会转发到上游', '2026-05-08 08:57:04', '2026-05-08 08:57:04');
+INSERT INTO `ok_plugins` VALUES ('54', 'pl-xZjvnLQfq2i5GTS', 'key-auth', 'icon-key-auth', '1', '配置身份验证密钥（key密钥字符串）', '2026-05-08 08:57:04', '2026-05-08 08:57:04');
+INSERT INTO `ok_plugins` VALUES ('55', 'pl-0FnmajmiO7C8PtX', 'jwt-auth', 'icon-jwt-auth', '1', '配置用于JWT身份验证的密钥', '2026-05-08 08:57:04', '2026-05-08 08:57:04');
+INSERT INTO `ok_plugins` VALUES ('56', 'pl-m5BzSXbCQfGzoQi', 'limit-req', 'icon-limit-req', '2', '使用漏桶算法限制客户端对服务的请求速率', '2026-05-08 08:57:04', '2026-05-08 08:57:04');
+INSERT INTO `ok_plugins` VALUES ('57', 'pl-rLYsoeNVfPUMUAA', 'limit-conn', 'icon-limit-conn', '2', '限制客户端对服务的并发请求数', '2026-05-08 08:57:04', '2026-05-08 08:57:04');
+INSERT INTO `ok_plugins` VALUES ('58', 'pl-XZxaqOgRZsBKpoE', 'limit-count', 'icon-limit-count', '2', '限制客户端在指定的时间范围内对服务的总请求数', '2026-05-08 08:57:05', '2026-05-08 08:57:05');
+INSERT INTO `ok_plugins` VALUES ('59', 'pl-WafZxaqOgRZsBKpE', 'waf', 'icon-limit-count', '3', 'Web应用防火墙，提供SQL注入、XSS攻击等安全防护', '2026-05-08 08:57:05', '2026-05-08 12:05:34');
+INSERT INTO `ok_plugins` VALUES ('60', 'pl-LogKafkaZxaqOgRZ', 'log-kafka', 'icon-limit-count', '99', '将访问日志发送到Kafka消息队列', '2026-05-08 08:57:05', '2026-05-08 12:05:37');
+INSERT INTO `ok_plugins` VALUES ('61', 'pl-LogMysqlZxaqOgRZ', 'log-mysql', 'icon-limit-count', '99', '将访问日志存储到MySQL数据库', '2026-05-08 08:57:05', '2026-05-08 12:05:39');
+INSERT INTO `ok_plugins` VALUES ('62', 'pl-TrafficTagZxaqOgR', 'traffic-tag', 'icon-limit-count', '4', '根据匹配规则为请求添加流量标签', '2026-05-08 08:57:05', '2026-05-08 12:05:42');
+INSERT INTO `ok_plugins` VALUES ('63', 'pl-RequestRewriteZxaqO', 'request-rewrite', 'icon-limit-count', '4', '重写请求URI、请求头和查询参数', '2026-05-08 08:57:05', '2026-05-08 12:05:45');
+INSERT INTO `ok_plugins` VALUES ('64', 'pl-ResponseRewriteZxaq', 'response-rewrite', 'icon-limit-count', '4', '重写响应头、状态码和响应体', '2026-05-08 08:57:05', '2026-05-08 12:05:50');
+
+-- ----------------------------
+-- Table structure for ok_plugin_configs
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_plugin_configs`;
+CREATE TABLE `ok_plugin_configs` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(56) NOT NULL DEFAULT '' COMMENT 'Plugin config id',
+  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Plugin config name',
+  `type` tinyint NOT NULL DEFAULT '0' COMMENT 'Plugin relation type 1:service  2:router',
+  `description` varchar(128) DEFAULT NULL,
+  `target_id` char(20) NOT NULL DEFAULT '' COMMENT 'Target id',
+  `plugin_res_id` char(56) NOT NULL DEFAULT '' COMMENT 'Plugin res id',
+  `plugin_key` varchar(20) NOT NULL DEFAULT '' COMMENT 'Plugin key',
+  `config` text NOT NULL COMMENT 'Plugin configuration',
+  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Plugin config enable  1:on  2:off',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_plugin_configs
+-- ----------------------------
+INSERT INTO `ok_plugin_configs` VALUES ('1', 'pc-cIvvY2IdZ1U9eQD', 'plugin-limit-req', '2', null, 'rt-Vany67MXLtgTHwG', 'pl-m5BzSXbCQfGzoQi', 'limit-req', '{\"rate\":1,\"burst\":500}', '1', '2025-12-04 15:56:32', '2025-12-04 15:56:32');
+INSERT INTO `ok_plugin_configs` VALUES ('4', 'pc-8NZxzDiuDu88U8g', 'request-rewrite', '1', '', 'sv-GdO0rkKOo5yJ9RM', 'pl-RequestRewriteZxaqO', 'request-rewrite', '{\"enabled\":true,\"uri_rewrite\":{\"type\":\"replace\",\"value\":{\"pattern\":\"\",\"replacement\":\"\",\"flags\":\"\",\"from\":\"/3721-api\",\"to\":\"/admin\",\"remove\":\"\",\"add\":\"\"}},\"headers\":{},\"query_args\":{}}', '1', '2026-05-08 12:08:53', '2026-05-08 12:09:03');
+INSERT INTO `ok_plugin_configs` VALUES ('5', 'pc-PbpEw5ZYLTTnQPA', 'plugin-request-rewrite', '2', '', 'rt-l417zeVG36pTVxd', 'pl-RequestRewriteZxaqO', 'request-rewrite', '{\"enabled\":true,\"uri_rewrite\":{\"type\":\"replace\",\"value\":{\"pattern\":\"/admin-api\",\"replacement\":\"\",\"flags\":\"\",\"from\":\"/admin-api\",\"to\":\"/admin\",\"remove\":\"\",\"add\":\"\"}},\"headers\":{},\"query_args\":{}}', '1', '2026-05-08 16:09:59', '2026-05-08 16:09:59');
+INSERT INTO `ok_plugin_configs` VALUES ('6', 'pc-1kUa75VFx2pTVUq', 'plugin-request-rewrite', '1', '', 'sv-BkiWODvz2LI9i66', 'pl-RequestRewriteZxaqO', 'request-rewrite', '{\"enabled\":true,\"uri_rewrite\":{\"type\":\"replace\",\"value\":{\"pattern\":\"\",\"replacement\":\"\",\"flags\":\"\",\"from\":\"/admin-api\",\"to\":\"/admin\",\"remove\":\"\",\"add\":\"\"}},\"headers\":{},\"query_args\":{}}', '1', '2026-05-08 16:11:01', '2026-05-08 16:11:01');
+
+-- ----------------------------
+-- Table structure for ok_routers
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_routers`;
+CREATE TABLE `ok_routers` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Router id',
+  `service_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
+  `upstream_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
+  `router_name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Router name',
+  `request_methods` varchar(150) NOT NULL DEFAULT '' COMMENT 'Request method',
+  `router_path` varchar(200) NOT NULL DEFAULT '' COMMENT 'Routing path',
+  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Router enable  1:on  2:off',
+  `release` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
+  `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size in bytes',
+  `chunked_transfer_encoding` tinyint unsigned DEFAULT NULL COMMENT 'Chunked transfer encoding 1:enable 2:disable',
+  `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
+  `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',
+  `proxy_set_header` text COMMENT 'Proxy set header configuration (JSON)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_routers
+-- ----------------------------
+INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-GdO0rkKOo5yJ9RM', 'up-p6f18nbjdLwS73j', 'apiok-router', 'ALL', '/*', '1', '3', '', null, null, null, null, '2025-12-05 18:58:50', '2026-05-08 09:53:44');
+INSERT INTO `ok_routers` VALUES ('7', 'rt-l417zeVG36pTVxd', 'sv-BkiWODvz2LI9i66', 'up-BsYcvp9VClgXIX2', 'okx-router', 'ALL', '/*', '1', '2', null, null, null, null, null, '2025-12-22 17:49:48', '2026-05-08 16:09:59');
+INSERT INTO `ok_routers` VALUES ('9', 'rt-U9Xx9J5HIVygiFy', 'sv-uGkY5neXwUXMW8r', 'up-a04qPOIQ1qnpFKt', 'opseasy-router', 'ALL', '/*', '1', '3', null, null, null, null, null, '2026-02-28 09:44:13', '2026-02-28 09:45:00');
+
+-- ----------------------------
+-- Table structure for ok_services
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_services`;
+CREATE TABLE `ok_services` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
+  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Service name',
+  `protocol` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Protocol  1:HTTP  2:HTTPS  3:HTTP&HTTPS',
+  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Service enable  1:on  2:off',
+  `release` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
+  `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size in bytes',
+  `chunked_transfer_encoding` tinyint unsigned DEFAULT NULL COMMENT 'Chunked transfer encoding 1:enable 2:disable',
+  `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
+  `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',
+  `proxy_set_header` text COMMENT 'Proxy set header configuration (JSON)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  KEY `IDX_NAME` (`name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_services
+-- ----------------------------
+INSERT INTO `ok_services` VALUES ('3', 'sv-GdO0rkKOo5yJ9RM', 'apiok-service', '3', '1', '3', null, null, null, null, null, '2025-12-05 19:22:32', '2026-05-08 16:16:16');
+INSERT INTO `ok_services` VALUES ('8', 'sv-BkiWODvz2LI9i66', 'okx-service', '3', '1', '3', null, null, null, null, null, '2025-12-22 17:49:48', '2026-05-08 16:16:14');
+INSERT INTO `ok_services` VALUES ('10', 'sv-uGkY5neXwUXMW8r', 'opseasy-service', '3', '1', '3', null, null, null, null, null, '2026-02-28 09:43:19', '2026-05-08 12:06:22');
+
+-- ----------------------------
+-- Table structure for ok_service_domains
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_service_domains`;
+CREATE TABLE `ok_service_domains` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Domain id',
+  `service_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service id',
+  `domain` varchar(50) NOT NULL DEFAULT '' COMMENT 'Domain name',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  UNIQUE KEY `UNIQ_SERVICE_ID_DOMAIN` (`service_res_id`,`domain`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_service_domains
+-- ----------------------------
+INSERT INTO `ok_service_domains` VALUES ('17', 'sd-KG7dDWBLYSsxhTS', 'sv-BkiWODvz2LI9i66', 'okx.xmquhu.com', '2025-12-26 16:15:59', '2025-12-26 16:15:59');
+INSERT INTO `ok_service_domains` VALUES ('18', 'sd-x84YFPD35IGE8uO', 'sv-GdO0rkKOo5yJ9RM', 'apiok.xmquhu.com', '2025-12-26 16:16:07', '2026-02-28 09:16:11');
+INSERT INTO `ok_service_domains` VALUES ('22', 'sd-URXx5G9mBKlFkJS', 'sv-uGkY5neXwUXMW8r', 'opseasy.xmquhu.com', '2026-02-28 09:43:19', '2026-02-28 09:43:19');
+
+-- ----------------------------
+-- Table structure for ok_upstreams
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_upstreams`;
+CREATE TABLE `ok_upstreams` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
+  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Upstream name',
+  `algorithm` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Load balancing algorithm  1:round robin  2:chash',
+  `connect_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Connect timeout',
+  `write_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Write timeout',
+  `read_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Read timeout',
+  `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Enable  1:on  2:off',
+  `release` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Release status 1:unpublished  2:to be published  3:published',
+  `check_enabled` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Health check enabled  0:false  1:true',
+  `check_tcp` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Health check type  0:http  1:tcp',
+  `check_method` varchar(10) NOT NULL DEFAULT '' COMMENT 'HTTP method for health check',
+  `check_host` varchar(150) NOT NULL DEFAULT '' COMMENT 'HTTP Host header for health check',
+  `check_uri` varchar(150) NOT NULL DEFAULT '/' COMMENT 'HTTP URI for health check',
+  `check_interval` int unsigned NOT NULL DEFAULT '1' COMMENT 'Health check interval in seconds',
+  `check_timeout` int unsigned NOT NULL DEFAULT '1' COMMENT 'Health check timeout in seconds',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_upstreams
+-- ----------------------------
+INSERT INTO `ok_upstreams` VALUES ('3', 'up-BsYcvp9VClgXIX2', 'okx-upstream', '1', '30000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-05 18:12:04', '2026-05-08 12:47:30');
+INSERT INTO `ok_upstreams` VALUES ('7', 'up-p6f18nbjdLwS73j', 'apiok-upstream', '1', '60', '60', '60', '1', '3', '0', '1', '', '', '/', '1', '1', '2025-12-22 17:49:48', '2026-05-08 09:54:08');
+INSERT INTO `ok_upstreams` VALUES ('9', 'up-a04qPOIQ1qnpFKt', 'opseasy-upstream', '1', '3000', '3000', '3000', '1', '3', '0', '1', '', '', '/', '1', '1', '2026-02-28 09:42:15', '2026-02-28 09:44:41');
+
+-- ----------------------------
+-- Table structure for ok_upstream_nodes
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_upstream_nodes`;
+CREATE TABLE `ok_upstream_nodes` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Service node id',
+  `upstream_res_id` char(20) NOT NULL DEFAULT '' COMMENT 'Upstream id',
+  `node_ip` varchar(60) NOT NULL DEFAULT '' COMMENT 'Node IP',
+  `ip_type` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'IP Type  1:IPV4  2:IPV6',
+  `node_port` smallint unsigned NOT NULL DEFAULT '0' COMMENT 'Node port',
+  `node_weight` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Node weight',
+  `health` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Health type  1:HEALTH  2:UNHEALTH',
+  `health_check` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Health check  1:on  2:off',
+  `tags` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  UNIQUE KEY `UNIQ_UPSTREAM_ID_NODE_IP_PORT` (`upstream_res_id`,`node_ip`,`node_port`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_upstream_nodes
+-- ----------------------------
+INSERT INTO `ok_upstream_nodes` VALUES ('13', 'un-j7SBOsVHwJdpnSe', 'up-p6f18nbjdLwS73j', '127.0.0.1', '1', '3000', '100', '1', '2', '', '2025-12-22 17:49:48', '2025-12-22 17:56:35');
+INSERT INTO `ok_upstream_nodes` VALUES ('16', 'un-2Tf8rueOjl4012l', 'up-a04qPOIQ1qnpFKt', '127.0.0.1', '1', '9876', '1', '1', '2', '', '2026-02-28 09:42:15', '2026-02-28 09:42:35');
+INSERT INTO `ok_upstream_nodes` VALUES ('18', 'un-nprObeKpLG64q6x', 'up-BsYcvp9VClgXIX2', '127.0.0.1', '1', '9999', '100', '1', '2', '', '2026-05-08 12:47:27', '2026-05-08 12:47:27');
+
+-- ----------------------------
+-- Table structure for ok_users
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_users`;
+CREATE TABLE `ok_users` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'User iD',
+  `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'User name',
+  `password` char(32) NOT NULL DEFAULT '' COMMENT 'Password',
+  `email` varchar(80) NOT NULL DEFAULT '' COMMENT 'Email',
+  `role` varchar(32) NOT NULL DEFAULT 'admin' COMMENT 'admin|viewer|operator',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  UNIQUE KEY `UNIQ_EMAIL` (`email`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_users
+-- ----------------------------
+INSERT INTO `ok_users` VALUES ('1', 'us-Ew2h6VglDSz5Jgi', 'admin', '5521a5be07317574fb365a68fbc43109', 'admin@apiok.com', 'admin', '2025-12-04 15:25:01', '2026-02-28 11:12:24');
+
+-- ----------------------------
+-- Table structure for ok_user_tokens
+-- ----------------------------
+DROP TABLE IF EXISTS `ok_user_tokens`;
+CREATE TABLE `ok_user_tokens` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `res_id` char(20) NOT NULL DEFAULT '' COMMENT 'User tokenID',
+  `token` text NOT NULL COMMENT 'Token',
+  `user_email` varchar(80) NOT NULL DEFAULT '' COMMENT 'Email',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  `expired_at` timestamp NULL DEFAULT NULL COMMENT 'Expired time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_ID` (`res_id`) USING BTREE,
+  UNIQUE KEY `UNIQ_USER_EMAIL` (`user_email`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Records of ok_user_tokens
+-- ----------------------------
+INSERT INTO `ok_user_tokens` VALUES ('2', 'ut-fRxOwcPbZkePkrB', 'eyJlbmNyeXB0aW9uIjoiYXBwbGVAYXBwbGUuY29tIiwidGltZXN0YW1wIjoiYmY5MjFjMzcyMWEzNzQ2ZjFjYzkzZGY0ZjNmZjg5NjEiLCJzZWNyZXQiOiJGUF9WbFdWM292TXY1SHNnUkJFRXIzbzgwWEttOXFlbkVjc1dQWGJPQW8wPSIsImlzc3VlciI6InphbmVoeSJ9', 'apple@apple.com', '2025-12-08 15:56:21', '2025-12-25 23:24:14', '2025-12-26 01:24:14');
+INSERT INTO `ok_user_tokens` VALUES ('3', 'ut-A2HxucJY2xrnC3c', 'eyJlbmNyeXB0aW9uIjoiYXBwbGUiLCJ0aW1lc3RhbXAiOiI1ODg1OGNjNGEyYTdjZGM3M2RmNDBkYTNmMzVkNTI0MSIsInNlY3JldCI6IkZQX1ZsV1Yzb3ZNdjVIc2dSQkVFcjNvODBYS205cWVuRWNzV1BYYk9BbzA9IiwiaXNzdWVyIjoiemFuZWh5In0', 'apple', '2025-12-26 16:11:18', '2026-02-28 11:11:06', '2026-02-28 13:11:06');
+INSERT INTO `ok_user_tokens` VALUES ('5', 'ut-3j190pydJHWjJC7', 'eyJlbmNyeXB0aW9uIjoiYWRtaW4iLCJ0aW1lc3RhbXAiOiJlOGU5YThmNzNkNzgxNzA5Y2IzZTgwZmY1MzNhNjYzNSIsInNlY3JldCI6IkZQX1ZsV1Yzb3ZNdjVIc2dSQkVFcjNvODBYS205cWVuRWNzV1BYYk9BbzA9IiwiaXNzdWVyIjoiemFuZWh5In0', 'admin', '2026-02-28 14:22:01', '2026-05-08 16:17:01', '2026-05-08 18:17:01');
