@@ -1,56 +1,59 @@
 <template>
-  <div class="service-plugin-main">
-    <a-row :gutter="16">
-      <!-- 左侧：插件类型列表 -->
-      <a-col :span="8">
-        <a-card title="插件类型" :bordered="true">
+  <div class="service-plugin-main gw-plugin-shell">
+    <div class="gw-plugin-split gw-plugin-split--lg-row plugin-row">
+      <div class="gw-plugin-split__col gw-plugin-split__col--nav">
+        <a-card class="gw-plugin-card gw-plugin-nav-card" size="small" title="插件类型">
           <a-input-search
             v-model:value="data.searchKeyword"
-            placeholder="搜索插件"
-            style="margin-bottom: 16px"
+            placeholder="搜索插件标识或描述"
+            allow-clear
+            style="margin-bottom: 12px"
             @search="fn.searchPlugin"
           />
 
-          <a-list
-            :data-source="filteredPluginList"
-            :loading="data.loading"
-            size="small"
-          >
-            <template #renderItem="{ item }">
-              <a-list-item
-                :class="{ 'plugin-item-active': data.selectedPlugin?.res_id === item.res_id }"
-                @click="fn.selectPlugin(item)"
-                style="cursor: pointer; padding: 8px"
-              >
-                <a-list-item-meta>
-                  <template #title>
-                    <span>
-                      <i class="iconfont" :class="item.icon || 'icon-apex_plugin1'" style="margin-right: 8px" />
-                      {{ item.plugin_key }}
-                    </span>
+          <div class="gw-plugin-list-scroll">
+            <a-list
+              :data-source="filteredPluginList"
+              :loading="data.loading"
+              size="small"
+            >
+              <template #renderItem="{ item }">
+                <a-list-item
+                  :class="{ 'plugin-item-active': data.selectedPlugin?.res_id === item.res_id }"
+                  @click="fn.selectPlugin(item)"
+                >
+                  <a-list-item-meta>
+                    <template #title>
+                      <span class="gw-plugin-list-title">
+                        <i class="iconfont" :class="item.icon || 'icon-apex_plugin1'" />
+                        {{ item.plugin_key }}
+                      </span>
+                    </template>
+                    <template #description>
+                      <span class="gw-plugin-list-desc">{{ item.description }}</span>
+                    </template>
+                  </a-list-item-meta>
+                  <template #actions>
+                    <a-tag :color="getTypeColor(item.type)">{{ item.typeName }}</a-tag>
                   </template>
-                  <template #description>
-                    <span style="font-size: 12px; color: #999">{{ item.description }}</span>
-                  </template>
-                </a-list-item-meta>
-                <template #actions>
-                  <a-tag :color="getTypeColor(item.type)">{{ item.typeName }}</a-tag>
-                </template>
-              </a-list-item>
-            </template>
-          </a-list>
+                </a-list-item>
+              </template>
+            </a-list>
+          </div>
         </a-card>
-      </a-col>
+      </div>
 
-      <!-- 右侧：插件配置 -->
-      <a-col :span="16">
-        <a-card :title="data.selectedPlugin ? `配置 - ${data.selectedPlugin.plugin_key}` : '请选择插件'" :bordered="true">
-          <div v-if="!data.selectedPlugin" class="empty-state">
-            <a-empty description="请从左侧选择一个插件进行配置" />
+      <div class="gw-plugin-split__col">
+        <a-card
+          class="gw-plugin-card gw-plugin-detail-card"
+          size="small"
+          :title="data.selectedPlugin ? `配置 · ${data.selectedPlugin.plugin_key}` : '插件配置'"
+        >
+          <div v-if="!data.selectedPlugin" class="gw-plugin-empty">
+            <a-empty description="请从左侧选择一个插件" />
           </div>
 
-          <div v-else>
-            <!-- 已配置的插件列表 -->
+          <div v-else class="gw-plugin-config-scroll">
             <div v-if="data.configuredPlugins.length > 0" style="margin-bottom: 16px">
               <a-table
                 :columns="data.configColumns"
@@ -93,9 +96,8 @@
               </a-table>
             </div>
 
-            <!-- 新增/编辑插件配置表单 -->
             <div v-if="data.showConfigForm && data.selectedPlugin">
-              <a-divider>配置信息</a-divider>
+              <p class="gw-plugin-section-title">编辑表单</p>
               <component
                 :key="`${data.configComponentName}-${data.editConfigResId || 'new'}-${data.selectedPlugin.res_id}`"
                 :is="data.configComponentName"
@@ -112,23 +114,26 @@
               />
             </div>
 
-            <!-- 添加按钮 -->
-            <div v-if="!data.showConfigForm" style="text-align: center; padding: 20px">
-              <a-button type="primary" @click="fn.showAddForm">
-                <i class="iconfont icon-addNode" style="margin-right: 4px" />
+            <div v-if="!data.showConfigForm" class="gw-plugin-empty" style="padding: 24px 0">
+              <a-button type="primary" size="large" @click="fn.showAddForm">
+                <template #icon>
+                  <PlusOutlined />
+                </template>
                 添加配置
               </a-button>
             </div>
           </div>
         </a-card>
-      </a-col>
-    </a-row>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { reactive, onMounted, computed } from 'vue'
 import { message } from 'ant-design-vue'
+import { PlusOutlined } from '@ant-design/icons-vue'
+import '@/assets/css/plugin-shell.css'
 import { HookPluginList, HookPluginTypeIdNameMap, HookPluginKeyComponentMap } from '@/hooks'
 import { $pluginConfigList, $pluginConfigEnable, $pluginConfigDelete } from '@/api'
 import Plugin404 from '../plugin/components/err404.vue'
@@ -140,9 +145,15 @@ import LimitReq from '../plugin/components/limitReq.vue'
 import LimitConn from '../plugin/components/limitConn.vue'
 import LimitCount from '../plugin/components/limitCount.vue'
 import Waf from '../plugin/components/waf.vue'
+import LogKafka from '../plugin/components/logKafka.vue'
+import LogMysql from '../plugin/components/logMysql.vue'
+import TrafficTag from '../plugin/components/trafficTag.vue'
+import RequestRewrite from '../plugin/components/requestRewrite.vue'
+import ResponseRewrite from '../plugin/components/responseRewrite.vue'
 
 export default {
   components: {
+    PlusOutlined,
     Plugin404,
     Cors,
     Mock,
@@ -151,7 +162,12 @@ export default {
     LimitReq,
     LimitConn,
     LimitCount,
-    Waf
+    Waf,
+    LogKafka,
+    LogMysql,
+    TrafficTag,
+    RequestRewrite,
+    ResponseRewrite
   },
   props: {
     currentResId: {
@@ -446,31 +462,49 @@ export default {
 }
 </script>
 
-<style lange="scss" scoped>
+<style scoped>
 .service-plugin-main {
   padding: 0;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.plugin-item-active {
-  background-color: #e6f7ff;
-  border-left: 3px solid #1890ff;
+.plugin-row {
+  flex: 1;
+  min-height: 0;
 }
 
-.empty-state {
-  padding: 40px 0;
+.gw-plugin-list-title .iconfont {
+  margin-right: 8px;
+  font-size: 16px;
 }
 
-:deep(.ant-list-item) {
-  border-bottom: 1px solid #f0f0f0;
-  transition: all 0.3s;
+.gw-plugin-list-desc {
+  font-size: 12px;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-:deep(.ant-list-item:hover) {
-  background-color: #f5f5f5;
+:deep(.gw-plugin-nav-card.ant-card) {
+  min-height: 0;
 }
 
-:deep(.plugin-item-active) {
-  background-color: #e6f7ff !important;
+:deep(.gw-plugin-detail-card.ant-card) {
+  height: 100%;
+  min-height: 0;
+}
+
+:deep(.gw-plugin-nav-card .ant-card-body),
+:deep(.gw-plugin-detail-card .ant-card-body) {
+  padding: 12px 14px 16px;
 }
 </style>
 

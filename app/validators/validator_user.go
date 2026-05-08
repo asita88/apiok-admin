@@ -22,6 +22,7 @@ type UserAddUpdate struct {
 	Name     string `json:"name" zh:"昵称" en:"User name" binding:"required,min=1,max=20"`
 	Email    string `json:"email" zh:"邮箱" en:"Email" binding:"required,email"`
 	Password string `json:"password" zh:"密码" en:"Password" binding:"omitempty,min=8"`
+	Role     string `json:"role" zh:"角色" en:"Role" binding:"omitempty,oneof=admin viewer operator"`
 }
 
 type UserList struct {

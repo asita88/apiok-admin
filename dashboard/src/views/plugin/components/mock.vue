@@ -1,10 +1,12 @@
 <template>
   <a-form
+    class="plugin-form-surface"
     :model="data.formData"
     name="formData"
     :label-col="{ span: 5 }"
     :wrapper-col="{ span: 18 }"
     autocomplete="off"
+    label-align="right"
     @finish="fn.onSubmit"
   >
     <a-form-item label="配置名称" name="name">
@@ -31,57 +33,67 @@
       <a-textarea v-model:value="data.formData.http_body" :rows="4" />
     </a-form-item>
 
-    <a-form-item class="http_headers_list" label="http_headers" name="http_headers">
+    <a-form-item label="http_headers" name="http_headers">
       <div
-        class="http_headers"
+        class="plugin-form-kv-row"
         v-for="(item, index) in data.formData.http_headers"
         :key="item.id"
-        align="baseline"
       >
         <a-form-item
-          class="http_headers_item"
+          class="plugin-form-kv-field"
           :name="['http_headers', index, 'key']"
           :rules="checkHttpHeader"
-          style="width: 35%"
         >
           <a-input placeholder="key" v-model:value="item.key" />
         </a-form-item>
-        <a-form-item
-          class="http_headers_item"
-          :name="['http_headers', index, 'value']"
-          style="width: 55%"
-        >
+        <a-form-item class="plugin-form-kv-field" :name="['http_headers', index, 'value']">
           <a-input placeholder="value" v-model:value="item.value" />
         </a-form-item>
-
-        <a-form-item>
-          <a @click="fn.addHttpHeaders()">
-            <i class="iconfont icon-tianjia"></i>
-          </a>
-          <a v-if="index > 0" @click="fn.removeHttpHeaders(item)">
-            <i class="iconfont color-red icon-jian"></i>
-          </a>
-        </a-form-item>
+        <div class="plugin-form-kv-actions">
+          <a-button type="link" size="small" @click="fn.addHttpHeaders">
+            <template #icon>
+              <PlusOutlined />
+            </template>
+          </a-button>
+          <a-button
+            v-if="index > 0"
+            type="link"
+            size="small"
+            danger
+            @click="fn.removeHttpHeaders(item)"
+          >
+            <template #icon>
+              <MinusCircleOutlined />
+            </template>
+          </a-button>
+        </div>
       </div>
     </a-form-item>
     <a-form-item label="启用" name="enable" v-show="pluginOpType === 1">
       <a-switch v-model:checked="data.formData.enable" size="small" />
     </a-form-item>
 
-    <a-form-item :wrapper-col="{ offset: 10, span: 16 }">
-      <a-button html-type="submit" type="primary">保存</a-button>
-      <a-button style="margin-left: 20px" @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+    <a-form-item class="plugin-form-actions" :wrapper-col="{ offset: 5, span: 18 }">
+      <a-space>
+        <a-button html-type="submit" type="primary">保存</a-button>
+        <a-button @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+      </a-space>
     </a-form-item>
   </a-form>
 </template>
 <script>
 import { reactive, onMounted } from 'vue'
+import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons-vue'
 import { Form, message } from 'ant-design-vue'
 import { schemaPluginMock } from '@/schema'
 import { $pluginConfigAdd, $pluginConfigUpdate } from '@/api'
 
 const useForm = Form.useForm
 export default {
+  components: {
+    PlusOutlined,
+    MinusCircleOutlined
+  },
   props: {
     pluginConfigData: {
       Object
@@ -283,14 +295,3 @@ export default {
 }
 </script>
 
-<style lange="scss" scoped>
-.http_headers_list {
-  margin-bottom: 0;
-}
-.http_headers {
-  display: flex;
-}
-.http_headers_item {
-  margin-right: 10px;
-}
-</style>

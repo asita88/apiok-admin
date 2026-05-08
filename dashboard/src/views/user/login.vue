@@ -56,7 +56,7 @@ export default {
         message.error(msg)
       } else {
         if (data.token.length != 0) {
-          store.commit('user/setToken', { token: data.token, username: form.username })
+          store.commit('user/setToken', { username: form.username, ...data })
           router.replace('/')
           return
         }

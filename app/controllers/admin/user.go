@@ -2,6 +2,7 @@ package admin
 
 import (
 	"apiok-admin/app/enums"
+	"apiok-admin/app/models"
 	"apiok-admin/app/packages"
 	"apiok-admin/app/services"
 	"apiok-admin/app/utils"
@@ -31,11 +32,26 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 
-	type tokenData struct {
-		Token string `json:"token"`
+	var um models.Users
+	userRow := um.UserInfoByName(userLoginValidator.Username)
+	if userRow.ResID == "" {
+		emailKey := services.GetUserEmailWithLdap(userLoginValidator.Username)
+		userRow = um.UserInfoByEmail(emailKey)
 	}
-	result := tokenData{
-		Token: token,
+	perms := services.PermissionsFromRole(userRow.Role)
+	roles := services.RolesFromRole(userRow.Role)
+
+	type loginData struct {
+		Token        string   `json:"token"`
+		Username     string   `json:"username"`
+		Permissions  []string `json:"permissions"`
+		Roles        []string `json:"roles"`
+	}
+	result := loginData{
+		Token:       token,
+		Username:    userLoginValidator.Username,
+		Permissions: perms,
+		Roles:       roles,
 	}
 
 	utils.Ok(c, result)

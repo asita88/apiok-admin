@@ -1,95 +1,101 @@
 <template>
-  <div class="main">
+  <div class="main gw-dash">
     <a-breadcrumb class="breadcrumb">
-      <a-breadcrumb-item>
-        <i style="color: #448ef7; font-size: 30px" class="iconfont icon-rizhi"></i>大盘
-      </a-breadcrumb-item>
+      <a-breadcrumb-item
+        ><i
+          style="color: #448ef7; font-size: 30px"
+          class="iconfont icon-yuntongbu"
+        />大盘</a-breadcrumb-item
+      >
     </a-breadcrumb>
     <a-divider style="margin: 10px 0" />
 
     <div class="dashboard-content">
-      <div class="time-filter">
-        <a-range-picker
-          v-model:value="data.timeRange"
-          show-time
-          format="YYYY-MM-DD HH:mm:ss"
-          :placeholder="['开始时间', '结束时间']"
-          @change="fn.onTimeRangeChange"
-          style="width: 400px"
-        />
-        <a-button type="primary" @click="fn.quickTimeRange('1h')" style="margin-left: 10px">
-          最近1小时
-        </a-button>
-        <a-button @click="fn.quickTimeRange('24h')" style="margin-left: 10px">
-          最近24小时
-        </a-button>
-        <a-button @click="fn.quickTimeRange('7d')" style="margin-left: 10px">
-          最近7天
-        </a-button>
-        <a-button @click="fn.refresh" style="margin-left: 10px" :loading="data.loading">
-          刷新
-        </a-button>
+      <div class="time-filter gw-toolbar">
+        <div class="gw-toolbar__label">时间范围</div>
+        <div class="gw-toolbar__controls">
+          <a-range-picker
+            v-model:value="data.timeRange"
+            show-time
+            format="YYYY-MM-DD HH:mm:ss"
+            :placeholder="['开始时间', '结束时间']"
+            @change="fn.onTimeRangeChange"
+            class="gw-toolbar__picker"
+          />
+          <a-button type="primary" class="gw-toolbar__btn" @click="fn.quickTimeRange('1h')">
+            最近1小时
+          </a-button>
+          <a-button class="gw-toolbar__btn" @click="fn.quickTimeRange('24h')">
+            最近24小时
+          </a-button>
+          <a-button class="gw-toolbar__btn" @click="fn.quickTimeRange('7d')">
+            最近7天
+          </a-button>
+          <a-button class="gw-toolbar__btn" @click="fn.refresh" :loading="data.loading">
+            刷新
+          </a-button>
+        </div>
       </div>
 
       <a-spin :spinning="data.loading">
         <div class="stats-grid" v-if="data.aggregation">
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #1890ff">
-              <i class="iconfont icon-rizhi"></i>
+          <div class="stat-card stat-card--indigo">
+            <div class="stat-icon">
+              <ThunderboltOutlined />
             </div>
             <div class="stat-content">
               <div class="stat-label">总请求数</div>
-              <div class="stat-value">{{ fn.formatNumber(data.aggregation.total_requests) }}</div>
+              <div class="stat-value stat-value--nums">{{ fn.formatNumber(data.aggregation.total_requests) }}</div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #52c41a">
-              <i class="iconfont icon-shijian"></i>
+          <div class="stat-card stat-card--emerald">
+            <div class="stat-icon">
+              <FieldTimeOutlined />
             </div>
             <div class="stat-content">
               <div class="stat-label">平均响应时间</div>
-              <div class="stat-value">{{ fn.formatNumber(data.aggregation.avg_response_time, 2) }}ms</div>
+              <div class="stat-value stat-value--nums">{{ fn.formatNumber(data.aggregation.avg_response_time, 2) }}ms</div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #faad14">
-              <i class="iconfont icon-cuowu"></i>
+          <div class="stat-card stat-card--amber">
+            <div class="stat-icon">
+              <WarningOutlined />
             </div>
             <div class="stat-content">
               <div class="stat-label">错误数</div>
-              <div class="stat-value">{{ fn.formatNumber(data.aggregation.error_count) }}</div>
+              <div class="stat-value stat-value--nums">{{ fn.formatNumber(data.aggregation.error_count) }}</div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #f5222d">
-              <i class="iconfont icon-baifenbi"></i>
+          <div class="stat-card stat-card--rose">
+            <div class="stat-icon">
+              <PieChartOutlined />
             </div>
             <div class="stat-content">
               <div class="stat-label">错误率</div>
-              <div class="stat-value">{{ fn.formatNumber(data.aggregation.error_rate * 100, 2) }}%</div>
+              <div class="stat-value stat-value--nums">{{ fn.formatNumber(data.aggregation.error_rate * 100, 2) }}%</div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #722ed1">
-              <i class="iconfont icon-shujuliang"></i>
+          <div class="stat-card stat-card--violet">
+            <div class="stat-icon">
+              <CloudUploadOutlined />
             </div>
             <div class="stat-content">
               <div class="stat-label">总流量</div>
-              <div class="stat-value">{{ fn.formatBytes(data.aggregation.total_bytes_sent) }}</div>
+              <div class="stat-value stat-value--nums">{{ fn.formatBytes(data.aggregation.total_bytes_sent) }}</div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #13c2c2">
-              <i class="iconfont icon-shijian"></i>
+          <div class="stat-card stat-card--cyan">
+            <div class="stat-icon">
+              <ClockCircleOutlined />
             </div>
             <div class="stat-content">
               <div class="stat-label">最大响应时间</div>
-              <div class="stat-value">{{ fn.formatNumber(data.aggregation.max_response_time, 2) }}ms</div>
+              <div class="stat-value stat-value--nums">{{ fn.formatNumber(data.aggregation.max_response_time, 2) }}ms</div>
             </div>
           </div>
         </div>
@@ -98,6 +104,7 @@
           <div class="chart-card">
             <div class="chart-header">
               <h3>请求趋势</h3>
+              <span class="chart-header__hint">时间序列 · 请求次数</span>
             </div>
             <div class="chart-content">
               <div class="time-series-chart">
@@ -142,6 +149,7 @@
           <div class="chart-card">
             <div class="chart-header">
               <h3>流量趋势</h3>
+              <span class="chart-header__hint">出站字节 · 时间序列</span>
             </div>
             <div class="chart-content">
               <div class="time-series-chart">
@@ -338,9 +346,17 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, computed } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
+import {
+  ThunderboltOutlined,
+  FieldTimeOutlined,
+  WarningOutlined,
+  PieChartOutlined,
+  CloudUploadOutlined,
+  ClockCircleOutlined
+} from '@ant-design/icons-vue'
 import { $accessLogAggregation } from '@/api/log'
 
 const data = reactive({
@@ -557,42 +573,42 @@ const fn = {
     const code = Math.floor(status / 100)
     switch (code) {
       case 2:
-        return '#52c41a'
+        return '#059669'
       case 3:
-        return '#1890ff'
+        return '#4f46e5'
       case 4:
-        return '#faad14'
+        return '#d97706'
       case 5:
-        return '#f5222d'
+        return '#e11d48'
       default:
-        return '#d9d9d9'
+        return '#cbd5e1'
     }
   },
 
   getStatusColorByRange: (statusRange) => {
     switch (statusRange) {
       case '2xx':
-        return '#52c41a'
+        return '#059669'
       case '3xx':
-        return '#1890ff'
+        return '#4f46e5'
       case '4xx':
-        return '#faad14'
+        return '#d97706'
       case '5xx':
-        return '#f5222d'
+        return '#e11d48'
       default:
-        return '#d9d9d9'
+        return '#cbd5e1'
     }
   },
 
   getMethodColor: (method) => {
     const colors = {
-      GET: '#1890ff',
-      POST: '#52c41a',
-      PUT: '#faad14',
-      DELETE: '#f5222d',
-      PATCH: '#722ed1'
+      GET: '#4f46e5',
+      POST: '#059669',
+      PUT: '#d97706',
+      DELETE: '#e11d48',
+      PATCH: '#7c3aed'
     }
-    return colors[method] || '#d9d9d9'
+    return colors[method] || '#94a3b8'
   }
 }
 
@@ -602,6 +618,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.breadcrumb {
+  font-size: 20px;
+}
+
+.gw-dash {
+  --gw-slate-50: #f8fafc;
+  --gw-slate-200: #e2e8f0;
+  --gw-slate-500: #64748b;
+  --gw-slate-700: #334155;
+  --gw-slate-900: #0f172a;
+  --gw-indigo: #4f46e5;
+  --gw-indigo-light: #6366f1;
+  --gw-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.06);
+  --gw-card-shadow-hover: 0 2px 4px rgba(15, 23, 42, 0.08), 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
 .main {
   padding: 10px;
   height: calc(100vh - 64px - 20px);
@@ -612,10 +644,6 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.breadcrumb {
-  flex-shrink: 0;
-}
-
 .dashboard-content {
   flex: 1;
   min-height: 0;
@@ -624,90 +652,166 @@ onMounted(() => {
 }
 
 .time-filter {
-  margin-bottom: 20px;
-  padding: 16px;
+  margin-bottom: 0;
+}
+
+.gw-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
   background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 1px solid var(--gw-slate-200);
+  box-shadow: var(--gw-card-shadow);
+}
+
+.gw-toolbar__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gw-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gw-toolbar__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.gw-toolbar__picker {
+  width: 400px;
+  max-width: 100%;
+}
+
+.gw-toolbar__btn {
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .stat-card {
   display: flex;
   align-items: center;
-  padding: 20px;
+  padding: 18px 18px;
   background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
+  border-radius: 10px;
+  border: 1px solid var(--gw-slate-200);
+  box-shadow: var(--gw-card-shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: default;
 }
 
 .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  box-shadow: var(--gw-card-shadow-hover);
+  border-color: #cbd5e1;
+}
+
+.stat-card--indigo .stat-icon {
+  background: linear-gradient(145deg, #4f46e5, #6366f1);
+}
+.stat-card--emerald .stat-icon {
+  background: linear-gradient(145deg, #047857, #059669);
+}
+.stat-card--amber .stat-icon {
+  background: linear-gradient(145deg, #b45309, #d97706);
+}
+.stat-card--rose .stat-icon {
+  background: linear-gradient(145deg, #be123c, #e11d48);
+}
+.stat-card--violet .stat-icon {
+  background: linear-gradient(145deg, #6d28d9, #7c3aed);
+}
+.stat-card--cyan .stat-icon {
+  background: linear-gradient(145deg, #0e7490, #0891b2);
 }
 
 .stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
+  margin-right: 14px;
   color: #fff;
-  font-size: 24px;
+  font-size: 22px;
+  flex-shrink: 0;
 }
 
 .stat-content {
   flex: 1;
+  min-width: 0;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #8c8c8c;
-  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--gw-slate-500);
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
-  color: #262626;
+  color: var(--gw-slate-900);
+  letter-spacing: -0.02em;
+}
+
+.stat-value--nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 14px;
 }
 
 .chart-card {
   background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 1px solid var(--gw-slate-200);
+  box-shadow: var(--gw-card-shadow);
   overflow: hidden;
 }
 
 .chart-header {
-  padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gw-slate-200);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--gw-slate-50);
 }
 
 .chart-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #262626;
+  color: var(--gw-slate-900);
+}
+
+.chart-header__hint {
+  font-size: 12px;
+  color: var(--gw-slate-500);
+  font-weight: 500;
 }
 
 .chart-content {
-  padding: 16px;
+  padding: 14px 16px 16px;
 }
 
 .time-series-chart {
@@ -733,34 +837,34 @@ onMounted(() => {
 }
 
 .chart-bar {
-  background: linear-gradient(to top, #1890ff, #40a9ff);
-  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top, #4338ca, #6366f1);
+  border-radius: 3px 3px 0 0;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
   min-height: 2px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
 }
 
 .bytes-bar {
-  background: linear-gradient(to top, #52c41a, #73d13d);
+  background: linear-gradient(to top, #047857, #10b981);
+  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.25);
 }
 
 .bytes-bar:hover {
-  background: linear-gradient(to top, #389e0d, #52c41a);
+  filter: brightness(1.06);
 }
 
 .chart-bar:hover {
-  background: linear-gradient(to top, #096dd9, #1890ff);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
 }
 
 .y-axis {
   width: 60px;
   position: relative;
-  border-right: 1px solid #e8e8e8;
+  border-right: 1px solid var(--gw-slate-200);
   padding-right: 8px;
   display: flex;
   flex-direction: column-reverse;
@@ -774,7 +878,7 @@ onMounted(() => {
   right: auto;
   transform: translateY(50%);
   font-size: 10px;
-  color: #999;
+  color: var(--gw-slate-500);
   white-space: nowrap;
   text-align: right;
   height: 0;
@@ -787,7 +891,7 @@ onMounted(() => {
   left: 12px;
   right: 8px;
   height: 35px;
-  border-top: 1px solid #d9d9d9;
+  border-top: 1px solid var(--gw-slate-200);
   padding-top: 4px;
   overflow: visible;
 }
@@ -796,7 +900,7 @@ onMounted(() => {
   position: absolute;
   transform: translateX(-50%);
   font-size: 10px;
-  color: #8c8c8c;
+  color: var(--gw-slate-500);
   white-space: nowrap;
   font-weight: 500;
   pointer-events: none;
@@ -827,41 +931,43 @@ onMounted(() => {
 .status-code {
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
 }
 
 .status-2xx {
-  background: #f6ffed;
-  color: #52c41a;
+  background: #ecfdf5;
+  color: #047857;
 }
 
 .status-3xx {
-  background: #e6f7ff;
-  color: #1890ff;
+  background: #eef2ff;
+  color: #4338ca;
 }
 
 .status-4xx {
-  background: #fffbe6;
-  color: #faad14;
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .status-5xx {
-  background: #fff1f0;
-  color: #f5222d;
+  background: #fff1f2;
+  color: #be123c;
 }
 
 .status-count {
-  font-size: 14px;
-  color: #262626;
-  font-weight: 500;
+  font-size: 13px;
+  color: var(--gw-slate-900);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .status-progress {
   height: 8px;
-  background: #f0f0f0;
-  border-radius: 4px;
+  background: var(--gw-slate-50);
+  border-radius: 999px;
   overflow: hidden;
+  border: 1px solid var(--gw-slate-200);
 }
 
 .status-progress-bar {
@@ -870,19 +976,20 @@ onMounted(() => {
 }
 
 .method-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #262626;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gw-slate-900);
   margin-bottom: 4px;
 }
 
 .method-bar-container,
 .service-bar-container {
   height: 32px;
-  background: #f0f0f0;
-  border-radius: 4px;
+  background: var(--gw-slate-50);
+  border-radius: 8px;
   overflow: hidden;
   position: relative;
+  border: 1px solid var(--gw-slate-200);
 }
 
 .method-bar,
@@ -927,17 +1034,18 @@ onMounted(() => {
 
 .host-rank,
 .path-rank {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f0f0;
-  border-radius: 4px;
+  background: var(--gw-slate-50);
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 600;
-  color: #595959;
+  font-weight: 700;
+  color: var(--gw-slate-700);
   flex-shrink: 0;
+  border: 1px solid var(--gw-slate-200);
 }
 
 .host-info,
@@ -951,7 +1059,8 @@ onMounted(() => {
 .host-label,
 .path-label {
   font-size: 13px;
-  color: #262626;
+  color: var(--gw-slate-900);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -961,10 +1070,11 @@ onMounted(() => {
 .host-bar-container,
 .path-bar-container {
   height: 24px;
-  background: #f0f0f0;
-  border-radius: 4px;
+  background: var(--gw-slate-50);
+  border-radius: 999px;
   overflow: hidden;
   position: relative;
+  border: 1px solid var(--gw-slate-200);
 }
 
 .host-bar,
@@ -972,9 +1082,9 @@ onMounted(() => {
   height: 100%;
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  background: linear-gradient(to right, #1890ff, #40a9ff);
-  transition: width 0.3s;
+  padding: 0 10px;
+  background: linear-gradient(to right, #4f46e5, #818cf8);
+  transition: width 0.25s ease;
 }
 
 .host-count,
@@ -998,17 +1108,18 @@ onMounted(() => {
 }
 
 .path-bytes-rank {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f0f0;
-  border-radius: 4px;
+  background: var(--gw-slate-50);
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 600;
-  color: #595959;
+  font-weight: 700;
+  color: var(--gw-slate-700);
   flex-shrink: 0;
+  border: 1px solid var(--gw-slate-200);
 }
 
 .path-bytes-info {
@@ -1020,7 +1131,8 @@ onMounted(() => {
 
 .path-bytes-label {
   font-size: 13px;
-  color: #262626;
+  color: var(--gw-slate-900);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1029,19 +1141,20 @@ onMounted(() => {
 
 .path-bytes-bar-container {
   height: 24px;
-  background: #f0f0f0;
-  border-radius: 4px;
+  background: var(--gw-slate-50);
+  border-radius: 999px;
   overflow: hidden;
   position: relative;
+  border: 1px solid var(--gw-slate-200);
 }
 
 .path-bytes-bar {
   height: 100%;
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  background: linear-gradient(to right, #52c41a, #73d13d);
-  transition: width 0.3s;
+  padding: 0 10px;
+  background: linear-gradient(to right, #059669, #34d399);
+  transition: width 0.25s ease;
 }
 
 .path-bytes-count {
@@ -1049,6 +1162,19 @@ onMounted(() => {
   color: #fff;
   font-weight: 500;
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .chart-bar,
+  .bytes-bar,
+  .method-bar,
+  .host-bar,
+  .path-bar,
+  .path-bytes-bar,
+  .status-progress-bar {
+    transition: none !important;
+  }
 }
 </style>
 

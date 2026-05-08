@@ -125,6 +125,11 @@ export default {
           width: 200
         },
         {
+          title: '角色',
+          dataIndex: 'role',
+          width: 110
+        },
+        {
           title: '创建时间',
           dataIndex: 'created_at',
           width: 180

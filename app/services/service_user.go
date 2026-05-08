@@ -154,10 +154,11 @@ func UserChangePassword(token string, request *validators.UserChangePassword) er
 }
 
 type UserItem struct {
-	ID      int    `json:"id"`
-	ResID   string `json:"res_id"`
-	Name    string `json:"name"`
-	Email   string `json:"email"`
+	ID        int    `json:"id"`
+	ResID     string `json:"res_id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
@@ -172,10 +173,11 @@ func UserList(request *validators.UserList) ([]UserItem, int, error) {
 	userList := make([]UserItem, 0)
 	for _, v := range list {
 		userItem := UserItem{
-			ID:      v.ID,
-			ResID:   v.ResID,
-			Name:    v.Name,
-			Email:   v.Email,
+			ID:        v.ID,
+			ResID:     v.ResID,
+			Name:      v.Name,
+			Email:     v.Email,
+			Role:      v.Role,
 			CreatedAt: v.CreatedAt.Format("2006-01-02 15:04:05"),
 			UpdatedAt: v.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
@@ -193,10 +195,11 @@ func UserInfo(resId string) (UserItem, error) {
 	}
 
 	userItem := UserItem{
-		ID:      user.ID,
-		ResID:   user.ResID,
-		Name:    user.Name,
-		Email:   user.Email,
+		ID:        user.ID,
+		ResID:     user.ResID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}
@@ -214,6 +217,7 @@ func UserCreate(userData *validators.UserAddUpdate) error {
 		Name:     userData.Name,
 		Email:    userData.Email,
 		Password: userData.Password,
+		Role:     userData.Role,
 	}
 
 	addErr := userModel.UserAdd(userModel)
@@ -239,6 +243,9 @@ func UserUpdate(resId string, userData *validators.UserAddUpdate) error {
 
 	if userData.Password != "" {
 		updateData["password"] = userData.Password
+	}
+	if userData.Role != "" {
+		updateData["role"] = userData.Role
 	}
 
 	err = userModel.UserUpdate(resId, updateData)

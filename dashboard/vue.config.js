@@ -14,6 +14,14 @@ module.exports = defineConfig({
   devServer: {
     open: true, // vue项目启动时自动打开浏览器
     port: 8080, // 开发时的服务端口
+    client: {
+      overlay: {
+        runtimeErrors: error => {
+          const msg = `${error?.message ?? ''} ${error?.stack ?? ''}`
+          return !/ResizeObserver/i.test(msg)
+        }
+      }
+    },
     proxy: {
       // 开发时防止跨域的代理服务
       '/api': {

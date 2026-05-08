@@ -20,7 +20,7 @@ func RouterRegister(routerEngine *gin.Engine) {
 		}
 	}
 
-	adminRouter := routerEngine.Group("admin", middlewares.CheckUserLogin, middlewares.AuditLog())
+	adminRouter := routerEngine.Group("admin", middlewares.CheckUserLogin, middlewares.RBAC(), middlewares.AuditLog())
 	{
 		// user
 		user := adminRouter.Group("user")

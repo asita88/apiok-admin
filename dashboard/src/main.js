@@ -6,59 +6,65 @@ import router from '@/router'
 import store from '@/store'
 import '@/assets/font/iconfont.css'
 import '@/assets/css/common.css'
+import '@/assets/css/plugin-form.css'
+import permissionDirective from '@/directives/permission'
 
-// 处理 ResizeObserver 警告
-const resizeObserverErr = window.ResizeObserver
-if (resizeObserverErr) {
-  const resizeObserverErrHandler = window.ResizeObserver.prototype.observe
-  window.ResizeObserver.prototype.observe = function (...args) {
-    try {
-      resizeObserverErrHandler.apply(this, args)
-    } catch (e) {
-      if (e.message !== 'ResizeObserver loop completed with undelivered notifications.') {
-        throw e
-      }
+;(function patchResizeObserverForStableLoop() {
+  const OriginalResizeObserver = window.ResizeObserver
+  if (!OriginalResizeObserver) return
+  window.ResizeObserver = class extends OriginalResizeObserver {
+    constructor(callback) {
+      super((entries, observer) => {
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            try {
+              callback(entries, observer)
+            } catch (e) {
+              const m = String(e?.message ?? e ?? '')
+              if (/ResizeObserver/i.test(m)) return
+              throw e
+            }
+          })
+        })
+      })
     }
   }
-}
+})()
 
-// 全局错误处理器 - 捕获 ResizeObserver 警告
+const RO_MSG = /ResizeObserver/i
+
 const originalError = console.error
 console.error = (...args) => {
-  if (
-    args[0] &&
-    typeof args[0] === 'string' &&
-    args[0].includes('ResizeObserver loop completed with undelivered notifications')
-  ) {
-    return
-  }
+  const first = args[0]
+  const text =
+    typeof first === 'string'
+      ? first
+      : first?.message ?? first?.reason?.message ?? ''
+  if (text && RO_MSG.test(String(text))) return
   originalError.apply(console, args)
 }
 
-// 捕获未处理的 Promise rejection
-window.addEventListener('error', event => {
-  if (
-    event.message &&
-    event.message.includes('ResizeObserver loop completed with undelivered notifications')
-  ) {
-    event.preventDefault()
-    return false
-  }
-})
+window.addEventListener(
+  'error',
+  event => {
+    const m = event.message ?? ''
+    if (m && RO_MSG.test(String(m))) {
+      event.stopImmediatePropagation()
+      event.preventDefault()
+    }
+  },
+  true
+)
 
-// 捕获未处理的 Promise rejection
 window.addEventListener('unhandledrejection', event => {
-  if (
-    event.reason &&
-    event.reason.message &&
-    event.reason.message.includes('ResizeObserver loop completed with undelivered notifications')
-  ) {
+  const msg = event.reason?.message ?? event.reason ?? ''
+  if (msg && RO_MSG.test(String(msg))) {
     event.preventDefault()
-    return false
   }
 })
 
 const app = createApp(App)
+app.directive('permission', permissionDirective)
 app.use(Antd)
 app.use(store)
 app.use(router).mount('#app')

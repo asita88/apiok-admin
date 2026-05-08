@@ -14,6 +14,14 @@
         <a-input v-model:value="formData.email" placeholder="请输入邮箱" />
       </a-form-item>
 
+      <a-form-item label="角色：" name="role">
+        <a-select v-model:value="formData.role" placeholder="请选择角色" style="width: 100%">
+          <a-select-option value="admin">管理员（全部）</a-select-option>
+          <a-select-option value="viewer">浏览（无日志与用户）</a-select-option>
+          <a-select-option value="operator">运维（含日志，无用户管理）</a-select-option>
+        </a-select>
+      </a-form-item>
+
       <a-form-item
         label="密码："
         name="password"
@@ -53,7 +61,8 @@ export default {
     const formData = reactive({
       name: '',
       email: '',
-      password: ''
+      password: '',
+      role: 'admin'
     })
 
     const schemaUserPasswordEdit = [
@@ -68,6 +77,7 @@ export default {
       if (code === 0) {
         formData.name = data.name || ''
         formData.email = data.email || ''
+        formData.role = data.role || 'admin'
       } else {
         message.error(msg || '获取用户信息失败')
       }
@@ -83,7 +93,8 @@ export default {
       try {
         const submitData = {
           name: formData.name,
-          email: formData.email
+          email: formData.email,
+          role: formData.role
         }
 
         if (formData.password) {

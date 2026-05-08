@@ -5,7 +5,7 @@
         ><i
           style="color: #448ef7; font-size: 30px"
           class="iconfont icon-fuwuqi"
-        />服务管理</a-breadcrumb-item
+        />域名管理</a-breadcrumb-item
       >
     </a-breadcrumb>
     <a-divider style="margin: 10px 0" />
@@ -285,7 +285,7 @@
   <!-- 抽屉 -->
   <a-drawer
     v-model:visible="drawer.visible"
-    class="custom-class"
+    :class="['custom-class', { 'service-drawer--plugin': drawer.componentName === 'ServicePlugin' }]"
     placement="right"
     :title="drawer.title"
     :destroyOnClose="drawer.destroyOnClose"
@@ -644,5 +644,20 @@ export default {
 }
 .icon-fuwuqi {
   margin-right: 10px;
+}
+
+.service-drawer--plugin :deep(.ant-drawer-content) {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-drawer--plugin :deep(.ant-drawer-body) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
 }
 </style>

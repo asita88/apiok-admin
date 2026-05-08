@@ -1,14 +1,20 @@
 <template>
   <a-form
+    class="plugin-form-surface"
     :model="data.formData"
     name="formData"
     :label-col="{ span: 5 }"
     :wrapper-col="{ span: 18 }"
     autocomplete="off"
+    label-align="right"
     @finish="fn.onSubmit"
   >
     <a-form-item label="配置名称" name="name" :rules="schemaPluginLogMysql.name">
       <a-input v-model:value="data.formData.name" />
+    </a-form-item>
+
+    <a-form-item label="插件描述" name="description">
+      <a-textarea v-model:value="data.formData.description" :rows="2" placeholder="请输入插件配置描述" />
     </a-form-item>
 
     <a-form-item label="host" name="host" :rules="schemaPluginLogMysql.host">
@@ -111,9 +117,11 @@
       <a-switch v-model:checked="data.formData.enable" size="small" />
     </a-form-item>
 
-    <a-form-item :wrapper-col="{ offset: 10, span: 16 }">
-      <a-button html-type="submit" type="primary">保存</a-button>
-      <a-button style="margin-left: 20px" @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+    <a-form-item class="plugin-form-actions" :wrapper-col="{ offset: 5, span: 18 }">
+      <a-space>
+        <a-button html-type="submit" type="primary">保存</a-button>
+        <a-button @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+      </a-space>
     </a-form-item>
   </a-form>
 </template>
@@ -150,6 +158,7 @@ export default {
     const data = reactive({
       formData: {
         name: 'plugin-log-mysql',
+        description: '',
         enabled: true,
         host: '127.0.0.1',
         port: 3306,
@@ -174,6 +183,9 @@ export default {
     if (props.pluginConfigData != null) {
       if (props.pluginConfigData.name != null) {
         data.formData.name = props.pluginConfigData.name
+      }
+      if (props.pluginConfigData.description != null) {
+        data.formData.description = props.pluginConfigData.description
       }
       if (props.pluginConfigData.enabled != null) {
         data.formData.enabled = props.pluginConfigData.enabled
@@ -233,6 +245,7 @@ export default {
           target_id: props.targetResId ?? '',
           type: props.pluginConfigType ?? '',
           name: formData.name ?? '',
+          description: formData.description ?? '',
           enable: formData.enable == true ? 1 : 2,
           config: reactive({
             enabled: formData.enabled ?? true,
@@ -267,6 +280,7 @@ export default {
       } else {
         let configData = reactive({
           name: formData.name ?? '',
+          description: formData.description ?? '',
           config: reactive({
             enabled: formData.enabled ?? true,
             host: formData.host ?? '127.0.0.1',

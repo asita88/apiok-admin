@@ -39,10 +39,11 @@ instance.interceptors.response.use(
     NProgress.done()
     let data = response.data
     if (data.code == 401) {
-      // 清除用户信息
       store.commit('user/setToken', {})
-      // 跳转登录页
       router.push('/login')
+    }
+    if (data.code === 403) {
+      router.replace({ name: 'forbidden' })
     }
     return data
   },

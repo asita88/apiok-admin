@@ -17,6 +17,7 @@ type Users struct {
 	Name     string `gorm:"column:name"`           // User name
 	Password string `gorm:"column:password"`       // Password
 	Email    string `gorm:"column:email"`          // Email
+	Role     string `gorm:"column:role"`           // admin | viewer | operator
 	ModelTime
 }
 
@@ -84,6 +85,9 @@ func (u *Users) UserAdd(userData *Users) error {
 	}
 	userData.ResID = userId
 	userData.Password = utils.Md5(utils.Md5(userData.Password))
+	if userData.Role == "" {
+		userData.Role = "admin"
+	}
 
 	err := packages.GetDb().
 		Table(u.TableName()).

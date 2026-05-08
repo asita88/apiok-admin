@@ -1,14 +1,20 @@
 <template>
   <a-form
+    class="plugin-form-surface plugin-form-waf"
     :model="data.formData"
     name="formData"
     :label-col="{ span: 5 }"
     :wrapper-col="{ span: 18 }"
+    label-align="right"
     autocomplete="off"
     @finish="fn.onSubmit"
   >
     <a-form-item label="配置名称" name="name" :rules="schemaPluginWaf.name">
       <a-input v-model:value="data.formData.name" />
+    </a-form-item>
+
+    <a-form-item label="插件描述" name="description">
+      <a-textarea v-model:value="data.formData.description" :rows="2" placeholder="请输入插件配置描述" />
     </a-form-item>
 
     <a-form-item label="启用" name="enabled">
@@ -54,97 +60,117 @@
       <a-card
         v-for="(rule, ruleIndex) in data.formData.rules.rule_list"
         :key="rule.id"
+        class="waf-rule-card"
         size="small"
-        style="margin-bottom: 16px"
       >
         <template #title>
-          <a-input
-            v-model:value="rule.name"
-            placeholder="规则名称"
-            style="width: 200px"
-          />
-          <a-button
-            type="link"
-            danger
-            size="small"
-            style="float: right"
-            @click="fn.removeRule(rule)"
-          >
-            删除规则
-          </a-button>
+          <div class="waf-card-head">
+            <a-input
+              v-model:value="rule.name"
+              placeholder="规则名称"
+              class="waf-rule-name-input"
+            />
+            <a-button type="link" danger size="small" @click="fn.removeRule(rule)">
+              删除规则
+            </a-button>
+          </div>
         </template>
 
-        <a-form-item label="动作" :name="['rules', 'rule_list', ruleIndex, 'action']">
-          <a-select v-model:value="rule.action" style="width: 100%">
-            <a-select-option value="block">block</a-select-option>
-            <a-select-option value="log">log</a-select-option>
-          </a-select>
-        </a-form-item>
-
-        <a-form-item label="条件列表">
-          <a-card
-            v-for="(condition, condIndex) in rule.conditions"
-            :key="condition.id"
-            size="small"
-            style="margin-bottom: 8px"
+        <div class="waf-rule-fields">
+          <a-form-item
+            label="动作"
+            :name="['rules', 'rule_list', ruleIndex, 'action']"
+            :label-col="wafNestedLabelCol"
+            :wrapper-col="wafNestedWrapperCol"
           >
-            <template #title>
-              <span>条件 {{ condIndex + 1 }}</span>
-              <a-button
-                type="link"
-                danger
+            <a-select v-model:value="rule.action" class="waf-control-full">
+              <a-select-option value="block">block</a-select-option>
+              <a-select-option value="log">log</a-select-option>
+            </a-select>
+          </a-form-item>
+
+          <a-form-item label="条件列表" class="waf-conditions-form-item">
+            <div class="waf-conditions-stack">
+              <a-card
+                v-for="(condition, condIndex) in rule.conditions"
+                :key="condition.id"
+                class="waf-condition-card"
                 size="small"
-                style="float: right"
-                @click="fn.removeCondition(rule, condition)"
               >
-                删除
+                <template #title>
+                  <div class="waf-card-head">
+                    <span class="waf-condition-title">条件 {{ condIndex + 1 }}</span>
+                    <a-button
+                      type="link"
+                      danger
+                      size="small"
+                      @click="fn.removeCondition(rule, condition)"
+                    >
+                      删除
+                    </a-button>
+                  </div>
+                </template>
+
+                <div class="waf-condition-fields">
+                  <a-form-item
+                    label="匹配类型"
+                    :name="['rules', 'rule_list', ruleIndex, 'conditions', condIndex, 'match_type']"
+                    :label-col="wafNestedLabelCol"
+                    :wrapper-col="wafNestedWrapperCol"
+                  >
+                    <a-select v-model:value="condition.match_type" class="waf-control-full">
+                      <a-select-option value="uri">uri</a-select-option>
+                      <a-select-option value="args">args</a-select-option>
+                      <a-select-option value="header">header</a-select-option>
+                      <a-select-option value="body">body</a-select-option>
+                      <a-select-option value="all">all</a-select-option>
+                      <a-select-option value="method">method</a-select-option>
+                      <a-select-option value="request_size">request_size</a-select-option>
+                    </a-select>
+                  </a-form-item>
+
+                  <a-form-item
+                    label="匹配模式"
+                    :name="['rules', 'rule_list', ruleIndex, 'conditions', condIndex, 'patterns']"
+                    :label-col="wafNestedLabelCol"
+                    :wrapper-col="wafNestedWrapperCol"
+                  >
+                    <a-select
+                      mode="tags"
+                      v-model:value="condition.patterns"
+                      placeholder="输入匹配模式（正则表达式或精确匹配）"
+                      class="waf-control-full"
+                    />
+                  </a-form-item>
+
+                  <a-form-item
+                    label="操作符"
+                    :name="['rules', 'rule_list', ruleIndex, 'conditions', condIndex, 'operator']"
+                    :label-col="wafNestedLabelCol"
+                    :wrapper-col="wafNestedWrapperCol"
+                  >
+                    <a-select v-model:value="condition.operator" class="waf-control-full">
+                      <a-select-option value="match">match</a-select-option>
+                      <a-select-option value="not_match">not_match</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                </div>
+              </a-card>
+              <a-button type="dashed" block class="waf-add-btn" @click="fn.addCondition(rule)">
+                <template #icon>
+                  <PlusOutlined />
+                </template>
+                添加条件
               </a-button>
-            </template>
-
-            <a-form-item
-              label="匹配类型"
-              :name="['rules', 'rule_list', ruleIndex, 'conditions', condIndex, 'match_type']"
-            >
-              <a-select v-model:value="condition.match_type" style="width: 100%">
-                <a-select-option value="uri">uri</a-select-option>
-                <a-select-option value="args">args</a-select-option>
-                <a-select-option value="header">header</a-select-option>
-                <a-select-option value="body">body</a-select-option>
-                <a-select-option value="all">all</a-select-option>
-                <a-select-option value="method">method</a-select-option>
-                <a-select-option value="request_size">request_size</a-select-option>
-              </a-select>
-            </a-form-item>
-
-            <a-form-item
-              label="匹配模式"
-              :name="['rules', 'rule_list', ruleIndex, 'conditions', condIndex, 'patterns']"
-            >
-              <a-select
-                mode="tags"
-                v-model:value="condition.patterns"
-                placeholder="输入匹配模式（正则表达式或精确匹配）"
-                style="width: 100%"
-              />
-            </a-form-item>
-
-            <a-form-item
-              label="操作符"
-              :name="['rules', 'rule_list', ruleIndex, 'conditions', condIndex, 'operator']"
-            >
-              <a-select v-model:value="condition.operator" style="width: 100%">
-                <a-select-option value="match">match</a-select-option>
-                <a-select-option value="not_match">not_match</a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-card>
-          <a-button type="dashed" block @click="fn.addCondition(rule)">
-            <i class="iconfont icon-tianjia"></i> 添加条件
-          </a-button>
-        </a-form-item>
+            </div>
+          </a-form-item>
+        </div>
       </a-card>
-      <a-button type="dashed" block @click="fn.addRule">
-        <i class="iconfont icon-tianjia"></i> 添加规则
+      <a-button type="dashed" block class="waf-add-btn" @click="fn.addRule">
+        <template #icon>
+          <PlusOutlined />
+        </template>
+        添加规则
       </a-button>
     </a-form-item>
 
@@ -152,20 +178,29 @@
       <a-switch v-model:checked="data.formData.enable" size="small" />
     </a-form-item>
 
-    <a-form-item :wrapper-col="{ offset: 10, span: 16 }">
-      <a-button html-type="submit" type="primary">保存</a-button>
-      <a-button style="margin-left: 20px" @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+    <a-form-item class="plugin-form-actions" :wrapper-col="{ offset: 5, span: 18 }">
+      <a-space>
+        <a-button html-type="submit" type="primary">保存</a-button>
+        <a-button @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+      </a-space>
     </a-form-item>
   </a-form>
 </template>
 <script>
 import { reactive, onMounted } from 'vue'
+import { PlusOutlined } from '@ant-design/icons-vue'
 import { Form, message } from 'ant-design-vue'
 import { schemaPluginWaf } from '@/schema'
 import { $pluginConfigAdd, $pluginConfigUpdate } from '@/api'
 
+const wafNestedLabelCol = { flex: '0 0 104px' }
+const wafNestedWrapperCol = { flex: '1 1 auto' }
+
 const useForm = Form.useForm
 export default {
+  components: {
+    PlusOutlined
+  },
   props: {
     pluginConfigData: {
       Object
@@ -191,6 +226,7 @@ export default {
     const data = reactive({
       formData: {
         name: 'plugin-waf',
+        description: '',
         enabled: true,
         ip_whitelist: {
           enabled: true,
@@ -218,6 +254,9 @@ export default {
     if (props.pluginConfigData != null) {
       if (props.pluginConfigData.name != null) {
         data.formData.name = props.pluginConfigData.name
+      }
+      if (props.pluginConfigData.description != null) {
+        data.formData.description = props.pluginConfigData.description
       }
       if (props.pluginConfigData.enabled != null) {
         data.formData.enabled = props.pluginConfigData.enabled
@@ -329,6 +368,7 @@ export default {
           target_id: props.targetResId ?? '',
           type: props.pluginConfigType ?? '',
           name: data.formData.name ?? '',
+          description: data.formData.description ?? '',
           enable: data.formData.enable == true ? 1 : 2,
           config: reactive(config)
         })
@@ -347,6 +387,7 @@ export default {
       } else {
         let configData = reactive({
           name: data.formData.name ?? '',
+          description: data.formData.description ?? '',
           config: reactive(config)
         })
 
@@ -384,13 +425,106 @@ export default {
       cancel
     })
 
-    return { data, fn, schemaPluginWaf }
+    return { data, fn, schemaPluginWaf, wafNestedLabelCol, wafNestedWrapperCol }
   }
 }
 </script>
 
 <style scoped>
-.ant-card {
-  margin-bottom: 16px;
+.plugin-form-waf :deep(.waf-rule-card),
+.plugin-form-waf :deep(.waf-condition-card) {
+  border-color: #e2e8f0;
+  border-radius: 10px;
+}
+
+.plugin-form-waf :deep(.waf-rule-card .ant-card-head),
+.plugin-form-waf :deep(.waf-condition-card .ant-card-head) {
+  min-height: 44px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.plugin-form-waf :deep(.waf-condition-card .ant-card-body) {
+  padding: 12px 14px 14px;
+}
+
+.waf-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.waf-rule-name-input {
+  flex: 1;
+  min-width: 0;
+  max-width: 280px;
+}
+
+.waf-condition-title {
+  font-weight: 600;
+  color: #334155;
+}
+
+.waf-rule-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.waf-conditions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.waf-condition-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.waf-control-full {
+  width: 100%;
+}
+
+.waf-add-btn {
+  margin-top: 2px;
+}
+
+.plugin-form-waf :deep(.waf-rule-fields .ant-form-item),
+.plugin-form-waf :deep(.waf-condition-fields .ant-form-item) {
+  margin-bottom: 12px;
+}
+
+.plugin-form-waf :deep(.waf-rule-fields .ant-form-item:last-child),
+.plugin-form-waf :deep(.waf-condition-fields .ant-form-item:last-child) {
+  margin-bottom: 0;
+}
+
+.plugin-form-waf :deep(.waf-rule-fields .ant-form-item-label > label),
+.plugin-form-waf :deep(.waf-condition-fields .ant-form-item-label > label) {
+  height: auto;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.plugin-form-waf :deep(.waf-conditions-form-item > .ant-row.ant-form-item-row) {
+  align-items: flex-start;
+}
+
+.plugin-form-waf :deep(.waf-conditions-form-item .ant-form-item-label) {
+  padding-top: 6px;
+}
+
+.plugin-form-waf :deep(.waf-conditions-form-item .ant-form-item-control-input-content) {
+  width: 100%;
+}
+
+@media (max-width: 576px) {
+  .plugin-form-waf :deep(.waf-rule-fields .ant-form-item),
+  .plugin-form-waf :deep(.waf-condition-fields .ant-form-item) {
+    flex-wrap: wrap;
+  }
 }
 </style>

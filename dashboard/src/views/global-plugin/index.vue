@@ -1,71 +1,69 @@
 <template>
-  <div class="main">
+  <div class="main gw-plugin-shell">
     <a-breadcrumb class="breadcrumb">
       <a-breadcrumb-item
         ><i
           style="color: #448ef7; font-size: 30px"
-          class="iconfont icon-chajian"
+          class="iconfont icon-chajiangongneng"
         />全局插件</a-breadcrumb-item
       >
     </a-breadcrumb>
-    <a-divider class="divider" />
+    <a-divider style="margin: 10px 0" />
 
-    <a-row :gutter="16" class="plugin-row">
-      <!-- 左侧：插件类型列表 -->
-      <a-col :span="8">
-        <a-card title="插件类型" :bordered="true">
-          <div class="card-content-wrapper">
-            <a-input-search
-              v-model:value="data.searchKeyword"
-              placeholder="搜索插件"
-              class="search-input"
-              @search="fn.searchPlugin"
-            />
+    <div class="gw-plugin-split gw-plugin-split--lg-row plugin-row">
+      <div class="gw-plugin-split__col gw-plugin-split__col--nav">
+        <a-card class="gw-plugin-card gw-plugin-nav-card" size="small" title="插件类型">
+          <a-input-search
+            v-model:value="data.searchKeyword"
+            placeholder="搜索插件标识或描述"
+            allow-clear
+            class="search-input"
+            @search="fn.searchPlugin"
+          />
 
-            <div class="plugin-list-container">
+          <div class="gw-plugin-list-scroll plugin-list-container">
             <a-list
               :data-source="filteredPluginList"
               :loading="data.loading"
               size="small"
             >
-            <template #renderItem="{ item }">
-              <a-list-item
-                :class="{ 'plugin-item-active': data.selectedPlugin?.res_id === item.res_id }"
-                @click="fn.selectPlugin(item)"
-                style="cursor: pointer; padding: 8px"
-              >
-                <a-list-item-meta>
-                  <template #title>
-                    <span>
-                      <i class="iconfont" :class="item.icon || 'icon-apex_plugin1'" style="margin-right: 8px" />
-                      {{ item.plugin_key }}
-                    </span>
+              <template #renderItem="{ item }">
+                <a-list-item
+                  :class="{ 'plugin-item-active': data.selectedPlugin?.res_id === item.res_id }"
+                  @click="fn.selectPlugin(item)"
+                >
+                  <a-list-item-meta>
+                    <template #title>
+                      <span class="gw-plugin-list-title">
+                        <i class="iconfont" :class="item.icon || 'icon-apex_plugin1'" />
+                        {{ item.plugin_key }}
+                      </span>
+                    </template>
+                    <template #description>
+                      <span class="gw-plugin-list-desc">{{ item.description }}</span>
+                    </template>
+                  </a-list-item-meta>
+                  <template #actions>
+                    <a-tag :color="getTypeColor(item.type)">{{ item.typeName }}</a-tag>
                   </template>
-                  <template #description>
-                    <span style="font-size: 12px; color: #999">{{ item.description }}</span>
-                  </template>
-                </a-list-item-meta>
-                <template #actions>
-                  <a-tag :color="getTypeColor(item.type)">{{ item.typeName }}</a-tag>
-                </template>
-              </a-list-item>
-            </template>
-          </a-list>
-            </div>
+                </a-list-item>
+              </template>
+            </a-list>
           </div>
         </a-card>
-      </a-col>
+      </div>
 
-      <!-- 右侧：插件配置 -->
-      <a-col :span="16">
-        <a-card :title="data.selectedPlugin ? `配置 - ${data.selectedPlugin.plugin_key}` : '请选择插件'" :bordered="true">
-          <div class="plugin-config-container">
-            <div v-if="!data.selectedPlugin" class="empty-state">
-              <a-empty description="请从左侧选择一个插件进行配置" />
-            </div>
+      <div class="gw-plugin-split__col">
+        <a-card
+          class="gw-plugin-card gw-plugin-detail-card"
+          size="small"
+          :title="data.selectedPlugin ? `配置 · ${data.selectedPlugin.plugin_key}` : '插件配置'"
+        >
+          <div v-if="!data.selectedPlugin" class="gw-plugin-empty">
+            <a-empty description="请从左侧选择一个插件" />
+          </div>
 
-            <div v-else>
-            <!-- 已配置的插件列表 -->
+          <div v-else class="gw-plugin-config-scroll plugin-config-container">
             <div v-if="data.configuredPlugins.length > 0" style="margin-bottom: 16px">
               <a-table
                 :columns="data.configColumns"
@@ -108,9 +106,8 @@
               </a-table>
             </div>
 
-            <!-- 新增/编辑插件配置表单 -->
             <div v-if="data.showConfigForm && data.selectedPlugin">
-              <a-divider>配置信息</a-divider>
+              <p class="gw-plugin-section-title">编辑表单</p>
               <component
                 :key="`${data.configComponentName}-${data.editConfigResId || 'new'}-${data.selectedPlugin.res_id}`"
                 :is="data.configComponentName"
@@ -127,24 +124,26 @@
               />
             </div>
 
-            <!-- 添加按钮 -->
-            <div v-if="!data.showConfigForm" style="text-align: center; padding: 20px">
-              <a-button type="primary" @click="fn.showAddForm">
-                <i class="iconfont icon-addNode" style="margin-right: 4px" />
+            <div v-if="!data.showConfigForm" class="gw-plugin-empty" style="padding: 24px 0">
+              <a-button type="primary" size="large" @click="fn.showAddForm">
+                <template #icon>
+                  <PlusOutlined />
+                </template>
                 添加配置
               </a-button>
             </div>
-            </div>
           </div>
         </a-card>
-      </a-col>
-    </a-row>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { reactive, onMounted, computed } from 'vue'
 import { message } from 'ant-design-vue'
+import { PlusOutlined } from '@ant-design/icons-vue'
+import '@/assets/css/plugin-shell.css'
 import { HookPluginList, HookPluginTypeIdNameMap, HookPluginKeyComponentMap } from '@/hooks'
 import { $globalPluginConfigList, $globalPluginConfigEnable, $globalPluginConfigDelete } from '@/api'
 import Plugin404 from '../plugin/components/err404.vue'
@@ -164,6 +163,7 @@ import ResponseRewrite from '../plugin/components/responseRewrite.vue'
 
 export default {
   components: {
+    PlusOutlined,
     Plugin404,
     Cors,
     Mock,
@@ -463,100 +463,56 @@ export default {
 }
 </script>
 
-<style lange="scss" scoped>
+<style scoped>
+.breadcrumb {
+  font-size: 20px;
+}
+
 .main {
   padding: 10px;
-  height: calc(100vh - 64px - 20px);
-  max-height: calc(100vh - 64px - 20px);
+  height: calc(100vh - 64px - 24px);
+  max-height: calc(100vh - 64px - 24px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
 }
 
-.breadcrumb {
-  margin-bottom: 10px;
-  flex-shrink: 0;
-}
-
-.divider {
-  margin: 10px 0;
-  flex-shrink: 0;
-}
-
 .plugin-row {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  display: flex;
-}
-
-.plugin-item-active {
-  background-color: #e6f7ff;
-  border-left: 3px solid #1890ff;
-}
-
-.empty-state {
-  padding: 40px 0;
-}
-
-:deep(.ant-col) {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-:deep(.ant-card) {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-:deep(.ant-card-body) {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.card-content-wrapper {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .search-input {
   flex-shrink: 0;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.plugin-list-container {
-  flex: 1;
+.gw-plugin-list-title .iconfont {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.gw-plugin-list-desc {
+  font-size: 12px;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:deep(.gw-plugin-nav-card.ant-card) {
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
-.plugin-config-container {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+:deep(.gw-plugin-detail-card.ant-card) {
+  height: 100%;
+  min-height: 380px;
 }
 
-:deep(.ant-list-item) {
-  border-bottom: 1px solid #f0f0f0;
-  transition: all 0.3s;
-}
-
-:deep(.ant-list-item:hover) {
-  background-color: #f5f5f5;
-}
-
-:deep(.plugin-item-active) {
-  background-color: #e6f7ff !important;
+:deep(.gw-plugin-nav-card .ant-card-body),
+:deep(.gw-plugin-detail-card .ant-card-body) {
+  padding: 12px 14px 16px;
 }
 </style>

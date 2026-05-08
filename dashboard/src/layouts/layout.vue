@@ -3,6 +3,7 @@
   <a-layout>
     <!-- 固定菜单 -->
     <a-layout-sider
+      class="shell-sider"
       :style="{
         marginTop: '60px',
         overflow: 'auto',
@@ -10,48 +11,49 @@
         position: 'fixed',
         left: 0,
         top: 0,
-        bottom: 0
+        bottom: 0,
+        background: '#0f172a'
       }"
     >
       <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-        <a-menu-item key="dashboard" @click="$router.push('/dashboard')">
+        <a-menu-item v-if="perm('dashboard')" key="dashboard" @click="$router.push('/dashboard')">
           <DashboardOutlined />
           <span>大盘</span>
         </a-menu-item>
-        <a-menu-item key="service" @click="$router.push('/service')">
+        <a-menu-item v-if="perm('service')" key="service" @click="$router.push('/service')">
           <AppstoreOutlined />
-          <span>服务管理</span>
+          <span>域名管理</span>
         </a-menu-item>
-        <a-menu-item key="router" @click="$router.push('/router')">
+        <a-menu-item v-if="perm('router')" key="router" @click="$router.push('/router')">
           <LinkOutlined />
           <span>路由管理</span>
         </a-menu-item>
-        <a-menu-item key="upstream" @click="$router.push('/upstream')">
+        <a-menu-item v-if="perm('upstream')" key="upstream" @click="$router.push('/upstream')">
           <ClusterOutlined />
           <span>上游管理</span>
         </a-menu-item>
-        <a-menu-item key="ssl" @click="$router.push('/ssl')">
+        <a-menu-item v-if="perm('ssl')" key="ssl" @click="$router.push('/ssl')">
           <SafetyCertificateOutlined />
           <span>证书管理</span>
         </a-menu-item>
-        <a-menu-item key="global-plugin" @click="$router.push('/global-plugin')">
+        <a-menu-item v-if="perm('global-plugin')" key="global-plugin" @click="$router.push('/global-plugin')">
           <GlobalOutlined />
           <span>全局插件</span>
         </a-menu-item>
-        <a-sub-menu key="system">
+        <a-sub-menu v-if="perm('user') || perm('log') || perm('access-log')" key="system">
           <template #title>
             <SettingOutlined />
             <span>系统管理</span>
           </template>
-          <a-menu-item key="user" @click="$router.push('/user')">
+          <a-menu-item v-if="perm('user')" key="user" @click="$router.push('/user')">
             <UserOutlined />
             <span>用户管理</span>
           </a-menu-item>
-          <a-menu-item key="log" @click="$router.push('/log')">
+          <a-menu-item v-if="perm('log')" key="log" @click="$router.push('/log')">
             <FileTextOutlined />
             <span>操作日志</span>
           </a-menu-item>
-          <a-menu-item key="access-log" @click="$router.push('/access-log')">
+          <a-menu-item v-if="perm('access-log')" key="access-log" @click="$router.push('/access-log')">
             <FileTextOutlined />
             <span>访问日志</span>
           </a-menu-item>
@@ -65,10 +67,11 @@
       <a-layout-header class="header" :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
         <div class="logo">
           <div>
-            <img src="@/assets/img/apiok-logo-no-text.png" />
+            <img src="@/assets/img/apiok-logo-no-text.png" alt="" />
           </div>
-          <div>
-            <span>APIOK-Admin</span>
+          <div class="logo-text">
+            <span class="logo-title">APIOK</span>
+            <span class="logo-sub">Gateway Admin</span>
           </div>
         </div>
 
@@ -95,9 +98,7 @@
         </a-layout-content>
 
         <!-- 页脚 -->
-        <a-layout-footer :style="{ textAlign: 'center' }">
-          <!-- Ant Design ©2018 Created by Ant UED -->
-        </a-layout-footer>
+        <a-layout-footer class="shell-footer">OpenResty · APIOK</a-layout-footer>
       </a-layout>
     </a-layout>
   </a-layout>
@@ -120,6 +121,7 @@ import {
 } from '@ant-design/icons-vue'
 import router from '@/router'
 import store from '@/store'
+
 export default {
         components: {
           DashboardOutlined,
@@ -136,6 +138,8 @@ export default {
     const selectedKeys = ref([router.currentRoute.value.name])
     const collapsed = ref(false)
     const { userInfo } = store.state.user
+
+    const perm = code => store.getters['user/can'](code)
 
     const logout = async () => {
       const { code, msg } = await $logout()
@@ -161,44 +165,68 @@ export default {
       }
     )
 
-    return { selectedKeys, collapsed, logout, changePassword, userName: userInfo.username || userInfo.email || '' }
+    return { selectedKeys, collapsed, logout, changePassword, perm, userName: userInfo.username || userInfo.email || '' }
   }
 }
 </script>
 
-<style lange="scss" scoped>
+<style scoped>
 .content {
-  margin: 10px;
-  padding: 10px;
-  background: #fff;
+  margin: 12px;
+  padding: 0;
+  background: #f1f5f9;
   height: calc(100%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
+.shell-footer {
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #94a3b8;
+  background: transparent;
+}
 .logo {
-  height: 30px;
-  margin: 15px;
+  height: 36px;
+  margin: 0 16px;
   display: flex;
   justify-content: left;
   align-items: center;
+  gap: 12px;
 }
 .logo img {
-  height: 30px;
-  margin-left: 6px;
+  height: 32px;
+  margin-left: 0;
 }
-.logo span {
-  margin-left: 10px;
-  color: #fff;
-  font-size: 17px;
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+.logo-title {
+  color: #f8fafc;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.logo-sub {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 .header {
-  background: #001529;
+  background: #0f172a;
   padding: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.5);
 }
 .user span {
   margin-right: 10px;

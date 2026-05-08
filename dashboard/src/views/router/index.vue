@@ -302,7 +302,7 @@
   <!-- 抽屉 -->
   <a-drawer
     v-model:visible="drawer.visible"
-    class="custom-class"
+    :class="['custom-class', { 'service-drawer--plugin': drawer.componentName === 'RouterPlugin' }]"
     placement="right"
     :title="drawer.title"
     :destroyOnClose="drawer.destroyOnClose"
@@ -735,5 +735,20 @@ export default {
 }
 .method-span {
   margin-right: 5px;
+}
+
+.service-drawer--plugin :deep(.ant-drawer-content) {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-drawer--plugin :deep(.ant-drawer-body) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
 }
 </style>

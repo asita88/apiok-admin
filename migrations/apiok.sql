@@ -318,6 +318,7 @@ CREATE TABLE `ok_users` (
   `name` varchar(50) NOT NULL DEFAULT '' COMMENT 'User name',
   `password` char(32) NOT NULL DEFAULT '' COMMENT 'Password',
   `email` varchar(80) NOT NULL DEFAULT '' COMMENT 'Email',
+  `role` varchar(32) NOT NULL DEFAULT 'admin' COMMENT 'admin|viewer|operator',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
   PRIMARY KEY (`id`),
@@ -328,7 +329,7 @@ CREATE TABLE `ok_users` (
 -- ----------------------------
 -- Records of ok_users
 -- ----------------------------
-INSERT INTO `ok_users` VALUES ('1', 'us-Ew2h6VglDSz5Jgi', 'apple', '550e1bafe077ff0b0b67f4e32f29d751', 'apple@apple.com', '2025-12-04 15:25:01', '2025-12-04 15:25:01');
+INSERT INTO `ok_users` VALUES ('1', 'us-Ew2h6VglDSz5Jgi', 'apple', '550e1bafe077ff0b0b67f4e32f29d751', 'apple@apple.com', 'admin', '2025-12-04 15:25:01', '2025-12-04 15:25:01');
 
 -- ----------------------------
 -- Table structure for ok_user_tokens

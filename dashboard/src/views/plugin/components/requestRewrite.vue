@@ -1,18 +1,24 @@
 <template>
   <a-form
+    class="plugin-form-surface"
     :model="data.formData"
     name="formData"
     :label-col="{ span: 5 }"
     :wrapper-col="{ span: 18 }"
     autocomplete="off"
+    label-align="right"
     @finish="fn.onSubmit"
   >
     <a-form-item label="配置名称" name="name" :rules="schemaPluginRequestRewrite.name">
       <a-input v-model:value="data.formData.name" />
     </a-form-item>
 
+    <a-form-item label="插件描述" name="description">
+      <a-textarea v-model:value="data.formData.description" :rows="2" placeholder="请输入插件配置描述" />
+    </a-form-item>
+
     <a-form-item label="URI重写" name="uri_rewrite">
-      <a-card size="small">
+      <a-card class="plugin-form-nested-card" size="small">
         <a-form-item label="类型" name="uri_rewrite.type">
           <a-select v-model:value="data.formData.uri_rewrite.type" style="width: 100%">
             <a-select-option value="regex">regex</a-select-option>
@@ -53,59 +59,67 @@
 
     <a-form-item label="请求头" name="headers">
       <div
-        class="headers-list"
+        class="plugin-form-kv-row"
         v-for="(item, index) in data.formData.headers"
         :key="item.id"
       >
-        <a-form-item
-          :name="['headers', index, 'key']"
-          style="width: 30%"
-        >
+        <a-form-item class="plugin-form-kv-field" :name="['headers', index, 'key']">
           <a-input placeholder="header key" v-model:value="item.key" />
         </a-form-item>
-        <a-form-item
-          :name="['headers', index, 'value']"
-          style="width: 50%"
-        >
+        <a-form-item class="plugin-form-kv-field" :name="['headers', index, 'value']">
           <a-input placeholder="header value (留空表示删除)" v-model:value="item.value" />
         </a-form-item>
-        <a-form-item>
-          <a @click="fn.addHeader()">
-            <i class="iconfont icon-tianjia"></i>
-          </a>
-          <a v-if="index > 0" @click="fn.removeHeader(item)">
-            <i class="iconfont color-red icon-jian"></i>
-          </a>
-        </a-form-item>
+        <div class="plugin-form-kv-actions">
+          <a-button type="link" size="small" @click="fn.addHeader">
+            <template #icon>
+              <PlusOutlined />
+            </template>
+          </a-button>
+          <a-button
+            v-if="index > 0"
+            type="link"
+            size="small"
+            danger
+            @click="fn.removeHeader(item)"
+          >
+            <template #icon>
+              <MinusCircleOutlined />
+            </template>
+          </a-button>
+        </div>
       </div>
     </a-form-item>
 
     <a-form-item label="查询参数" name="query_args">
       <div
-        class="query-args-list"
+        class="plugin-form-kv-row"
         v-for="(item, index) in data.formData.query_args"
         :key="item.id"
       >
-        <a-form-item
-          :name="['query_args', index, 'key']"
-          style="width: 30%"
-        >
+        <a-form-item class="plugin-form-kv-field" :name="['query_args', index, 'key']">
           <a-input placeholder="参数名" v-model:value="item.key" />
         </a-form-item>
-        <a-form-item
-          :name="['query_args', index, 'value']"
-          style="width: 50%"
-        >
+        <a-form-item class="plugin-form-kv-field" :name="['query_args', index, 'value']">
           <a-input placeholder="参数值 (留空表示删除)" v-model:value="item.value" />
         </a-form-item>
-        <a-form-item>
-          <a @click="fn.addQueryArg()">
-            <i class="iconfont icon-tianjia"></i>
-          </a>
-          <a v-if="index > 0" @click="fn.removeQueryArg(item)">
-            <i class="iconfont color-red icon-jian"></i>
-          </a>
-        </a-form-item>
+        <div class="plugin-form-kv-actions">
+          <a-button type="link" size="small" @click="fn.addQueryArg">
+            <template #icon>
+              <PlusOutlined />
+            </template>
+          </a-button>
+          <a-button
+            v-if="index > 0"
+            type="link"
+            size="small"
+            danger
+            @click="fn.removeQueryArg(item)"
+          >
+            <template #icon>
+              <MinusCircleOutlined />
+            </template>
+          </a-button>
+        </div>
       </div>
     </a-form-item>
 
@@ -113,20 +127,27 @@
       <a-switch v-model:checked="data.formData.enable" size="small" />
     </a-form-item>
 
-    <a-form-item :wrapper-col="{ offset: 10, span: 16 }">
-      <a-button html-type="submit" type="primary">保存</a-button>
-      <a-button style="margin-left: 20px" @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+    <a-form-item class="plugin-form-actions" :wrapper-col="{ offset: 5, span: 18 }">
+      <a-space>
+        <a-button html-type="submit" type="primary">保存</a-button>
+        <a-button @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+      </a-space>
     </a-form-item>
   </a-form>
 </template>
 <script>
 import { reactive, onMounted } from 'vue'
+import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons-vue'
 import { Form, message } from 'ant-design-vue'
 import { schemaPluginRequestRewrite } from '@/schema'
 import { $pluginConfigAdd, $pluginConfigUpdate } from '@/api'
 
 const useForm = Form.useForm
 export default {
+  components: {
+    PlusOutlined,
+    MinusCircleOutlined
+  },
   props: {
     pluginConfigData: {
       Object
@@ -152,6 +173,7 @@ export default {
     const data = reactive({
       formData: {
         name: 'plugin-request-rewrite',
+        description: '',
         enabled: true,
         uri_rewrite: {
           type: 'regex',
@@ -179,6 +201,9 @@ export default {
     if (props.pluginConfigData != null) {
       if (props.pluginConfigData.name != null) {
         data.formData.name = props.pluginConfigData.name
+      }
+      if (props.pluginConfigData.description != null) {
+        data.formData.description = props.pluginConfigData.description
       }
       if (props.pluginConfigData.enabled != null) {
         data.formData.enabled = props.pluginConfigData.enabled
@@ -288,6 +313,7 @@ export default {
           target_id: props.targetResId ?? '',
           type: props.pluginConfigType ?? '',
           name: formData.name ?? '',
+          description: formData.description ?? '',
           enable: formData.enable == true ? 1 : 2,
           config: reactive(config)
         })
@@ -306,6 +332,7 @@ export default {
       } else {
         let configData = reactive({
           name: formData.name ?? '',
+          description: formData.description ?? '',
           config: reactive(config)
         })
 
@@ -348,11 +375,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.headers-list,
-.query-args-list {
-  display: flex;
-  margin-bottom: 10px;
-}
-</style>
 

@@ -1,7 +1,9 @@
 <template>
-  <div class="text">
-    <h3 v-show="data.pluginType === 1">请在“插件信息”中选择插件</h3>
-    <h3 v-show="data.pluginType === 2">暂不支持当前插件</h3>
+  <div class="plugin-form-empty">
+    <p v-show="data.pluginType === 1" class="plugin-form-empty-title">请选择插件</p>
+    <p v-show="data.pluginType === 1" class="plugin-form-empty-desc">请先在「插件信息」中选择要配置的插件类型。</p>
+    <p v-show="data.pluginType === 2" class="plugin-form-empty-title">暂不支持</p>
+    <p v-show="data.pluginType === 2" class="plugin-form-empty-desc">当前插件类型未提供配置表单。</p>
   </div>
 </template>
 <script>
@@ -31,11 +33,3 @@ export default {
   }
 }
 </script>
-
-<style lange="scss" scoped>
-.text {
-  align-content: center;
-  justify-content: center;
-  display: flex;
-}
-</style>

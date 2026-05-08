@@ -1,18 +1,24 @@
 <template>
   <a-form
+    class="plugin-form-surface"
     :model="data.formData"
     name="formData"
     :label-col="{ span: 5 }"
     :wrapper-col="{ span: 18 }"
     autocomplete="off"
+    label-align="right"
     @finish="fn.onSubmit"
   >
     <a-form-item label="配置名称" name="name" :rules="schemaPluginTrafficTag.name">
       <a-input v-model:value="data.formData.name" />
     </a-form-item>
 
+    <a-form-item label="插件描述" name="description">
+      <a-textarea v-model:value="data.formData.description" :rows="2" placeholder="请输入插件配置描述" />
+    </a-form-item>
+
     <a-form-item label="匹配规则" name="match_rules">
-      <a-card size="small">
+      <a-card class="plugin-form-nested-card" size="small">
         <a-form-item label="path" name="match_rules.path">
           <a-input v-model:value="data.formData.match_rules.path" placeholder="路径匹配，如: /api/users" />
         </a-form-item>
@@ -35,63 +41,73 @@
         </a-form-item>
         <a-form-item label="headers" name="match_rules.headers">
           <div
-            class="headers-list"
+            class="plugin-form-kv-row"
             v-for="(item, index) in data.formData.match_rules.headers"
             :key="item.id"
           >
-            <a-form-item
-              :name="['match_rules', 'headers', index, 'key']"
-              style="width: 35%"
-            >
+            <a-form-item class="plugin-form-kv-field" :name="['match_rules', 'headers', index, 'key']">
               <a-input placeholder="header key" v-model:value="item.key" />
             </a-form-item>
-            <a-form-item
-              :name="['match_rules', 'headers', index, 'value']"
-              style="width: 55%"
-            >
+            <a-form-item class="plugin-form-kv-field" :name="['match_rules', 'headers', index, 'value']">
               <a-input placeholder="header value" v-model:value="item.value" />
             </a-form-item>
-            <a-form-item>
-              <a @click="fn.addHeader()">
-                <i class="iconfont icon-tianjia"></i>
-              </a>
-              <a v-if="index > 0" @click="fn.removeHeader(item)">
-                <i class="iconfont color-red icon-jian"></i>
-              </a>
-            </a-form-item>
+            <div class="plugin-form-kv-actions">
+              <a-button type="link" size="small" @click="fn.addHeader">
+                <template #icon>
+                  <PlusOutlined />
+                </template>
+              </a-button>
+              <a-button
+                v-if="index > 0"
+                type="link"
+                size="small"
+                danger
+                @click="fn.removeHeader(item)"
+              >
+                <template #icon>
+                  <MinusCircleOutlined />
+                </template>
+              </a-button>
+            </div>
           </div>
         </a-form-item>
       </a-card>
     </a-form-item>
 
     <a-form-item label="标签" name="tags" :rules="schemaPluginTrafficTag.tags">
-      <div
-        class="tags-list"
-        v-for="(item, index) in data.formData.tags"
-        :key="item.id"
-      >
+      <div class="plugin-form-kv-row" v-for="(item, index) in data.formData.tags" :key="item.id">
         <a-form-item
+          class="plugin-form-kv-field"
           :name="['tags', index, 'key']"
           :rules="[{ required: true, message: '请输入标签key' }]"
-          style="width: 35%"
         >
           <a-input placeholder="标签key" v-model:value="item.key" />
         </a-form-item>
         <a-form-item
+          class="plugin-form-kv-field"
           :name="['tags', index, 'value']"
           :rules="[{ required: true, message: '请输入标签value' }]"
-          style="width: 55%"
         >
           <a-input placeholder="标签value" v-model:value="item.value" />
         </a-form-item>
-        <a-form-item>
-          <a @click="fn.addTag()">
-            <i class="iconfont icon-tianjia"></i>
-          </a>
-          <a v-if="index > 0" @click="fn.removeTag(item)">
-            <i class="iconfont color-red icon-jian"></i>
-          </a>
-        </a-form-item>
+        <div class="plugin-form-kv-actions">
+          <a-button type="link" size="small" @click="fn.addTag">
+            <template #icon>
+              <PlusOutlined />
+            </template>
+          </a-button>
+          <a-button
+            v-if="index > 0"
+            type="link"
+            size="small"
+            danger
+            @click="fn.removeTag(item)"
+          >
+            <template #icon>
+              <MinusCircleOutlined />
+            </template>
+          </a-button>
+        </div>
       </div>
     </a-form-item>
 
@@ -99,20 +115,27 @@
       <a-switch v-model:checked="data.formData.enable" size="small" />
     </a-form-item>
 
-    <a-form-item :wrapper-col="{ offset: 10, span: 16 }">
-      <a-button html-type="submit" type="primary">保存</a-button>
-      <a-button style="margin-left: 20px" @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+    <a-form-item class="plugin-form-actions" :wrapper-col="{ offset: 5, span: 18 }">
+      <a-space>
+        <a-button html-type="submit" type="primary">保存</a-button>
+        <a-button @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+      </a-space>
     </a-form-item>
   </a-form>
 </template>
 <script>
 import { reactive, onMounted } from 'vue'
+import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons-vue'
 import { Form, message } from 'ant-design-vue'
 import { schemaPluginTrafficTag } from '@/schema'
 import { $pluginConfigAdd, $pluginConfigUpdate } from '@/api'
 
 const useForm = Form.useForm
 export default {
+  components: {
+    PlusOutlined,
+    MinusCircleOutlined
+  },
   props: {
     pluginConfigData: {
       Object
@@ -138,6 +161,7 @@ export default {
     const data = reactive({
       formData: {
         name: 'plugin-traffic-tag',
+        description: '',
         match_rules: {
           path: '',
           method: [],
@@ -168,6 +192,9 @@ export default {
     if (props.pluginConfigData != null) {
       if (props.pluginConfigData.name != null) {
         data.formData.name = props.pluginConfigData.name
+      }
+      if (props.pluginConfigData.description != null) {
+        data.formData.description = props.pluginConfigData.description
       }
       if (props.pluginConfigData.match_rules != null) {
         if (props.pluginConfigData.match_rules.path != null) {
@@ -268,6 +295,7 @@ export default {
           target_id: props.targetResId ?? '',
           type: props.pluginConfigType ?? '',
           name: formData.name ?? '',
+          description: formData.description ?? '',
           enable: formData.enable == true ? 1 : 2,
           config: reactive({
             match_rules: matchRules,
@@ -289,6 +317,7 @@ export default {
       } else {
         let configData = reactive({
           name: formData.name ?? '',
+          description: formData.description ?? '',
           config: reactive({
             match_rules: matchRules,
             tags: tagsObj
@@ -334,11 +363,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.headers-list,
-.tags-list {
-  display: flex;
-  margin-bottom: 10px;
-}
-</style>
 

@@ -1,0 +1,91 @@
+.plugin-form-surface.ant-form-horizontal .ant-form-item-label > label {
+  color: #334155;
+}
+
+.plugin-form-surface .plugin-form-actions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.plugin-form-surface .plugin-form-nested-card.ant-card {
+  border-radius: 10px;
+  border-color: #e2e8f0;
+}
+
+.plugin-form-surface .plugin-form-nested-card .ant-card-body {
+  padding: 12px 14px;
+}
+
+.plugin-form-surface .plugin-form-nested-card .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.plugin-form-surface .plugin-form-nested-card .ant-form-item:last-child {
+  margin-bottom: 0;
+}
+
+.plugin-form-surface .plugin-form-nested-card .ant-form-item-label {
+  flex: 0 0 104px !important;
+  max-width: 104px !important;
+}
+
+.plugin-form-surface .plugin-form-nested-card .ant-form-item-control {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.plugin-form-surface .plugin-form-nested-card .ant-form-item-label > label {
+  justify-content: flex-end;
+  height: auto;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.plugin-form-kv-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.plugin-form-kv-row:last-child {
+  margin-bottom: 0;
+}
+
+.plugin-form-kv-row > .ant-form-item {
+  margin-bottom: 0;
+}
+
+.plugin-form-kv-field {
+  flex: 1;
+  min-width: 140px;
+}
+
+.plugin-form-kv-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.plugin-form-empty {
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.plugin-form-empty-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.plugin-form-empty-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}

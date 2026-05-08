@@ -1,10 +1,12 @@
 <template>
   <a-form
+    class="plugin-form-surface"
     :model="data.formData"
     name="formData"
-    :label-col="{ span: 4 }"
+    :label-col="{ span: 5 }"
     :wrapper-col="{ span: 18 }"
     autocomplete="off"
+    label-align="right"
     @finish="fn.onSubmit"
   >
     <a-form-item label="配置名称" name="name" :rules="schemaPluginLimitReq.name">
@@ -35,9 +37,11 @@
       <a-switch v-model:checked="data.formData.enable" size="small" />
     </a-form-item>
 
-    <a-form-item :wrapper-col="{ offset: 10, span: 16 }">
-      <a-button html-type="submit" type="primary">保存</a-button>
-      <a-button style="margin-left: 20px" @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+    <a-form-item class="plugin-form-actions" :wrapper-col="{ offset: 5, span: 18 }">
+      <a-space>
+        <a-button html-type="submit" type="primary">保存</a-button>
+        <a-button @click="fn.cancel(pluginConfigData?.key)">取消</a-button>
+      </a-space>
     </a-form-item>
   </a-form>
 </template>

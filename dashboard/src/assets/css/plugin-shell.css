@@ -1,0 +1,282 @@
+.gw-plugin-shell {
+  --gw-p-border: #e2e8f0;
+  --gw-p-text: #0f172a;
+  --gw-p-muted: #64748b;
+  --gw-p-primary: #4f46e5;
+  --gw-p-primary-soft: #eef2ff;
+  --gw-p-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.06);
+  --gw-p-radius: 10px;
+}
+
+.gw-plugin-shell .gw-plugin-hero {
+  margin-bottom: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+  border-radius: var(--gw-p-radius);
+  color: #f8fafc;
+  box-shadow: var(--gw-p-card-shadow);
+}
+
+.gw-plugin-shell .gw-plugin-hero--compact {
+  padding: 14px 18px;
+}
+
+.gw-plugin-shell .gw-plugin-hero__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.gw-plugin-shell .gw-plugin-hero__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 20px;
+  color: #e0e7ff;
+}
+
+.gw-plugin-shell .gw-plugin-hero__title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.gw-plugin-shell .gw-plugin-hero__desc {
+  margin: 0;
+  font-size: 13px;
+  color: #c7d2fe;
+  line-height: 1.45;
+  max-width: 56ch;
+}
+
+.gw-plugin-shell .gw-plugin-card {
+  margin-bottom: 16px;
+  border-radius: var(--gw-p-radius);
+  border: 1px solid var(--gw-p-border);
+  box-shadow: var(--gw-p-card-shadow);
+}
+
+.gw-plugin-shell .gw-plugin-card:last-child {
+  margin-bottom: 0;
+}
+
+.gw-plugin-shell .gw-plugin-card .ant-card-head {
+  border-bottom: 1px solid var(--gw-p-border);
+  min-height: 48px;
+}
+
+.gw-plugin-shell .gw-plugin-card .ant-card-head-title {
+  font-weight: 600;
+  color: var(--gw-p-text);
+  font-size: 15px;
+}
+
+.gw-plugin-shell .gw-plugin-card .ant-card-body {
+  padding: 16px 18px;
+}
+
+.gw-plugin-shell .gw-plugin-card--table .ant-card-body {
+  padding: 12px 16px 16px;
+}
+
+.gw-plugin-shell .gw-plugin-add-body {
+  padding-top: 4px;
+}
+
+.gw-plugin-shell .gw-plugin-field {
+  margin-bottom: 18px;
+}
+
+.gw-plugin-shell .gw-plugin-field__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gw-p-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.gw-plugin-shell .gw-plugin-field__control {
+  max-width: 520px;
+}
+
+.gw-plugin-shell .plugin-edit-form {
+  padding: 16px 18px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid var(--gw-p-border);
+}
+
+.gw-plugin-shell .gw-plugin-row--inactive {
+  background: #fafafa;
+}
+
+.gw-plugin-shell .gw-plugin-row--inactive .iconfont {
+  opacity: 0.45;
+}
+
+.gw-plugin-shell .gw-plugin-op-icon {
+  cursor: pointer;
+  color: var(--gw-p-primary);
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.gw-plugin-shell .gw-plugin-op-icon:hover {
+  color: #4338ca;
+  background: var(--gw-p-primary-soft);
+}
+
+.gw-plugin-shell .gw-plugin-op-icon--danger {
+  color: #be123c;
+}
+
+.gw-plugin-shell .gw-plugin-op-icon--danger:hover {
+  color: #9f1239;
+  background: #fff1f2;
+}
+
+.gw-plugin-shell .gw-plugin-split {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+@media (min-width: 992px) {
+  .gw-plugin-shell .gw-plugin-split--lg-row {
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .gw-plugin-shell .gw-plugin-split--lg-row .gw-plugin-split__col {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gw-plugin-shell .gw-plugin-split--lg-row .gw-plugin-split__col--nav {
+    flex: 0 0 320px;
+    max-width: 360px;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.gw-plugin-shell .gw-plugin-nav-card.ant-card,
+.gw-plugin-shell .gw-plugin-detail-card.ant-card {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gw-plugin-shell .gw-plugin-nav-card .ant-card-body,
+.gw-plugin-shell .gw-plugin-detail-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gw-plugin-shell .gw-plugin-nav-card .ant-card-head-title,
+.gw-plugin-shell .gw-plugin-detail-card .ant-card-head-title {
+  font-weight: 600;
+}
+
+.gw-plugin-shell .plugin-item-active {
+  background-color: var(--gw-p-primary-soft) !important;
+  border-left: 3px solid var(--gw-p-primary);
+}
+
+.gw-plugin-shell .gw-plugin-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gw-plugin-shell .gw-plugin-config-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gw-plugin-shell .gw-plugin-detail-card .gw-plugin-empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gw-plugin-shell .gw-plugin-empty {
+  padding: 48px 16px;
+}
+
+.gw-plugin-shell .gw-plugin-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gw-p-muted);
+  letter-spacing: 0.02em;
+}
+
+.gw-plugin-shell .gw-plugin-section-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--gw-p-primary);
+}
+
+.gw-plugin-shell .ant-list-item {
+  transition: background 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px 12px !important;
+}
+
+.gw-plugin-shell .ant-list-item:hover {
+  background-color: #f8fafc;
+}
+
+.gw-plugin-shell .ant-table-small .ant-table-thead > tr > th {
+  font-weight: 600;
+  color: var(--gw-p-muted);
+  background: #f8fafc !important;
+}
+
+.gw-plugin-shell .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+  border-radius: 8px 8px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-plugin-shell .ant-list-item,
+  .gw-plugin-shell .gw-plugin-op-icon {
+    transition: none !important;
+  }
+}

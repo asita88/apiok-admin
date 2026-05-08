@@ -75,7 +75,8 @@
       />
     </div>
 
-    <!-- 列表 -->
+    <!-- 列表：不设 scroll.x，避免 Table 内部 ResizeObserver 与 max-content 测量在同一帧叠加重绘触发告警 -->
+    <div class="table-wrap">
     <a-table
       class="table"
       size="small"
@@ -83,7 +84,6 @@
       :columns="data.columns"
       :data-source="data.list"
       :pagination="false"
-      :scroll="{ x: 'max-content' }"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'status_code'">
@@ -122,6 +122,7 @@
         </template>
       </template>
     </a-table>
+    </div>
 
     <!-- 分页 -->
     <a-pagination
@@ -325,9 +326,15 @@ export default {
 }
 </script>
 
-<style lange="scss" scoped>
+<style scoped>
 .main {
   padding: 10px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: 16px;
+  max-width: 100%;
 }
 
 .breadcrumb {
@@ -348,10 +355,6 @@ export default {
 
 .search {
   width: 250px;
-}
-
-.table {
-  margin-bottom: 16px;
 }
 
 .color-red {

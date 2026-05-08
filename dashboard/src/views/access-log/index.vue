@@ -10,6 +10,7 @@
     </a-breadcrumb>
     <a-divider style="margin: 10px 0" />
 
+    <div class="discover-app">
     <div class="main-layout">
       <div class="left-sidebar">
         <div class="sidebar-header">
@@ -63,39 +64,58 @@
       </div>
 
       <div class="right-content">
-        <div class="query-panel">
-          <div class="time-range">
-            <a-range-picker v-model:value="data.timeRange" show-time format="YYYY-MM-DD HH:mm:ss"
-              :placeholder="['开始时间', '结束时间']" @change="fn.onTimeRangeChange" style="width: 400px" />
-            <a-button type="primary" @click="fn.quickTimeRange('1h')" style="margin-left: 10px">
-              最近1小时
-            </a-button>
-            <a-button @click="fn.quickTimeRange('24h')" style="margin-left: 10px">
-              最近24小时
-            </a-button>
-            <a-button @click="fn.quickTimeRange('7d')" style="margin-left: 10px">
-              最近7天
-            </a-button>
+        <div class="query-panel discover-toolbar-card">
+          <div class="discover-toolbar">
+            <div class="discover-toolbar__left">
+              <a-button-group size="small" class="discover-quick-time">
+                <a-button type="primary" @click="fn.quickTimeRange('1h')">Last 1h</a-button>
+                <a-button @click="fn.quickTimeRange('24h')">24h</a-button>
+                <a-button @click="fn.quickTimeRange('7d')">7d</a-button>
+              </a-button-group>
+              <a-button size="small" class="discover-refresh" @click="fn.discoverRefresh" :loading="data.loading">
+                <template #icon>
+                  <ReloadOutlined />
+                </template>
+                Refresh
+              </a-button>
+            </div>
+            <div class="discover-toolbar__right">
+              <span class="discover-toolbar__clock-label">Time range</span>
+              <a-range-picker
+                v-model:value="data.timeRange"
+                show-time
+                format="YYYY-MM-DD HH:mm:ss"
+                :placeholder="['Start', 'End']"
+                @change="fn.onTimeRangeChange"
+                class="discover-date-picker"
+              />
+            </div>
           </div>
-
-          <div class="query-bar">
-            <a-input-search v-model:value="data.queryString" placeholder="输入查询条件" enter-button="查询"
-              @search="fn.onQuery" style="width: 100%" />
+          <div class="discover-kql-wrap">
+            <a-input-search
+              v-model:value="data.queryString"
+              placeholder="Filter your data using KQL syntax — e.g. response_status:500 AND request_method:GET"
+              enter-button="Update"
+              size="large"
+              class="discover-kql"
+              @search="fn.onQuery"
+            />
           </div>
         </div>
 
-        <div class="kibana-style-panel" v-if="data.aggregation">
+        <div class="kibana-style-panel discover-histogram-panel" v-if="data.aggregation">
           <div class="panel-header">
             <div class="header-left">
               <span class="total-hits">
-                <strong>{{ fn.formatNumber(data.aggregation.total_requests) }}</strong> hits
+                <strong>{{ fn.formatNumber(data.aggregation.total_requests) }}</strong>
+                <span class="hits-label">hits</span>
               </span>
               <span class="time-range-display" v-if="data.timeRange && data.timeRange.length === 2">
                 {{ fn.formatTimeRange(data.timeRange[0], data.timeRange[1]) }}
               </span>
               <span class="time-interval-selector" v-if="data.showChart && data.aggregation.time_series && data.aggregation.time_series.length > 0">
-                <span style="margin-left: 16px; margin-right: 8px; color: #666;">@timestamp per</span>
-                <a-select v-model:value="data.timeInterval" style="width: 120px" size="small">
+                <span class="interval-label">Interval</span>
+                <a-select v-model:value="data.timeInterval" class="discover-interval-select" size="small">
                   <a-select-option value="auto">Auto</a-select-option>
                   <a-select-option value="second">Second</a-select-option>
                   <a-select-option value="minute">Minute</a-select-option>
@@ -105,8 +125,8 @@
               </span>
             </div>
             <div class="header-right">
-              <a-button type="link" size="small" @click="data.showChart = !data.showChart">
-                {{ data.showChart ? '隐藏图表' : '显示图表' }}
+              <a-button type="text" size="small" class="toggle-chart-btn" @click="data.showChart = !data.showChart">
+                {{ data.showChart ? 'Hide chart' : 'Show chart' }}
               </a-button>
             </div>
           </div>
@@ -125,7 +145,9 @@
                   <div v-for="(item, index) in data.aggregation.time_series" :key="index" class="kibana-bar" :style="{
                     height: (item.count / fn.getMaxTimeSeriesCount() * 100) + '%',
                     width: (100 / data.aggregation.time_series.length) + '%',
-                    backgroundColor: item.count > 0 ? '#00b3a4' : '#e0e0e0'
+                    background: item.count > 0
+                      ? 'linear-gradient(180deg, #34d9b8 0%, #019f78 100%)'
+                      : 'var(--discover-bar-empty)'
                   }" :title="fn.formatTime(item.time) + ': ' + fn.formatNumber(item.count)"></div>
                 </div>
                 <div class="x-axis">
@@ -187,9 +209,13 @@
           </div>
         </a-modal>
 
-        <div class="log-list" ref="logListRef">
+        <div class="log-list discover-doc-table" ref="logListRef">
+          <div class="discover-table-caption" v-if="data.total > 0">
+            <span class="caption-count">{{ fn.formatNumber(data.list.length) }}</span>
+            <span class="caption-muted">of {{ fn.formatNumber(data.total) }} documents loaded</span>
+          </div>
           <a-table :columns="data.columns" :data-source="data.list" :pagination="false" :loading="data.loading"
-            :scroll="{ x: 'max-content', y: 'calc(100vh - 64px - 20px - 200px)' }" size="small" :expanded-row-keys="data.expandedRowKeys" @expand="fn.onExpand">
+            :scroll="{ x: 'max-content', y: 'calc(100vh - 280px)' }" size="small" :expanded-row-keys="data.expandedRowKeys" @expand="fn.onExpand" class="discover-ant-table">
             <template #bodyCell="{ column, record }">
               <template v-if="column.dataIndex === 'response_status'">
                 <a-tag :color="fn.getStatusColor(record.response_status)">
@@ -290,13 +316,14 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { reactive, onMounted, computed, ref, nextTick } from 'vue'
 import { message } from 'ant-design-vue'
-import { SearchOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
+import { SearchOutlined, PlusOutlined, MinusOutlined, ReloadOutlined } from '@ant-design/icons-vue'
 import { $accessLogList, $accessLogAggregation, $fieldAggregation } from '@/api/log'
 import dayjs from 'dayjs'
 import 'dayjs/plugin/utc'
@@ -305,7 +332,8 @@ export default {
   components: {
     SearchOutlined,
     PlusOutlined,
-    MinusOutlined
+    MinusOutlined,
+    ReloadOutlined
   },
   setup() {
     const logListRef = ref(null)
@@ -426,7 +454,14 @@ export default {
         fn.onTimeRangeChange()
       },
 
+      discoverRefresh: () => {
+        fn.onQuery()
+      },
+
       onQuery: async (isLoadMore = false) => {
+        if (!isLoadMore) {
+          data.params.page = 1
+        }
         if (isLoadMore) {
           isLoadingMore.value = true
         } else {
@@ -939,57 +974,87 @@ export default {
 </script>
 
 <style scoped>
+.discover-app {
+  --discover-bg-panel: #fff;
+  --discover-bar-fill: #02c49e;
+  --discover-bar-empty: #e7eef5;
+  --discover-border: #d3dae6;
+  --discover-bg-subtle: #f6f8fc;
+  --discover-text-muted: #69707d;
+  --discover-text-title: #343741;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .main {
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .breadcrumb {
-  margin-bottom: 10px;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
 .main-layout {
   display: flex;
-  gap: 16px;
+  gap: 0;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  border: 1px solid var(--discover-border);
+  border-radius: 6px;
+  background: var(--discover-bg-panel, #fff);
 }
 
 .left-sidebar {
-  width: 280px;
-  background: #fff;
-  border-radius: 4px;
+  width: 260px;
+  background: var(--discover-bg-subtle);
+  border-radius: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e8e8e8;
+  border: none;
+  border-right: 1px solid var(--discover-border);
   overflow: hidden;
 }
 
 .sidebar-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--discover-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #fff;
 }
 
 .sidebar-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #333;
+  color: var(--discover-text-title);
+  letter-spacing: 0.02em;
 }
 
 .field-count {
-  font-size: 12px;
-  color: #999;
-  background: #f5f5f5;
+  font-size: 11px;
+  color: var(--discover-text-muted);
+  background: #eef4fb;
   padding: 2px 8px;
   border-radius: 12px;
+  font-weight: 600;
 }
 
 .field-search {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--discover-border);
+  background: #fff;
 }
 
 .field-list {
@@ -1004,11 +1069,11 @@ export default {
 
 .section-title {
   padding: 8px 16px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #666;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--discover-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
 }
 
 .field-item {
@@ -1021,7 +1086,7 @@ export default {
 }
 
 .field-item:hover {
-  background-color: #f5f5f5;
+  background-color: #e8f4fc;
 }
 
 .field-icon {
@@ -1058,8 +1123,9 @@ export default {
 
 .field-name {
   flex: 1;
-  font-size: 13px;
-  color: #333;
+  font-size: 12px;
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--discover-text-title);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1205,37 +1271,124 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   overflow-x: hidden;
-  border: 1px solid #e8e8e8;
-  border-radius: 4px;
-  background: #fff;
+  border: none;
+  border-radius: 0;
+  background: var(--discover-bg-panel);
+  min-width: 0;
 }
 
-.query-panel {
-  background: #fff;
-  padding: 16px;
-  border-radius: 4px;
-  margin-bottom: 0px;
+.discover-toolbar-card {
+  border-bottom: 1px solid var(--discover-border);
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #fafbfd 0%, #fff 100%);
   flex-shrink: 0;
 }
 
-.time-range {
-  margin-bottom: 16px;
+.discover-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.query-bar {
-  margin-bottom: 0px;
+.discover-toolbar__left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.discover-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.discover-toolbar__clock-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--discover-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.discover-date-picker {
+  min-width: 320px;
+}
+
+.discover-kql-wrap {
+  width: 100%;
+}
+
+.discover-kql :deep(.ant-input-lg) {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.discover-kql :deep(.ant-input-search-button) {
+  font-weight: 600;
+}
+
+.query-panel {
+  flex-shrink: 0;
 }
 
 .log-list {
-  background: #fff;
-  padding: 16px;
-  border-radius: 4px;
+  background: var(--discover-bg-panel);
+  padding: 0 12px 12px;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+.discover-table-caption {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 4px 8px;
+  font-size: 12px;
+}
+
+.discover-table-caption .caption-count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--discover-text-title);
+}
+
+.discover-table-caption .caption-muted {
+  color: var(--discover-text-muted);
+}
+
+.discover-doc-table :deep(.discover-ant-table .ant-table-thead > tr > th) {
+  background: var(--discover-bg-subtle) !important;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--discover-text-muted) !important;
+  border-bottom: 1px solid var(--discover-border) !important;
+}
+
+.discover-doc-table :deep(.discover-ant-table .ant-table-tbody > tr > td) {
+  font-size: 12px;
+  border-color: #eef1f7 !important;
+}
+
+.discover-doc-table :deep(.discover-ant-table .ant-table-tbody > tr:hover > td) {
+  background: #f9fafd !important;
+}
+
+.discover-doc-table :deep(.ant-table-cell-fix-left) {
+  background: inherit;
+}
+
+.discover-doc-table :deep(.discover-ant-table .ant-table-tbody > tr > td:first-child) {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .log-detail {
@@ -1379,41 +1532,70 @@ export default {
 }
 
 .kibana-style-panel {
-  background: #fff;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--discover-bg-panel);
+  border-radius: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--discover-border);
+  box-shadow: none;
+}
+
+.discover-histogram-panel {
+  flex-shrink: 0;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--discover-border);
+  background: linear-gradient(180deg, #fafbfd 0%, #fff 100%);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px 20px;
 }
 
 .total-hits {
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  color: var(--discover-text-title);
 }
 
 .total-hits strong {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #017667;
+}
+
+.total-hits .hits-label {
+  margin-left: 4px;
+  font-size: 12px;
   font-weight: 600;
-  color: #000;
+  color: var(--discover-text-muted);
+  text-transform: lowercase;
 }
 
 .time-range-display {
-  font-size: 12px;
-  color: #666;
-  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--discover-text-muted);
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.time-interval-selector .interval-label {
+  margin-right: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--discover-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.discover-interval-select {
+  width: 112px;
 }
 
 .header-right {
@@ -1421,11 +1603,15 @@ export default {
   align-items: center;
 }
 
+.toggle-chart-btn {
+  color: var(--discover-text-muted) !important;
+  font-weight: 500;
+}
+
 .time-series-chart-container {
-  padding: 20px;
-  background: #fafafa;
-  border-radius: 4px;
-  margin-top: 8px;
+  padding: 14px 16px 18px;
+  background: var(--discover-bg-subtle);
+  margin-top: 0;
 }
 
 .chart-header {
@@ -1441,11 +1627,11 @@ export default {
 .kibana-chart-wrapper {
   display: flex;
   position: relative;
-  height: 150px;
+  height: 158px;
   background: #fff;
   border-radius: 4px;
   padding: 12px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--discover-border);
 }
 
 .y-axis {
@@ -1495,20 +1681,16 @@ export default {
 }
 
 .kibana-bar {
-  background: linear-gradient(to top, #1890ff, #40a9ff);
   border-radius: 2px 2px 0 0;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: opacity 0.15s ease, filter 0.15s ease;
   min-height: 2px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .kibana-bar:hover {
-  background: linear-gradient(to top, #096dd9, #1890ff);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  filter: brightness(1.06);
 }
 
 .x-axis {

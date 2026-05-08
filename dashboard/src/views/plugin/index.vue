@@ -1,47 +1,60 @@
 <template>
-  <div class="main">
-    <div class="plugin-add">
-      <div class="add">
-        <a-button type="primary" @click="fn.pluginAddVisible()"
-          ><i class="iconfont icon-addNode addPlugin" />新增插件</a-button
-        >
+  <div class="main gw-plugin-shell">
+    <header class="gw-plugin-hero gw-plugin-hero--compact">
+      <div class="gw-plugin-hero__main">
+        <div class="gw-plugin-hero__icon">
+          <AppstoreOutlined />
+        </div>
+        <div>
+          <h1 class="gw-plugin-hero__title">插件配置</h1>
+          <p class="gw-plugin-hero__desc">绑定与管理网关插件实例，展开行可编辑参数。</p>
+        </div>
       </div>
-      <div class="add-config" v-show="data.pluginAddVisible">
-        <a-tabs v-model:activeKey="data.addPluginTabActiveKey" type="card" centered>
+    </header>
+
+    <a-card class="gw-plugin-card" size="small">
+      <template #title>新增插件</template>
+      <template #extra>
+        <a-button type="primary" @click="fn.pluginAddVisible()">
+          <template #icon>
+            <PlusOutlined />
+          </template>
+          新增插件
+        </a-button>
+      </template>
+      <div v-show="data.pluginAddVisible" class="gw-plugin-add-body">
+        <a-tabs v-model:activeKey="data.addPluginTabActiveKey" type="card">
           <a-tab-pane key="1" tab="插件信息">
-            <div>
-              <div class="add-plugin-info">
-                选择插件：
-                <a-select
-                  class="action-box"
-                  :field-names="{
-                    label: 'name',
-                    value: 'res_id',
-                    options: 'children'
-                  }"
-                  placeholder="请选择"
-                  :options="data.addPluginList"
-                  @change="fn.addPluginChange"
-                  style="width: 85%"
-                />
-              </div>
+            <div class="gw-plugin-field">
+              <span class="gw-plugin-field__label">选择插件</span>
+              <a-select
+                class="gw-plugin-field__control"
+                :field-names="{
+                  label: 'name',
+                  value: 'res_id',
+                  options: 'children'
+                }"
+                placeholder="请选择插件类型"
+                :options="data.addPluginList"
+                @change="fn.addPluginChange"
+                style="width: 100%"
+              />
             </div>
 
             <div v-show="data.addPluginComponent.infomationShow">
-              <div class="add-plugin-info">
-                插件类型：
+              <div class="gw-plugin-field">
+                <span class="gw-plugin-field__label">插件类型</span>
                 <a-input
-                  class="action-box"
+                  class="gw-plugin-field__control"
                   v-model:value="data.addPluginType"
                   disabled
                   placeholder="插件类型"
                 />
-                <br />
               </div>
-              <div class="add-plugin-info">
-                插件描述：
+              <div class="gw-plugin-field">
+                <span class="gw-plugin-field__label">插件描述</span>
                 <a-input
-                  class="action-box"
+                  class="gw-plugin-field__control"
                   v-model:value="data.addPluginDesc"
                   disabled
                   placeholder="插件描述"
@@ -49,7 +62,7 @@
               </div>
             </div>
           </a-tab-pane>
-          <a-tab-pane key="2" tab="插件配置">
+          <a-tab-pane key="2" tab="插件配置" :disabled="!data.addPluginComponent.pluginResId">
             <div class="plugin-add-form">
               <component
                 :is="data.addPluginComponent.name"
@@ -66,22 +79,18 @@
             </div>
           </a-tab-pane>
         </a-tabs>
-        <a-divider />
       </div>
-    </div>
+    </a-card>
 
-    <div class="plugin-list">
+    <a-card class="gw-plugin-card gw-plugin-card--table" size="small">
+      <template #title>已绑定插件</template>
       <a-table
         :columns="data.columns"
         :pagination="false"
         :data-source="data.list"
         v-model:expandedRowKeys="data.expandedRowKeys"
-        :expandedRowKeys="data.expandedRowKeys"
-        :rowClassName="
-          function (record) {
-            return record.color
-          }
-        "
+        :rowClassName="fn.tableRowClassName"
+        size="middle"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.dataIndex === 'icon'">
@@ -106,27 +115,31 @@
           </template>
 
           <template v-if="column.dataIndex === 'operation'">
-            <a>
-              <a-tooltip placement="topRight">
-                <template #title> 编辑 </template>
-                <span>
-                  <i @click="fn.pluginConfigEditOn(record.key)" class="iconfont icon-xiugai" />
+            <a-space size="small">
+              <a-tooltip placement="top">
+                <template #title>展开编辑</template>
+                <span
+                  class="gw-plugin-op-icon"
+                  role="button"
+                  tabindex="0"
+                  @click="fn.pluginConfigEditOn(record.key)"
+                  @keydown.enter="fn.pluginConfigEditOn(record.key)"
+                >
+                  <EditOutlined />
                 </span>
               </a-tooltip>
-              <a-divider type="vertical" />
-            </a>
-
-            <a-popconfirm
-              placement="top"
-              title="确认删除?"
-              ok-text="是"
-              cancel-text="否"
-              @confirm="fn.deleteFunc(record)"
-            >
-              <a class="color-red a-delete">
-                <i class="iconfont icon-shanchu" />
-              </a>
-            </a-popconfirm>
+              <a-popconfirm
+                placement="top"
+                title="确认删除该插件配置？"
+                ok-text="删除"
+                cancel-text="取消"
+                @confirm="fn.deleteFunc(record)"
+              >
+                <span class="gw-plugin-op-icon gw-plugin-op-icon--danger" role="button" tabindex="0">
+                  <DeleteOutlined />
+                </span>
+              </a-popconfirm>
+            </a-space>
           </template>
         </template>
         <template #expandedRowRender="{ record }">
@@ -146,12 +159,19 @@
           </div>
         </template>
       </a-table>
-    </div>
+    </a-card>
   </div>
 </template>
 
 <script>
 import { reactive, ref, onMounted } from 'vue'
+import {
+  AppstoreOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined
+} from '@ant-design/icons-vue'
+import '@/assets/css/plugin-shell.css'
 import { $pluginConfigList, $pluginConfigEnable, $pluginConfigDelete, $globalPluginConfigList, $globalPluginConfigEnable, $globalPluginConfigDelete } from '@/api'
 import { message } from 'ant-design-vue'
 import { HookPluginKeyComponentMap, HookPluginTypeIdNameMap, HookPluginList } from '@/hooks'
@@ -172,6 +192,10 @@ import ResponseRewrite from '../plugin/components/responseRewrite.vue'
 
 export default {
   components: {
+    AppstoreOutlined,
+    PlusOutlined,
+    EditOutlined,
+    DeleteOutlined,
     Plugin404,
     Cors,
     Mock,
@@ -306,7 +330,6 @@ export default {
               type: hookData.pluginTypeIdNameMap[pluginConfigInfo.plugin_type],
               description: pluginConfigInfo.plugin_description,
               enable: pluginConfigInfo.enable == 1 ? true : false,
-              color: pluginConfigInfo.enable == 1 ? 'color-black' : 'color-light-grey',
               component: {
                 name: hookFnPluginKeyToComponent(pluginConfigInfo.plugin_key),
                 pluginOpType: 2,
@@ -425,7 +448,6 @@ export default {
         return
       } else {
         message.success(msg)
-        record.color = record.enable == 1 ? 'color-black' : 'color-light-grey'
       }
     }
 
@@ -453,14 +475,18 @@ export default {
     }
 
     // 定义函数
+    const tableRowClassName = record =>
+      record.enable ? 'gw-plugin-row--active' : 'gw-plugin-row--inactive'
+
     const fn = reactive({
-      pluginAddVisible, // 插件增加时的展示开关
+      pluginAddVisible,
       pluginEditVisibleOff,
       addPluginChange,
       componentRefreshList,
       pluginConfigEditOn,
       enableChange,
-      deleteFunc
+      deleteFunc,
+      tableRowClassName
     })
 
     return {
@@ -472,27 +498,12 @@ export default {
 }
 </script>
 
-<style lange="scss" scoped>
-.add {
-  display: flex;
-  justify-content: right;
-  margin-bottom: 10px;
-}
-.add .addPlugin {
-  font-size: 14px;
-}
-.plugin-add {
-  margin-bottom: 10px;
+<style scoped>
+.main {
+  padding: 0 0 8px;
+  min-height: 0;
 }
 .iconfont {
-  font-size: 16px;
-}
-.add-plugin-info {
-  width: 100%;
-  margin-bottom: 24px;
-  margin-left: 20px;
-}
-.action-box {
-  width: 85%;
+  font-size: 18px;
 }
 </style>
