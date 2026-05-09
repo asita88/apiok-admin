@@ -26,6 +26,7 @@ type Routers struct {
 	ProxyBuffering          *int    `gorm:"column:proxy_buffering"`            // Proxy buffering 1:enable 2:disable
 	ProxyCache              *string `gorm:"column:proxy_cache;type:text"`      // Proxy cache configuration (JSON)
 	ProxySetHeader          *string `gorm:"column:proxy_set_header;type:text"` // Proxy set header configuration (JSON)
+	RewriteRules            *string `gorm:"column:rewrite_rules;type:text"`   // APISIX-style rewrite (JSON)
 	ModelTime
 }
 

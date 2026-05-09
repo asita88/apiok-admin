@@ -172,6 +172,13 @@
           {{ record.path }}
         </template>
 
+        <template v-if="column.dataIndex === 'rewrite'">
+          <a-tooltip v-if="record.rewrite_keys && record.rewrite_keys.length" :title="record.rewrite_keys.join(', ')">
+            <span class="color-green">是</span>
+          </a-tooltip>
+          <span v-else style="color: #ccc">-</span>
+        </template>
+
         <!-- 插件 -->
         <template v-if="column.dataIndex === 'plugin'">
           <a-tooltip
@@ -404,6 +411,7 @@ export default {
       { title: '服务', dataIndex: 'service' },
       { title: '方法', dataIndex: 'method' },
       { title: '路径', dataIndex: 'path' },
+      { title: '改写', dataIndex: 'rewrite', width: 56 },
       { title: '插件', dataIndex: 'plugin' },
       { title: '发布', dataIndex: 'release', width: 75 },
       { title: '启用', dataIndex: 'enable' },
@@ -443,6 +451,11 @@ export default {
             })
           }
 
+          let rewriteKeys = []
+          if (item.rewrite_rules && typeof item.rewrite_rules === 'object' && !Array.isArray(item.rewrite_rules)) {
+            rewriteKeys = Object.keys(item.rewrite_rules)
+          }
+
           tmpList.value.push({
             key: key++,
             res_id: item.res_id,
@@ -453,6 +466,7 @@ export default {
             name: item.router_name,
             method: methods,
             path: item.router_path,
+            rewrite_keys: rewriteKeys,
             release: item.release,
             enable: item.enable == 1 ? true : false,
             plugin: plugins

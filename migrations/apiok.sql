@@ -324,6 +324,7 @@ CREATE TABLE `ok_routers` (
   `proxy_buffering` tinyint unsigned DEFAULT NULL COMMENT 'Proxy buffering 1:enable 2:disable',
   `proxy_cache` text COMMENT 'Proxy cache configuration (JSON)',
   `proxy_set_header` text COMMENT 'Proxy set header configuration (JSON)',
+  `rewrite_rules` text COMMENT 'APISIX-style rewrite (JSON)',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
   PRIMARY KEY (`id`),
@@ -333,9 +334,9 @@ CREATE TABLE `ok_routers` (
 -- ----------------------------
 -- Records of ok_routers
 -- ----------------------------
-INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-GdO0rkKOo5yJ9RM', 'up-p6f18nbjdLwS73j', 'apiok-router', 'ALL', '/*', '1', '3', '', null, null, null, null, '2025-12-05 18:58:50', '2026-05-08 09:53:44');
-INSERT INTO `ok_routers` VALUES ('7', 'rt-l417zeVG36pTVxd', 'sv-BkiWODvz2LI9i66', 'up-BsYcvp9VClgXIX2', 'okx-router', 'ALL', '/*', '1', '2', null, null, null, null, null, '2025-12-22 17:49:48', '2026-05-08 16:09:59');
-INSERT INTO `ok_routers` VALUES ('9', 'rt-U9Xx9J5HIVygiFy', 'sv-uGkY5neXwUXMW8r', 'up-a04qPOIQ1qnpFKt', 'opseasy-router', 'ALL', '/*', '1', '3', null, null, null, null, null, '2026-02-28 09:44:13', '2026-02-28 09:45:00');
+INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-GdO0rkKOo5yJ9RM', 'up-p6f18nbjdLwS73j', 'apiok-router', 'ALL', '/*', '1', '3', '', null, null, null, null, null, '2025-12-05 18:58:50', '2026-05-08 09:53:44');
+INSERT INTO `ok_routers` VALUES ('7', 'rt-l417zeVG36pTVxd', 'sv-BkiWODvz2LI9i66', 'up-BsYcvp9VClgXIX2', 'okx-router', 'ALL', '/*', '1', '2', null, null, null, null, null, null, '2025-12-22 17:49:48', '2026-05-08 16:09:59');
+INSERT INTO `ok_routers` VALUES ('9', 'rt-U9Xx9J5HIVygiFy', 'sv-uGkY5neXwUXMW8r', 'up-a04qPOIQ1qnpFKt', 'opseasy-router', 'ALL', '/*', '1', '3', null, null, null, null, null, null, '2026-02-28 09:44:13', '2026-02-28 09:45:00');
 
 -- ----------------------------
 -- Table structure for ok_services

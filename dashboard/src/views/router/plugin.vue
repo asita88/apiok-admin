@@ -1,17 +1,5 @@
 <template>
   <div class="router-plugin-main gw-plugin-shell">
-    <header class="gw-plugin-hero gw-plugin-hero--compact">
-      <div class="gw-plugin-hero__main">
-        <div class="gw-plugin-hero__icon">
-          <PartitionOutlined />
-        </div>
-        <div>
-          <h1 class="gw-plugin-hero__title">路由插件</h1>
-          <p class="gw-plugin-hero__desc">按路由绑定插件配置，可维护多条策略实例。</p>
-        </div>
-      </div>
-    </header>
-
     <div class="gw-plugin-split gw-plugin-split--lg-row plugin-row">
       <div class="gw-plugin-split__col gw-plugin-split__col--nav">
         <a-card class="gw-plugin-card gw-plugin-nav-card" size="small" title="插件类型">
@@ -144,7 +132,7 @@
 <script>
 import { reactive, onMounted, computed } from 'vue'
 import { message } from 'ant-design-vue'
-import { PartitionOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined } from '@ant-design/icons-vue'
 import '@/assets/css/plugin-shell.css'
 import { HookPluginList, HookPluginTypeIdNameMap, HookPluginKeyComponentMap } from '@/hooks'
 import { $pluginConfigList, $pluginConfigEnable, $pluginConfigDelete } from '@/api'
@@ -165,7 +153,6 @@ import ResponseRewrite from '../plugin/components/responseRewrite.vue'
 
 export default {
   components: {
-    PartitionOutlined,
     PlusOutlined,
     Plugin404,
     Cors,

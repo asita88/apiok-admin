@@ -32,6 +32,7 @@ type ValidatorRouterAddUpdate struct {
 	ProxyBuffering          *bool                  `json:"proxy_buffering" zh:"代理缓冲" en:"Proxy buffering" binding:"omitempty"`
 	ProxyCache              map[string]interface{} `json:"proxy_cache" zh:"代理缓存配置" en:"Proxy cache configuration" binding:"omitempty"`
 	ProxySetHeader          map[string]string      `json:"proxy_set_header" zh:"代理请求头设置" en:"Proxy set header configuration" binding:"omitempty"`
+	RewriteRules            map[string]interface{} `json:"rewrite_rules" zh:"改写规则" en:"Rewrite rules (APISIX-style)" binding:"omitempty"`
 }
 
 type ValidatorRouterList struct {

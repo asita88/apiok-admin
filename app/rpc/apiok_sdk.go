@@ -453,6 +453,7 @@ type RouterConfig struct {
 	ProxyBuffering          *bool                  `json:"proxy_buffering,omitempty"`
 	ProxyCache              map[string]interface{} `json:"proxy_cache,omitempty"`
 	ProxySetHeader          map[string]string      `json:"proxy_set_header,omitempty"`
+	RewriteRules            map[string]interface{} `json:"rewrite_rules,omitempty"`
 }
 
 func (m *ApiOk) RouterGet(routerResIds []string) (list []RouterConfig, err error) {

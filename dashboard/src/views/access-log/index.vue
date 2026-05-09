@@ -217,15 +217,15 @@
           <a-table :columns="data.columns" :data-source="data.list" :pagination="false" :loading="data.loading"
             :scroll="{ x: 'max-content', y: 'calc(100vh - 280px)' }" size="small" :expanded-row-keys="data.expandedRowKeys" @expand="fn.onExpand" class="discover-ant-table">
             <template #bodyCell="{ column, record }">
-              <template v-if="column.dataIndex === 'response_status'">
-                <a-tag :color="fn.getStatusColor(record.response_status)">
-                  {{ record.response_status }}
+              <template v-if="column.dataIndex === 'status'">
+                <a-tag :color="fn.getStatusColor(record.status)">
+                  {{ record.status }}
                 </a-tag>
               </template>
 
-              <template v-if="column.dataIndex === 'request_method'">
-                <a-tag :color="fn.getMethodColor(record.request_method)">
-                  {{ record.request_method }}
+              <template v-if="column.dataIndex === 'method'">
+                <a-tag :color="fn.getMethodColor(record.method)">
+                  {{ record.method }}
                 </a-tag>
               </template>
 
@@ -239,77 +239,47 @@
                 {{ fn.formatBytes(record.bytes_sent) }}
               </template>
 
-              <template v-if="column.dataIndex === 'timestamp'">
-                {{ fn.formatTime(record.timestamp) }}
+              <template v-if="column.dataIndex === 'time'">
+                {{ fn.formatLogTime(record.time) }}
               </template>
             </template>
 
             <template #expandedRowRender="{ record }">
               <div class="log-detail">
-                <a-tabs>
-                  <a-tab-pane key="request" tab="请求信息">
-                    <div class="detail-section">
-                      <div class="detail-item">
-                        <strong>请求URI:</strong>
-                        <div class="detail-value">{{ record.request_uri }}</div>
-                      </div>
-                      <div class="detail-item">
-                        <strong>请求路径:</strong>
-                        <div class="detail-value">{{ record.request_path }}</div>
-                      </div>
-                      <div class="detail-item" v-if="record.request_query_string">
-                        <strong>查询字符串:</strong>
-                        <div class="detail-value">{{ record.request_query_string }}</div>
-                      </div>
-                      <div class="detail-item" v-if="record.request_headers">
-                        <strong>请求头:</strong>
-                        <pre class="detail-value json-view">{{ fn.formatJson(record.request_headers) }}</pre>
-                      </div>
-                      <div class="detail-item" v-if="record.request_args">
-                        <strong>请求参数:</strong>
-                        <pre class="detail-value json-view">{{ fn.formatJson(record.request_args) }}</pre>
-                      </div>
-                      <div class="detail-item" v-if="record.request_body">
-                        <strong>请求体:</strong>
-                        <pre class="detail-value json-view">{{ fn.formatJson(record.request_body) }}</pre>
-                      </div>
-                    </div>
-                  </a-tab-pane>
-
-                  <a-tab-pane key="response" tab="响应信息">
-                    <div class="detail-section">
-                      <div class="detail-item" v-if="record.response_headers">
-                        <strong>响应头:</strong>
-                        <pre class="detail-value json-view">{{ fn.formatJson(record.response_headers) }}</pre>
-                      </div>
-                      <div class="detail-item" v-if="record.response_body">
-                        <strong>响应体:</strong>
-                        <pre class="detail-value json-view">{{ fn.formatJson(record.response_body) }}</pre>
-                      </div>
-                    </div>
-                  </a-tab-pane>
-
-                  <a-tab-pane key="upstream" tab="上游信息">
-                    <div class="detail-section">
-                      <div class="detail-item">
-                        <strong>上游响应时间:</strong>
-                        <div class="detail-value">{{ record.upstream_response_time || '-' }}</div>
-                      </div>
-                      <div class="detail-item">
-                        <strong>上游连接时间:</strong>
-                        <div class="detail-value">{{ record.upstream_connect_time || '-' }}</div>
-                      </div>
-                      <div class="detail-item">
-                        <strong>服务器地址:</strong>
-                        <div class="detail-value">{{ record.server_addr || '-' }}</div>
-                      </div>
-                      <div class="detail-item">
-                        <strong>服务器端口:</strong>
-                        <div class="detail-value">{{ record.server_port || '-' }}</div>
-                      </div>
-                    </div>
-                  </a-tab-pane>
-                </a-tabs>
+                <div class="detail-section">
+                  <div class="detail-item">
+                    <strong>URL</strong>
+                    <div class="detail-value">{{ record.url || '-' }}</div>
+                  </div>
+                  <div class="detail-item" v-if="record.request">
+                    <strong>请求行</strong>
+                    <pre class="detail-value">{{ record.request }}</pre>
+                  </div>
+                  <div class="detail-item">
+                    <strong>X-Forwarded-For</strong>
+                    <div class="detail-value">{{ record.x_forwarded_for || '-' }}</div>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Referer</strong>
+                    <div class="detail-value">{{ record.referer || '-' }}</div>
+                  </div>
+                  <div class="detail-item">
+                    <strong>User-Agent</strong>
+                    <div class="detail-value">{{ record.user_agent || '-' }}</div>
+                  </div>
+                  <div class="detail-item">
+                    <strong>上游</strong>
+                    <div class="detail-value">{{ record.upstream_addr || '-' }} · {{ record.upstream_status || '-' }} · {{ record.upstream_cache_status || '-' }}</div>
+                  </div>
+                  <div class="detail-item" v-if="record.block_reason || record.block_rule">
+                    <strong>拦截</strong>
+                    <div class="detail-value">{{ record.block_reason || '-' }} / {{ record.block_rule || '-' }}</div>
+                  </div>
+                  <div class="detail-item" v-if="record.geo_country || record.geo_city">
+                    <strong>地理</strong>
+                    <div class="detail-value">{{ [record.geo_country, record.geo_province, record.geo_city, record.geo_isp].filter(Boolean).join(' · ') }}</div>
+                  </div>
+                </div>
               </div>
             </template>
           </a-table>
@@ -346,7 +316,7 @@ export default {
         page_size: 500,
         start_time: 0,
         end_time: 0,
-        search: ''
+        query: ''
       },
       list: [],
       total: 0,
@@ -366,29 +336,29 @@ export default {
       columns: [
         {
           title: '时间',
-          dataIndex: 'timestamp',
+          dataIndex: 'time',
           width: 180,
           fixed: 'left'
         },
         {
           title: '方法',
-          dataIndex: 'request_method',
+          dataIndex: 'method',
           width: 80
         },
         {
           title: '状态',
-          dataIndex: 'response_status',
+          dataIndex: 'status',
           width: 80
         },
         {
-          title: '请求路径',
-          dataIndex: 'request_path',
+          title: 'URL',
+          dataIndex: 'url',
           width: 300,
           ellipsis: true
         },
         {
-          title: 'Host',
-          dataIndex: 'request_host',
+          title: '站点',
+          dataIndex: 'server_name',
           width: 200,
           ellipsis: true
         },
@@ -398,14 +368,8 @@ export default {
           width: 140
         },
         {
-          title: '服务名称',
-          dataIndex: 'service_name',
-          width: 150,
-          ellipsis: true
-        },
-        {
-          title: '路由名称',
-          dataIndex: 'router_name',
+          title: '请求ID',
+          dataIndex: 'request_id',
           width: 150,
           ellipsis: true
         },
@@ -467,9 +431,10 @@ export default {
         } else {
           data.loading = true
         }
+        data.params.query = (data.queryString || '').trim()
         const queryParams = { ...data.params }
-        if (!queryParams.search) {
-          delete queryParams.search
+        if (!queryParams.query) {
+          delete queryParams.query
         }
         if (queryParams.start_time === 0) {
           delete queryParams.start_time
@@ -549,6 +514,15 @@ export default {
       formatTime: timestamp => {
         if (!timestamp) return '-'
         return dayjs.unix(timestamp).format('YYYY-MM-DD HH:mm:ss')
+      },
+
+      formatLogTime: v => {
+        if (v === undefined || v === null || v === '') return '-'
+        const s = String(v).trim()
+        if (/^\d{10}$/.test(s)) return dayjs.unix(Number(s)).format('YYYY-MM-DD HH:mm:ss')
+        if (/^\d{13}$/.test(s)) return dayjs(Number(s)).format('YYYY-MM-DD HH:mm:ss')
+        const d = dayjs(s)
+        return d.isValid() ? d.format('YYYY-MM-DD HH:mm:ss') : s
       },
 
       formatBytes: bytes => {
@@ -688,14 +662,13 @@ export default {
 
         const fieldMap = new Map()
         const popularFieldNames = [
-          'timestamp',
-          'request_method',
-          'response_status',
-          'request_path',
-          'request_host',
+          'time',
+          'method',
+          'status',
+          'url',
+          'server_name',
           'remote_addr',
-          'service_name',
-          'router_name',
+          'request_id',
           'request_time',
           'bytes_sent'
         ]

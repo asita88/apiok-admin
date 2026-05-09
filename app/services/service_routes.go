@@ -139,6 +139,13 @@ func RouterCreate(routerData *validators.ValidatorRouterAddUpdate) (routerResId 
 			createRouterData.ProxySetHeader = &proxySetHeaderStr
 		}
 	}
+	if routerData.RewriteRules != nil {
+		rewriteRulesJson, jsonErr := json.Marshal(routerData.RewriteRules)
+		if jsonErr == nil {
+			rewriteRulesStr := string(rewriteRulesJson)
+			createRouterData.RewriteRules = &rewriteRulesStr
+		}
+	}
 
 	routerResId, err = createRouterData.RouterAdd(createRouterData)
 
@@ -174,6 +181,7 @@ type RouterInfo struct {
 	ProxyBuffering          *bool                  `json:"proxy_buffering,omitempty"`
 	ProxyCache              map[string]interface{} `json:"proxy_cache,omitempty"`
 	ProxySetHeader          map[string]string      `json:"proxy_set_header,omitempty"`
+	RewriteRules            map[string]interface{} `json:"rewrite_rules,omitempty"`
 	PluginList              []routerPlugin         `json:"plugin_list,omitempty"`
 }
 
@@ -358,6 +366,13 @@ func RouterInfoFromModel(routerModelDetail models.Routers) RouterInfo {
 		}
 	}
 
+	if routerModelDetail.RewriteRules != nil && len(*routerModelDetail.RewriteRules) > 0 {
+		var rewriteRules map[string]interface{}
+		if jsonErr := json.Unmarshal([]byte(*routerModelDetail.RewriteRules), &rewriteRules); jsonErr == nil {
+			routerInfo.RewriteRules = rewriteRules
+		}
+	}
+
 	if len(routerModelDetail.ServiceResID) > 0 {
 		serviceModel := models.Services{}
 		serviceList, err := serviceModel.ServiceListByResIds([]string{routerModelDetail.ServiceResID})
@@ -467,6 +482,12 @@ func RouterUpdate(routerResId string, routerData validators.ValidatorRouterAddUp
 		proxySetHeaderJson, jsonErr := json.Marshal(routerData.ProxySetHeader)
 		if jsonErr == nil {
 			updateRouterData["proxy_set_header"] = string(proxySetHeaderJson)
+		}
+	}
+	if routerData.RewriteRules != nil {
+		rewriteRulesJson, jsonErr := json.Marshal(routerData.RewriteRules)
+		if jsonErr == nil {
+			updateRouterData["rewrite_rules"] = string(rewriteRulesJson)
 		}
 	}
 	if err = packages.GetDb().Table(routerModel.TableName()).
@@ -649,6 +670,12 @@ func generateRouterConfig(routerInfo models.Routers) (rpc.RouterConfig, error) {
 			routerConfig.ProxySetHeader = proxySetHeader
 		}
 	}
+	if routerInfo.RewriteRules != nil && len(*routerInfo.RewriteRules) > 0 {
+		var rewriteRules map[string]interface{}
+		if jsonErr := json.Unmarshal([]byte(*routerInfo.RewriteRules), &rewriteRules); jsonErr == nil {
+			routerConfig.RewriteRules = rewriteRules
+		}
+	}
 
 	pluginConfigModel := models.PluginConfigs{}
 	pluginConfigList, err := pluginConfigModel.PluginConfigListByTargetResIds(models.PluginConfigsTypeRouter, []string{routerInfo.ResID})
@@ -737,14 +764,20 @@ func RouterCopy(routerResId string) (err error) {
 
 		randomStr := utils.RandomStrGenerate(4)
 		err = tx.Table(routerModel.TableName()).Create(&models.Routers{
-			ResID:          newRouterResId,
-			ServiceResID:   routerDetail.ServiceResID,
-			UpstreamResID:  routerDetail.UpstreamResID,
-			RequestMethods: routerDetail.RequestMethods,
-			RouterName:     routerDetail.RouterName + "-copy-" + randomStr,
-			RouterPath:     routerDetail.RouterPath + "-copy-" + randomStr,
-			Enable:         routerDetail.Enable,
-			Release:        utils.ReleaseStatusU,
+			ResID:                   newRouterResId,
+			ServiceResID:            routerDetail.ServiceResID,
+			UpstreamResID:           routerDetail.UpstreamResID,
+			RequestMethods:          routerDetail.RequestMethods,
+			RouterName:              routerDetail.RouterName + "-copy-" + randomStr,
+			RouterPath:              routerDetail.RouterPath + "-copy-" + randomStr,
+			Enable:                  routerDetail.Enable,
+			Release:                 utils.ReleaseStatusU,
+			ClientMaxBodySize:       routerDetail.ClientMaxBodySize,
+			ChunkedTransferEncoding: routerDetail.ChunkedTransferEncoding,
+			ProxyBuffering:          routerDetail.ProxyBuffering,
+			ProxyCache:              routerDetail.ProxyCache,
+			ProxySetHeader:          routerDetail.ProxySetHeader,
+			RewriteRules:            routerDetail.RewriteRules,
 		}).Error
 		if err != nil {
 			return

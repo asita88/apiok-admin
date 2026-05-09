@@ -55,6 +55,197 @@
         <a-switch v-model:checked="data.formData.enable" />
       </a-form-item>
 
+      <a-divider orientation="left">改写规则</a-divider>
+
+      <a-form-item label="请求改写：">
+        <div>
+          <a-switch v-model:checked="data.rewriteProxyRewriteEnabled" />
+          <div v-if="data.rewriteProxyRewriteEnabled" class="rewrite-nested">
+            <a-form-item
+              label="协议"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-radio-group v-model:value="data.rewritePrProtocol" button-style="solid" size="small">
+                <a-radio-button value="keep">保持原样</a-radio-button>
+                <a-radio-button value="http">HTTP</a-radio-button>
+                <a-radio-button value="https">HTTPS</a-radio-button>
+              </a-radio-group>
+            </a-form-item>
+
+            <a-form-item
+              label="路径改写"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-radio-group v-model:value="data.rewritePrPath" button-style="solid" size="small">
+                <a-radio-button value="keep">保持原样</a-radio-button>
+                <a-radio-button value="static">静态改写</a-radio-button>
+                <a-radio-button value="regex">正则改写</a-radio-button>
+              </a-radio-group>
+              <div v-if="data.rewritePrPath === 'static'" style="margin-top: 10px">
+                <a-input
+                  v-model:value="data.rewritePrPathStatic"
+                  placeholder="目标路径，如 /api/v1/foo"
+                />
+              </div>
+              <div v-if="data.rewritePrPath === 'regex'" style="margin-top: 10px">
+                <a-row :gutter="8">
+                  <a-col :span="12">
+                    <a-input v-model:value="data.rewritePrRegexPattern" placeholder="匹配正则，如 ^/api/(.*)" />
+                  </a-col>
+                  <a-col :span="12">
+                    <a-input v-model:value="data.rewritePrRegexReplacement" placeholder="替换为，如 /$1" />
+                  </a-col>
+                </a-row>
+              </div>
+            </a-form-item>
+
+            <a-form-item
+              label="域名改写"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-radio-group v-model:value="data.rewritePrHost" button-style="solid" size="small">
+                <a-radio-button value="keep">保持原样</a-radio-button>
+                <a-radio-button value="static">静态改写</a-radio-button>
+              </a-radio-group>
+              <div v-if="data.rewritePrHost === 'static'" style="margin-top: 10px">
+                <a-input
+                  v-model:value="data.rewritePrHostStatic"
+                  placeholder="主机名或 IP，勿填协议与路径"
+                />
+              </div>
+            </a-form-item>
+
+            <a-form-item
+              label="方法改写"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-select
+                v-model:value="data.rewritePrMethod"
+                allow-clear
+                placeholder="不改写"
+                style="width: 100%; max-width: 280px"
+              >
+                <a-select-option v-for="m in data.rewriteMethodOptions" :key="m" :value="m">{{ m }}</a-select-option>
+              </a-select>
+            </a-form-item>
+
+            <a-form-item
+              label="请求头改写"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <div style="width: 100%">
+                <div v-for="(h, hi) in data.rewriteProxyRewriteHeaders" :key="'rw-h-' + hi" style="margin-bottom: 10px">
+                  <a-row :gutter="8" align="middle">
+                    <a-col :span="10">
+                      <a-input v-model:value="h.key" placeholder="参数名称" />
+                    </a-col>
+                    <a-col :span="12">
+                      <a-input v-model:value="h.value" placeholder="参数值" />
+                    </a-col>
+                    <a-col :span="2">
+                      <a-button type="link" danger @click="fn.removeRewriteProxyHeader(hi)" style="padding: 0">
+                        <i class="iconfont icon-jian" />
+                      </a-button>
+                    </a-col>
+                  </a-row>
+                </div>
+                <a-button type="dashed" @click="fn.addRewriteProxyHeader" style="width: 100%">
+                  <i class="iconfont icon-tianjia" /> 新建
+                </a-button>
+              </div>
+            </a-form-item>
+          </div>
+        </div>
+      </a-form-item>
+
+      <a-form-item label="路径替换：">
+        <div>
+          <a-switch v-model:checked="data.rewriteReplaceEnabled" />
+          <div v-if="data.rewriteReplaceEnabled" class="rewrite-nested">
+            <a-form-item
+              label="查找"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-input v-model:value="data.rewriteReplaceFrom" placeholder="URI 中的原字符串，如 /old-api" />
+            </a-form-item>
+            <a-form-item
+              label="替换为"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-input v-model:value="data.rewriteReplaceTo" placeholder="可为空" />
+            </a-form-item>
+          </div>
+        </div>
+      </a-form-item>
+
+      <a-form-item label="重定向：">
+        <div>
+          <a-switch v-model:checked="data.rewriteRedirectEnabled" />
+          <div v-if="data.rewriteRedirectEnabled" class="rewrite-nested">
+            <a-form-item
+              label="HTTPS"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <div>
+                <a-switch v-model:checked="data.rewriteRedirect.http_to_https" />
+                <span style="margin-left: 8px; color: #999; font-size: 12px">HTTP 跳转 HTTPS</span>
+              </div>
+            </a-form-item>
+            <a-form-item
+              label="重定向 URI"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-input v-model:value="data.rewriteRedirect.uri" placeholder="可选" />
+            </a-form-item>
+            <a-form-item
+              label="状态码"
+              :label-col="{ style: { width: '100px' } }"
+              :wrapper-col="{ span: 18 }"
+              class="rewrite-inner-item"
+            >
+              <a-input-number
+                v-model:value="data.rewriteRedirect.ret_code"
+                :min="300"
+                :max="399"
+                placeholder="如 302"
+                style="width: 100%; max-width: 200px"
+              />
+            </a-form-item>
+          </div>
+        </div>
+      </a-form-item>
+
+      <a-form-item
+        v-if="data.rewriteRulesExtraKeys.length"
+        :label-col="{ style: { width: '100px' } }"
+        :wrapper-col="{ span: 18 }"
+      >
+        <template #label></template>
+        <div class="rewrite-extra-tip">
+          另含其它插件配置：{{ data.rewriteRulesExtraKeys.join('、') }}（已保留，保存时一并提交）
+        </div>
+      </a-form-item>
+
+
+
       <a-divider orientation="left">高级配置</a-divider>
 
       <a-form-item label="请求体大小限制：" name="client_max_body_size">
@@ -173,6 +364,8 @@
         </div>
       </a-form-item>
 
+
+
       <a-form-item :wrapper-col="{ span: 10, offset: 16 }">
         <a-button type="primary" html-type="submit">保存</a-button>
         <a-button style="margin-left: 15px" @click="fn.cancel">取消</a-button>
@@ -239,6 +432,28 @@ export default {
       proxyCacheBypassText: '',
       proxyNoCacheText: '',
       proxySetHeaders: [],
+      rewriteProxyRewriteEnabled: false,
+      rewritePrProtocol: 'keep',
+      rewritePrPath: 'keep',
+      rewritePrPathStatic: '',
+      rewritePrRegexPattern: '',
+      rewritePrRegexReplacement: '',
+      rewritePrHost: 'keep',
+      rewritePrHostStatic: '',
+      rewritePrMethod: undefined,
+      rewriteMethodOptions: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'TRACE'],
+      rewriteProxyRewriteHeaders: [],
+      rewriteRedirectEnabled: false,
+      rewriteRedirect: {
+        http_to_https: false,
+        uri: '',
+        ret_code: undefined
+      },
+      rewriteReplaceEnabled: false,
+      rewriteReplaceFrom: '',
+      rewriteReplaceTo: '',
+      rewriteRulesOriginalExtras: {},
+      rewriteRulesExtraKeys: [],
       serviceParam: reactive({
         page: 1,
         page_size: 1000 // 此处暂时不做轮询获取 暂定获取前1000条
@@ -367,7 +582,197 @@ export default {
             console.error('解析 proxy_set_header 失败:', e)
           }
         }
+
+        resetRewriteFormFromApi(dataInfo.rewrite_rules)
       }
+    }
+
+    const resetRewriteFormFromApi = rr => {
+      data.rewriteProxyRewriteEnabled = false
+      data.rewritePrProtocol = 'keep'
+      data.rewritePrPath = 'keep'
+      data.rewritePrPathStatic = ''
+      data.rewritePrRegexPattern = ''
+      data.rewritePrRegexReplacement = ''
+      data.rewritePrHost = 'keep'
+      data.rewritePrHostStatic = ''
+      data.rewritePrMethod = undefined
+      data.rewriteProxyRewriteHeaders = []
+      data.rewriteRedirectEnabled = false
+      data.rewriteRedirect = {
+        http_to_https: false,
+        uri: '',
+        ret_code: undefined
+      }
+      data.rewriteReplaceEnabled = false
+      data.rewriteReplaceFrom = ''
+      data.rewriteReplaceTo = ''
+      data.rewriteRulesOriginalExtras = {}
+      data.rewriteRulesExtraKeys = []
+
+      if (!rr || typeof rr !== 'object' || Array.isArray(rr)) {
+        return
+      }
+
+      data.rewriteRulesOriginalExtras = { ...rr }
+      const pr = rr['proxy-rewrite']
+      if (pr && typeof pr === 'object') {
+        delete data.rewriteRulesOriginalExtras['proxy-rewrite']
+        data.rewriteProxyRewriteEnabled = true
+        const sch = pr.scheme
+        if (sch === 'http') data.rewritePrProtocol = 'http'
+        else if (sch === 'https') data.rewritePrProtocol = 'https'
+        else data.rewritePrProtocol = 'keep'
+
+        if (Array.isArray(pr.regex_uri) && pr.regex_uri.length >= 2) {
+          data.rewritePrPath = 'regex'
+          data.rewritePrRegexPattern = pr.regex_uri[0] || ''
+          data.rewritePrRegexReplacement = pr.regex_uri[1] || ''
+        } else if (pr.uri) {
+          data.rewritePrPath = 'static'
+          data.rewritePrPathStatic = pr.uri
+        } else {
+          data.rewritePrPath = 'keep'
+        }
+
+        if (pr.host) {
+          data.rewritePrHost = 'static'
+          data.rewritePrHostStatic = pr.host
+        } else {
+          data.rewritePrHost = 'keep'
+        }
+
+        if (pr.method) {
+          data.rewritePrMethod = String(pr.method).toUpperCase()
+        }
+
+        const setObj = pr.headers && pr.headers.set && typeof pr.headers.set === 'object' ? pr.headers.set : null
+        if (setObj) {
+          data.rewriteProxyRewriteHeaders = Object.keys(setObj).map(k => ({
+            key: k,
+            value: setObj[k] != null ? String(setObj[k]) : ''
+          }))
+        }
+      }
+
+      const rp = rr.replace
+      if (rp && typeof rp === 'object') {
+        delete data.rewriteRulesOriginalExtras.replace
+        data.rewriteReplaceEnabled = true
+        if (rp.from != null) data.rewriteReplaceFrom = String(rp.from)
+        if (rp.to != null) data.rewriteReplaceTo = String(rp.to)
+      }
+
+      const rd = rr['redirect']
+      if (rd && typeof rd === 'object') {
+        delete data.rewriteRulesOriginalExtras['redirect']
+        data.rewriteRedirectEnabled = true
+        if (rd.http_to_https === true) data.rewriteRedirect.http_to_https = true
+        if (rd.uri) data.rewriteRedirect.uri = rd.uri
+        if (rd.ret_code != null && rd.ret_code !== '') {
+          const n = Number(rd.ret_code)
+          if (!Number.isNaN(n)) data.rewriteRedirect.ret_code = n
+        }
+      }
+
+      data.rewriteRulesExtraKeys = Object.keys(data.rewriteRulesOriginalExtras)
+    }
+
+    const buildProxyRewritePlugin = () => {
+      const o = {}
+
+      if (data.rewritePrProtocol === 'http') o.scheme = 'http'
+      else if (data.rewritePrProtocol === 'https') o.scheme = 'https'
+
+      if (data.rewritePrPath === 'static') {
+        const u = data.rewritePrPathStatic.trim()
+        if (u) o.uri = u
+      } else if (data.rewritePrPath === 'regex') {
+        const p = data.rewritePrRegexPattern.trim()
+        const r = data.rewritePrRegexReplacement.trim()
+        if ((p && !r) || (!p && r)) {
+          message.error('正则改写需同时填写「匹配」与「替换」')
+          return null
+        }
+        if (p && r) o.regex_uri = [p, r]
+      }
+
+      if (data.rewritePrHost === 'static') {
+        const h = data.rewritePrHostStatic.trim()
+        if (h) o.host = h
+      }
+
+      if (data.rewritePrMethod) {
+        const m = String(data.rewritePrMethod).trim().toUpperCase()
+        if (m) o.method = m
+      }
+
+      const set = {}
+      data.rewriteProxyRewriteHeaders.forEach(row => {
+        const k = (row.key || '').trim()
+        if (k && row.value != null && String(row.value).trim() !== '') {
+          set[k] = String(row.value).trim()
+        }
+      })
+      if (Object.keys(set).length > 0) {
+        o.headers = { set }
+      }
+      return o
+    }
+
+    const buildRedirectPlugin = () => {
+      const o = {}
+      if (data.rewriteRedirect.http_to_https) {
+        o.http_to_https = true
+      }
+      const uri = (data.rewriteRedirect.uri || '').trim()
+      if (uri) o.uri = uri
+      if (data.rewriteRedirect.ret_code != null && data.rewriteRedirect.ret_code !== '') {
+        const n = Number(data.rewriteRedirect.ret_code)
+        if (!Number.isNaN(n)) o.ret_code = n
+      }
+      return Object.keys(o).length > 0 ? o : null
+    }
+
+    const buildRewriteRulesPayload = () => {
+      const out = { ...data.rewriteRulesOriginalExtras }
+
+      if (data.rewriteProxyRewriteEnabled) {
+        const pr = buildProxyRewritePlugin()
+        if (pr === null) return null
+        if (Object.keys(pr).length > 0) {
+          out['proxy-rewrite'] = pr
+        }
+      }
+
+      if (data.rewriteReplaceEnabled) {
+        const from = (data.rewriteReplaceFrom || '').trim()
+        if (!from) {
+          message.error('路径替换需填写「查找」')
+          return null
+        }
+        out.replace = {
+          from,
+          to: (data.rewriteReplaceTo || '').trim()
+        }
+      }
+
+      if (data.rewriteRedirectEnabled) {
+        const rd = buildRedirectPlugin()
+        if (rd) {
+          out['redirect'] = rd
+        }
+      }
+
+      return out
+    }
+
+    const addRewriteProxyHeader = () => {
+      data.rewriteProxyRewriteHeaders.push({ key: '', value: '' })
+    }
+
+    const removeRewriteProxyHeader = index => {
+      data.rewriteProxyRewriteHeaders.splice(index, 1)
     }
 
     // 处理代理缓存配置变化
@@ -465,9 +870,24 @@ export default {
         delete formData.proxy_set_header
       }
 
+      const rrPayload = buildRewriteRulesPayload()
+      if (rrPayload === null) {
+        return
+      }
+      const rrKeys = Object.keys(rrPayload)
+      if (rrKeys.length === 0) {
+        if (props.currentResId != null) {
+          formData.rewrite_rules = {}
+        } else {
+          delete formData.rewrite_rules
+        }
+      } else {
+        formData.rewrite_rules = rrPayload
+      }
+
       // 调用增加/修改接口
       let routerRes
-      if (props.currentResId !== null) {
+      if (props.currentResId != null) {
         routerRes = await $routerUpdate(props.currentResId, formData)
       } else {
         routerRes = await $routerAdd(formData)
@@ -494,7 +914,9 @@ export default {
       filterOption,
       onProxyCacheChange,
       addProxyHeader,
-      removeProxyHeader
+      removeProxyHeader,
+      addRewriteProxyHeader,
+      removeRewriteProxyHeader
     })
 
     return {
@@ -512,5 +934,16 @@ export default {
 }
 .form {
   width: '150px';
+}
+.rewrite-nested {
+  margin-top: 16px;
+}
+.rewrite-inner-item {
+  margin-bottom: 16px;
+}
+.rewrite-extra-tip {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
 }
 </style>
