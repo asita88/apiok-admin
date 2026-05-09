@@ -53,8 +53,6 @@ func IdGenerate(idType string) (string, error) {
 		id = IdTypeService + "-" + randomId
 	case IdTypeServiceDomain:
 		id = IdTypeServiceDomain + "-" + randomId
-	case IdTypeServiceNode:
-		id = IdTypeServiceNode + "-" + randomId
 	case IdTypeRouter:
 		id = IdTypeRouter + "-" + randomId
 	case IdTypePlugin:

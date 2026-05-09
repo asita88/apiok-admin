@@ -5,7 +5,6 @@ const (
 	IdTypeUserToken     = "ut"
 	IdTypeService       = "sv"
 	IdTypeServiceDomain = "sd"
-	IdTypeServiceNode   = "sn"
 	IdTypeRouter        = "rt"
 	IdTypePlugin        = "pl"
 	IdTypePluginConfig  = "pc"

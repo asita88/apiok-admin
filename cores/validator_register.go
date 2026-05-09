@@ -32,10 +32,6 @@ func RegisterCustomizeValidator(validatorEngine *validator.Validate) error {
 		return err
 	}
 
-	if err := validatorEngine.RegisterValidation("CheckServiceNode", validators.CheckServiceNode); err != nil {
-		return err
-	}
-
 	if err := validatorEngine.RegisterValidation("CheckUpstreamNode", validators.CheckUpstreamNode); err != nil {
 		return err
 	}
