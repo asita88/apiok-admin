@@ -27,7 +27,7 @@ func RouterAdd(c *gin.Context) {
 		return
 	}
 
-	err := services.CheckExistServiceRouterPath(bindParams.ServiceResID, bindParams.RouterPath, []string{})
+	err := services.CheckExistServiceRouterPath(bindParams.ServiceResID, bindParams.RouterPath, bindParams.Priority, []string{})
 	if err != nil {
 		utils.Error(c, err.Error())
 		return
@@ -108,7 +108,7 @@ func RouterUpdate(c *gin.Context) {
 		return
 	}
 
-	err := services.CheckExistServiceRouterPath(bindParams.ServiceResID, bindParams.RouterPath, []string{routerResId})
+	err := services.CheckExistServiceRouterPath(bindParams.ServiceResID, bindParams.RouterPath, bindParams.Priority, []string{routerResId})
 	if err != nil {
 		utils.Error(c, err.Error())
 		return

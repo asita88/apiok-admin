@@ -19,6 +19,7 @@ type Routers struct {
 	RouterName              string  `gorm:"column:router_name"`                // Router name
 	RequestMethods          string  `gorm:"column:request_methods"`            // Request method
 	RouterPath              string  `gorm:"column:router_path"`                // Routing path
+	Priority                int     `gorm:"column:priority;default:0"`         // larger matches first
 	Enable                  int     `gorm:"column:enable"`                     // Router enable  1:on  2:off
 	Release                 int     `gorm:"column:release"`                    // Service release status 1:unpublished  2:to be published  3:published
 	ClientMaxBodySize       *string `gorm:"column:client_max_body_size"`       // Maximum request body size (e.g., "100M", "1G")
@@ -26,7 +27,7 @@ type Routers struct {
 	ProxyBuffering          *int    `gorm:"column:proxy_buffering"`            // Proxy buffering 1:enable 2:disable
 	ProxyCache              *string `gorm:"column:proxy_cache;type:text"`      // Proxy cache configuration (JSON)
 	ProxySetHeader          *string `gorm:"column:proxy_set_header;type:text"` // Proxy set header configuration (JSON)
-	RewriteRules            *string `gorm:"column:rewrite_rules;type:text"`   // APISIX-style rewrite (JSON)
+	RewriteRules            *string `gorm:"column:rewrite_rules;type:text"`    // APISIX-style rewrite (JSON)
 	ModelTime
 }
 
@@ -72,12 +73,14 @@ func (m *Routers) ModelUniqueId() (string, error) {
 func (r *Routers) RouterInfosByServiceRouterPath(
 	serviceResId string,
 	routerPaths []string,
+	priority int,
 	filterRouterResIds []string) ([]Routers, error) {
 	routersInfos := make([]Routers, 0)
 	db := packages.GetDb().
 		Table(r.TableName()).
 		Where("service_res_id = ?", serviceResId).
-		Where("router_path IN ?", routerPaths)
+		Where("router_path IN ?", routerPaths).
+		Where("priority = ?", priority)
 
 	if len(filterRouterResIds) != 0 {
 		db = db.Where("res_id NOT IN ?", filterRouterResIds)
@@ -272,7 +275,7 @@ func (r *Routers) RouterListPage(serviceResId string, param *validators.Validato
 	}
 
 	tx = tx.
-		Order("created_at desc")
+		Order("priority desc, created_at desc")
 
 	listError = ListPaginate(tx, &list, &param.BaseListPage)
 

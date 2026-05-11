@@ -26,6 +26,7 @@ type ValidatorRouterAddUpdate struct {
 	RouterName              string                 `json:"router_name" zh:"路由名称" en:"Router name" binding:"omitempty"`
 	RequestMethods          string                 `json:"request_methods" zh:"请求方法" en:"Request method" binding:"required,min=3,CheckRouterRequestMethodOneOf"`
 	RouterPath              string                 `json:"router_path" zh:"路由路径" en:"Routing path" binding:"required,min=1,CheckRouterPathPrefix"`
+	Priority                int                    `json:"priority" zh:"优先级" en:"Priority" binding:"gte=0"`
 	Enable                  int                    `json:"enable" zh:"路由开关" en:"Routing enable" binding:"required,oneof=1 2"`
 	ClientMaxBodySize       *string                `json:"client_max_body_size" zh:"请求体大小限制" en:"Maximum request body size" binding:"omitempty"`
 	ChunkedTransferEncoding *bool                  `json:"chunked_transfer_encoding" zh:"分块传输编码" en:"Chunked transfer encoding" binding:"omitempty"`

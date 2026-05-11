@@ -53,9 +53,9 @@ func CheckServiceRouterPath(path string) error {
 	return nil
 }
 
-func CheckExistServiceRouterPath(serviceResId string, path string, filterRouterResIds []string) error {
+func CheckExistServiceRouterPath(serviceResId string, path string, priority int, filterRouterResIds []string) error {
 	routerModel := models.Routers{}
-	routerPaths, err := routerModel.RouterInfosByServiceRouterPath(serviceResId, []string{path}, filterRouterResIds)
+	routerPaths, err := routerModel.RouterInfosByServiceRouterPath(serviceResId, []string{path}, priority, filterRouterResIds)
 	if err != nil {
 		return err
 	}
@@ -101,6 +101,7 @@ func RouterCreate(routerData *validators.ValidatorRouterAddUpdate) (routerResId 
 		RouterName:     routerData.RouterName,
 		RequestMethods: routerData.RequestMethods,
 		RouterPath:     routerData.RouterPath,
+		Priority:       routerData.Priority,
 		Enable:         routerData.Enable,
 		Release:        utils.ReleaseStatusU,
 	}
@@ -172,6 +173,7 @@ type RouterInfo struct {
 	RouterName              string                 `json:"router_name"`
 	RequestMethods          []string               `json:"request_methods"`
 	RouterPath              string                 `json:"router_path"`
+	Priority                int                    `json:"priority"`
 	Enable                  int                    `json:"enable"`
 	Release                 int                    `json:"release"`
 	UpstreamResId           string                 `json:"upstream_res_id,omitempty"`
@@ -335,6 +337,7 @@ func RouterInfoFromModel(routerModelDetail models.Routers) RouterInfo {
 		RouterName:        routerModelDetail.RouterName,
 		RequestMethods:    strings.Split(routerModelDetail.RequestMethods, ","),
 		RouterPath:        routerModelDetail.RouterPath,
+		Priority:          routerModelDetail.Priority,
 		Enable:            routerModelDetail.Enable,
 		Release:           routerModelDetail.Release,
 		UpstreamResId:     routerModelDetail.UpstreamResID,
@@ -444,6 +447,7 @@ func RouterUpdate(routerResId string, routerData validators.ValidatorRouterAddUp
 	updateRouterData["service_res_id"] = routerData.ServiceResID
 	updateRouterData["request_methods"] = routerData.RequestMethods
 	updateRouterData["router_path"] = routerData.RouterPath
+	updateRouterData["priority"] = routerData.Priority
 	updateRouterData["enable"] = routerData.Enable
 	updateRouterData["upstream_res_id"] = routerData.UpstreamResID
 
@@ -634,6 +638,7 @@ func generateRouterConfig(routerInfo models.Routers) (rpc.RouterConfig, error) {
 	routerConfig.Name = routerInfo.ResID
 	routerConfig.Methods = strings.Split(routerInfo.RequestMethods, ",")
 	routerConfig.Paths = append(routerConfig.Paths, routerInfo.RouterPath)
+	routerConfig.Priority = routerInfo.Priority
 	routerConfig.Enabled = false
 	if routerInfo.Enable == utils.EnableOn {
 		routerConfig.Enabled = true
@@ -770,6 +775,7 @@ func RouterCopy(routerResId string) (err error) {
 			RequestMethods:          routerDetail.RequestMethods,
 			RouterName:              routerDetail.RouterName + "-copy-" + randomStr,
 			RouterPath:              routerDetail.RouterPath + "-copy-" + randomStr,
+			Priority:                routerDetail.Priority,
 			Enable:                  routerDetail.Enable,
 			Release:                 utils.ReleaseStatusU,
 			ClientMaxBodySize:       routerDetail.ClientMaxBodySize,

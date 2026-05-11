@@ -31,6 +31,23 @@
         <a-input v-model:value="data.formData.router_path" />
       </a-form-item>
 
+      <a-form-item name="priority">
+        <template #label>
+          <span>
+            优先级
+            <a-tooltip title="同路径多条规则时数值越大越先匹配">
+              <i class="iconfont icon-help color-orange" />
+            </a-tooltip>
+          </span>
+        </template>
+        <a-input-number
+          v-model:value="data.formData.priority"
+          :min="0"
+          :precision="0"
+          style="width: 100%"
+        />
+      </a-form-item>
+
       <a-form-item label="请求方法：" name="request_methods" :rules="schemaRouter.request_methods">
         <a-checkbox-group
           v-model:value="data.formData.request_methods"
@@ -86,20 +103,64 @@
                 <a-radio-button value="regex">正则改写</a-radio-button>
               </a-radio-group>
               <div v-if="data.rewritePrPath === 'static'" style="margin-top: 10px">
-                <a-input
-                  v-model:value="data.rewritePrPathStatic"
-                  placeholder="目标路径，如 /api/v1/foo"
-                />
+                <div
+                  v-for="(row, ri) in data.rewritePrPathStaticRows"
+                  :key="'rw-static-' + ri"
+                  style="margin-bottom: 10px"
+                >
+                  <a-row :gutter="8" align="middle">
+                    <a-col :span="11">
+                      <a-input v-model:value="row.from" placeholder="源路径（须与请求 URI 完全一致）" />
+                    </a-col>
+                    <a-col :span="11">
+                      <a-input v-model:value="row.to" placeholder="目标路径" />
+                    </a-col>
+                    <a-col :span="2">
+                      <a-button
+                        type="link"
+                        danger
+                        @click="fn.removeRewriteStaticRow(ri)"
+                        style="padding: 0"
+                        :disabled="data.rewritePrPathStaticRows.length <= 1"
+                      >
+                        <i class="iconfont icon-jian" />
+                      </a-button>
+                    </a-col>
+                  </a-row>
+                </div>
+                <a-button type="dashed" @click="fn.addRewriteStaticRow" style="width: 100%">
+                  <i class="iconfont icon-tianjia" /> 添加静态改写
+                </a-button>
               </div>
               <div v-if="data.rewritePrPath === 'regex'" style="margin-top: 10px">
-                <a-row :gutter="8">
-                  <a-col :span="12">
-                    <a-input v-model:value="data.rewritePrRegexPattern" placeholder="匹配正则，如 ^/api/(.*)" />
-                  </a-col>
-                  <a-col :span="12">
-                    <a-input v-model:value="data.rewritePrRegexReplacement" placeholder="替换为，如 /$1" />
-                  </a-col>
-                </a-row>
+                <div
+                  v-for="(row, ri) in data.rewritePrRegexRows"
+                  :key="'rw-regex-' + ri"
+                  style="margin-bottom: 10px"
+                >
+                  <a-row :gutter="8" align="middle">
+                    <a-col :span="11">
+                      <a-input v-model:value="row.pattern" placeholder="匹配正则，如 ^/api/(.*)" />
+                    </a-col>
+                    <a-col :span="11">
+                      <a-input v-model:value="row.replacement" placeholder="替换为，如 /$1" />
+                    </a-col>
+                    <a-col :span="2">
+                      <a-button
+                        type="link"
+                        danger
+                        @click="fn.removeRewriteRegexRow(ri)"
+                        style="padding: 0"
+                        :disabled="data.rewritePrRegexRows.length <= 1"
+                      >
+                        <i class="iconfont icon-jian" />
+                      </a-button>
+                    </a-col>
+                  </a-row>
+                </div>
+                <a-button type="dashed" @click="fn.addRewriteRegexRow" style="width: 100%">
+                  <i class="iconfont icon-tianjia" /> 添加正则改写
+                </a-button>
               </div>
             </a-form-item>
 
@@ -415,6 +476,7 @@ export default {
         router_name: '',
         request_methods: [],
         router_path: '',
+        priority: 0,
         enable: false,
         client_max_body_size: '',
         chunked_transfer_encoding: undefined,
@@ -435,9 +497,8 @@ export default {
       rewriteProxyRewriteEnabled: false,
       rewritePrProtocol: 'keep',
       rewritePrPath: 'keep',
-      rewritePrPathStatic: '',
-      rewritePrRegexPattern: '',
-      rewritePrRegexReplacement: '',
+      rewritePrPathStaticRows: [{ from: '', to: '' }],
+      rewritePrRegexRows: [{ pattern: '', replacement: '' }],
       rewritePrHost: 'keep',
       rewritePrHostStatic: '',
       rewritePrMethod: undefined,
@@ -531,6 +592,8 @@ export default {
         data.formData.router_name = dataInfo.router_name
         data.formData.request_methods = dataInfo.request_methods
         data.formData.router_path = dataInfo.router_path
+        data.formData.priority =
+          dataInfo.priority !== undefined && dataInfo.priority !== null ? Number(dataInfo.priority) : 0
         data.formData.enable = dataInfo.enable == 1 ? true : false
         
         // 处理新字段
@@ -591,9 +654,8 @@ export default {
       data.rewriteProxyRewriteEnabled = false
       data.rewritePrProtocol = 'keep'
       data.rewritePrPath = 'keep'
-      data.rewritePrPathStatic = ''
-      data.rewritePrRegexPattern = ''
-      data.rewritePrRegexReplacement = ''
+      data.rewritePrPathStaticRows = [{ from: '', to: '' }]
+      data.rewritePrRegexRows = [{ pattern: '', replacement: '' }]
       data.rewritePrHost = 'keep'
       data.rewritePrHostStatic = ''
       data.rewritePrMethod = undefined
@@ -624,15 +686,33 @@ export default {
         else if (sch === 'https') data.rewritePrProtocol = 'https'
         else data.rewritePrProtocol = 'keep'
 
-        if (Array.isArray(pr.regex_uri) && pr.regex_uri.length >= 2) {
+        const pm = pr.path_mode
+        if (pm === 'keep' || pm === 'static' || pm === 'regex') {
+          data.rewritePrPath = pm
+        } else if (Array.isArray(pr.regex_uris) && pr.regex_uris.length > 0) {
           data.rewritePrPath = 'regex'
-          data.rewritePrRegexPattern = pr.regex_uri[0] || ''
-          data.rewritePrRegexReplacement = pr.regex_uri[1] || ''
-        } else if (pr.uri) {
+        } else if (Array.isArray(pr.uri_pairs) && pr.uri_pairs.length > 0) {
           data.rewritePrPath = 'static'
-          data.rewritePrPathStatic = pr.uri
         } else {
           data.rewritePrPath = 'keep'
+        }
+
+        if (data.rewritePrPath === 'static') {
+          data.rewritePrPathStaticRows =
+            Array.isArray(pr.uri_pairs) && pr.uri_pairs.length > 0
+              ? pr.uri_pairs.map(pair => ({
+                  from: String(pair[0] ?? ''),
+                  to: String(pair[1] ?? '')
+                }))
+              : [{ from: '', to: '' }]
+        } else if (data.rewritePrPath === 'regex') {
+          data.rewritePrRegexRows =
+            Array.isArray(pr.regex_uris) && pr.regex_uris.length > 0
+              ? pr.regex_uris.map(pair => ({
+                  pattern: String(pair[0] ?? ''),
+                  replacement: String(pair[1] ?? '')
+                }))
+              : [{ pattern: '', replacement: '' }]
         }
 
         if (pr.host) {
@@ -679,22 +759,39 @@ export default {
     }
 
     const buildProxyRewritePlugin = () => {
-      const o = {}
+      const o = {
+        path_mode: data.rewritePrPath
+      }
 
       if (data.rewritePrProtocol === 'http') o.scheme = 'http'
       else if (data.rewritePrProtocol === 'https') o.scheme = 'https'
 
       if (data.rewritePrPath === 'static') {
-        const u = data.rewritePrPathStatic.trim()
-        if (u) o.uri = u
-      } else if (data.rewritePrPath === 'regex') {
-        const p = data.rewritePrRegexPattern.trim()
-        const r = data.rewritePrRegexReplacement.trim()
-        if ((p && !r) || (!p && r)) {
-          message.error('正则改写需同时填写「匹配」与「替换」')
-          return null
+        const pairs = []
+        for (const row of data.rewritePrPathStaticRows) {
+          const from = String(row.from || '').trim()
+          const to = String(row.to || '').trim()
+          if (!from && !to) continue
+          if ((from && !to) || (!from && to)) {
+            message.error('每组静态改写需同时填写「源路径」与「目标路径」')
+            return null
+          }
+          pairs.push([from, to])
         }
-        if (p && r) o.regex_uri = [p, r]
+        o.uri_pairs = pairs
+      } else if (data.rewritePrPath === 'regex') {
+        const pairs = []
+        for (const row of data.rewritePrRegexRows) {
+          const p = String(row.pattern || '').trim()
+          const r = String(row.replacement || '').trim()
+          if (!p && !r) continue
+          if ((p && !r) || (!p && r)) {
+            message.error('每组正则改写需同时填写「匹配」与「替换」')
+            return null
+          }
+          pairs.push([p, r])
+        }
+        o.regex_uris = pairs
       }
 
       if (data.rewritePrHost === 'static') {
@@ -775,6 +872,24 @@ export default {
       data.rewriteProxyRewriteHeaders.splice(index, 1)
     }
 
+    const addRewriteStaticRow = () => {
+      data.rewritePrPathStaticRows.push({ from: '', to: '' })
+    }
+
+    const removeRewriteStaticRow = index => {
+      if (data.rewritePrPathStaticRows.length <= 1) return
+      data.rewritePrPathStaticRows.splice(index, 1)
+    }
+
+    const addRewriteRegexRow = () => {
+      data.rewritePrRegexRows.push({ pattern: '', replacement: '' })
+    }
+
+    const removeRewriteRegexRow = index => {
+      if (data.rewritePrRegexRows.length <= 1) return
+      data.rewritePrRegexRows.splice(index, 1)
+    }
+
     // 处理代理缓存配置变化
     const onProxyCacheChange = (checked) => {
       if (!checked) {
@@ -807,6 +922,16 @@ export default {
       let formData = JSON.parse(JSON.stringify(data.formData))
       formData.enable = formData.enable == true ? 1 : 2
       formData.request_methods = formData.request_methods.join(',')
+      {
+        let pri = formData.priority
+        if (pri === null || pri === undefined || pri === '') {
+          pri = 0
+        } else {
+          pri = Number(pri)
+          if (!Number.isFinite(pri) || pri < 0) pri = 0
+        }
+        formData.priority = pri
+      }
 
       // 处理新字段
       if (formData.client_max_body_size === undefined || formData.client_max_body_size === null || formData.client_max_body_size === '' || formData.client_max_body_size === '0') {
@@ -916,7 +1041,11 @@ export default {
       addProxyHeader,
       removeProxyHeader,
       addRewriteProxyHeader,
-      removeRewriteProxyHeader
+      removeRewriteProxyHeader,
+      addRewriteStaticRow,
+      removeRewriteStaticRow,
+      addRewriteRegexRow,
+      removeRewriteRegexRow
     })
 
     return {

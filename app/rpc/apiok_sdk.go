@@ -443,6 +443,7 @@ type RouterConfig struct {
 	Name                    string                 `json:"name"`
 	Methods                 []string               `json:"methods"`
 	Paths                   []string               `json:"paths"`
+	Priority                int                    `json:"priority"`
 	Enabled                 bool                   `json:"enabled"`
 	Headers                 map[string]string      `json:"headers"`
 	Service                 ConfigObjectName       `json:"service"`

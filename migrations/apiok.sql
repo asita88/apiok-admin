@@ -317,6 +317,7 @@ CREATE TABLE `ok_routers` (
   `router_name` varchar(50) NOT NULL DEFAULT '' COMMENT 'Router name',
   `request_methods` varchar(150) NOT NULL DEFAULT '' COMMENT 'Request method',
   `router_path` varchar(200) NOT NULL DEFAULT '' COMMENT 'Routing path',
+  `priority` int NOT NULL DEFAULT '0' COMMENT 'match order, larger matches first',
   `enable` tinyint unsigned NOT NULL DEFAULT '2' COMMENT 'Router enable  1:on  2:off',
   `release` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Service release status 1:unpublished  2:to be published  3:published',
   `client_max_body_size` varchar(20) DEFAULT NULL COMMENT 'Maximum request body size in bytes',
@@ -334,9 +335,9 @@ CREATE TABLE `ok_routers` (
 -- ----------------------------
 -- Records of ok_routers
 -- ----------------------------
-INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-GdO0rkKOo5yJ9RM', 'up-p6f18nbjdLwS73j', 'apiok-router', 'ALL', '/*', '1', '3', '', null, null, null, null, null, '2025-12-05 18:58:50', '2026-05-08 09:53:44');
-INSERT INTO `ok_routers` VALUES ('7', 'rt-l417zeVG36pTVxd', 'sv-BkiWODvz2LI9i66', 'up-BsYcvp9VClgXIX2', 'okx-router', 'ALL', '/*', '1', '2', null, null, null, null, null, null, '2025-12-22 17:49:48', '2026-05-08 16:09:59');
-INSERT INTO `ok_routers` VALUES ('9', 'rt-U9Xx9J5HIVygiFy', 'sv-uGkY5neXwUXMW8r', 'up-a04qPOIQ1qnpFKt', 'opseasy-router', 'ALL', '/*', '1', '3', null, null, null, null, null, null, '2026-02-28 09:44:13', '2026-02-28 09:45:00');
+INSERT INTO `ok_routers` VALUES ('2', 'rt-cMQH880AhzqxQnO', 'sv-GdO0rkKOo5yJ9RM', 'up-p6f18nbjdLwS73j', 'apiok-router', 'ALL', '/*', '0', '1', '3', '', null, null, null, null, null, '2025-12-05 18:58:50', '2026-05-08 09:53:44');
+INSERT INTO `ok_routers` VALUES ('7', 'rt-l417zeVG36pTVxd', 'sv-BkiWODvz2LI9i66', 'up-BsYcvp9VClgXIX2', 'okx-router', 'ALL', '/*', '0', '1', '2', null, null, null, null, null, null, '2025-12-22 17:49:48', '2026-05-08 16:09:59');
+INSERT INTO `ok_routers` VALUES ('9', 'rt-U9Xx9J5HIVygiFy', 'sv-uGkY5neXwUXMW8r', 'up-a04qPOIQ1qnpFKt', 'opseasy-router', 'ALL', '/*', '0', '1', '3', null, null, null, null, null, null, '2026-02-28 09:44:13', '2026-02-28 09:45:00');
 
 -- ----------------------------
 -- Table structure for ok_services
